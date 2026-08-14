@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E6EAEC">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Serum">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Serum — Blutwerte im Verlauf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E6EAEC; --card:#FBFCFD; --ink:#111820; --ink2:#3A4750; --muted:#77858E;
+  --line:#D3DADE; --hair:#E4E9EB;
+  --serum:#B98914; --serum-soft:#F4E7C3;
+  --opt:#1B7263; --opt-soft:#DDEDE9;
+  --ref-soft:#EEF2F4;
+  --alert:#A83E30; --alert-soft:#F6DFDA;
+  --r:14px; --shadow:0 1px 2px rgba(17,24,32,.05), 0 8px 24px -14px rgba(17,24,32,.22);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  background-image:linear-gradient(var(--hair) 1px,transparent 1px),linear-gradient(90deg,var(--hair) 1px,transparent 1px);
+  background-size:22px 22px;
+  color:var(--ink);
+  font:15px/1.6 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom);
+}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque",Inter,sans-serif;font-weight:700;letter-spacing:-.02em;margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--opt)}
+
+header{position:sticky;top:0;z-index:40;background:rgba(230,234,236,.88);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+.hbar{max-width:1180px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand .tube{width:11px;height:24px;border-radius:2px 2px 5px 5px;border:1.5px solid var(--ink);background:linear-gradient(to top,var(--serum) 0 42%,transparent 42%)}
+.brand h1{font-size:20px}
+.brand small{display:block;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+.nav{display:flex;gap:3px;background:var(--ref-soft);border:1px solid var(--line);border-radius:11px;padding:3px}
+.nav button{border:none;background:transparent;padding:7px 15px;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--ink2)}
+.nav button[aria-current="page"]{background:var(--ink);color:#fff}
+
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:9px;font-size:13.5px;font-weight:500;transition:.15s}
+.btn:hover{border-color:var(--ink2)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.primary:hover{background:#000}
+.btn.ghost{background:transparent}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.nav button:focus-visible{outline:2px solid var(--opt);outline-offset:2px}
+
+.filters{border-bottom:1px solid var(--line);background:rgba(251,252,253,.7)}
+.filters-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.filters-in::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);padding:6px 13px;border-radius:99px;font-size:13px;color:var(--ink2)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+main{max-width:1180px;margin:0 auto;padding:24px 20px 90px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.sect-h{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
+.sect-h:first-child{margin-top:0}
+
+/* Profilkopf */
+.who{display:flex;gap:16px;align-items:flex-start;padding:20px 22px;margin-bottom:16px}
+.avatar{width:52px;height:52px;border-radius:50%;background:var(--opt-soft);color:var(--opt);display:grid;place-items:center;font-family:"Bricolage Grotesque",sans-serif;font-size:22px;font-weight:700;flex:none}
+.who h2{font-size:21px}
+.who .meta{font-size:13.5px;color:var(--muted);margin-top:3px}
+.who .cond{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{background:var(--ref-soft);border:1px solid var(--hair);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--ink2)}
+
+/* Kennzahlen */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:8px}
+.stat{padding:18px 20px}
+.stat .k{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat .n{font-family:"IBM Plex Mono",monospace;font-size:30px;font-weight:600;line-height:1.15;margin-top:6px;letter-spacing:-.02em}
+.stat .n.small{font-size:19px;padding-top:7px}
+.stat .s{font-size:12.5px;color:var(--muted);margin-top:2px}
+.stat.ringbox{display:flex;align-items:center;gap:14px}
+.ring{width:78px;height:78px;flex:none}
+
+/* Befunde-Auswertung */
+.assess{margin-bottom:16px;overflow:hidden}
+.assess>summary{padding:15px 20px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:11px;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:16px}
+.assess>summary::-webkit-details-marker{display:none}
+.assess>summary::after{content:"⌄";margin-left:auto;color:var(--muted);font-size:16px;transition:.2s}
+.assess[open]>summary::after{transform:rotate(180deg)}
+.ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:14px;flex:none}
+.ico.i{background:var(--opt-soft)}
+.ico.c{background:var(--ref-soft)}
+.ico.a{background:var(--serum-soft)}
+.assess .body{padding:0 20px 18px}
+.find{display:flex;gap:11px;padding:12px 0;border-top:1px solid var(--hair)}
+.find:first-child{border-top:none;padding-top:2px}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:7px;flex:none}
+.dot.bad{background:var(--alert)} .dot.mid{background:var(--serum)} .dot.ok{background:var(--opt)}
+.find h4{font-size:14.5px;margin-bottom:2px}
+.find p{margin:0;font-size:13.6px;color:var(--ink2)}
+.lead{font-size:14.5px;color:var(--ink2);margin:0 0 14px;line-height:1.62}
+
+/* Auffällige Werte */
+.rows{overflow:hidden}
+.row-i{display:flex;align-items:center;gap:13px;padding:13px 20px;border-top:1px solid var(--hair);width:100%;background:none;border-left:none;border-right:none;border-bottom:none;text-align:left}
+.row-i:first-child{border-top:none}
+.row-i:hover{background:var(--ref-soft)}
+.row-i .nm{font-weight:500;font-size:14.5px}
+.row-i .sm{font-size:12.5px;color:var(--muted)}
+.row-i .rv{margin-left:auto;text-align:right;flex:none}
+.row-i .rv b{font-family:"IBM Plex Mono",monospace;font-size:16px;font-weight:600}
+.row-i .chev{color:var(--muted);flex:none}
+
+/* Messwert-Karte */
+.grp-h{display:flex;align-items:baseline;gap:12px;margin:30px 0 12px;flex-wrap:wrap}
+.grp-h:first-of-type{margin-top:0}
+.grp-h h3{font-size:17px}
+.grp-h span{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase}
+.grp-h .n{margin-left:auto;color:var(--muted)}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(430px,1fr))}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:150px}
+.mcard.flash{animation:flash 1.6s ease-out}
+@keyframes flash{0%,40%{border-color:var(--opt);box-shadow:0 0 0 4px var(--opt-soft)}100%{}}
+.card-top{display:flex;gap:16px;padding:16px 18px 12px;align-items:flex-start}
+.card-top h3{font-size:16.5px;line-height:1.25}
+.card-top .sub{font-size:11.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;font-family:"IBM Plex Mono",monospace;margin-top:3px}
+.readout{margin-left:auto;text-align:right;flex:none}
+.readout .val{font-family:"IBM Plex Mono",monospace;font-size:27px;font-weight:600;letter-spacing:-.02em;line-height:1}
+.readout .unit{font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace}
+.pill{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;font-family:"IBM Plex Mono",monospace}
+.readout .pill{margin-top:7px}
+.pill.ok{background:var(--opt-soft);color:var(--opt)}
+.pill.mid{background:var(--serum-soft);color:var(--serum)}
+.pill.bad{background:var(--alert-soft);color:var(--alert)}
+.chart{padding:0 8px 4px;display:block;width:100%}
+.trend{display:flex;gap:9px;margin:2px 18px 0;padding:11px 13px;border-radius:10px;background:var(--ref-soft);font-size:13.2px;color:var(--ink2)}
+.trend .arrow{font-family:"IBM Plex Mono",monospace;font-weight:600;flex:none}
+.acc{border-top:1px solid var(--hair);margin-top:14px}
+.acc summary{padding:11px 18px;font-size:13.4px;font-weight:500;color:var(--ink2);cursor:pointer;list-style:none;display:flex;gap:8px}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::before{content:"+";font-family:"IBM Plex Mono",monospace;color:var(--muted);width:11px}
+.acc[open] summary::before{content:"–"}
+.acc .body{padding:0 18px 16px;font-size:13.8px;color:var(--ink2)}
+.acc .body p{margin:0 0 10px}
+.acc .body ul{margin:0;padding-left:18px}
+.acc .body li{margin-bottom:5px}
+.card-foot{padding:12px 18px 16px;border-top:1px solid var(--hair);display:flex;gap:9px;flex-wrap:wrap}
+
+/* Befundliste */
+.test-row{display:flex;align-items:center;gap:14px;padding:17px 20px;border-top:1px solid var(--hair);width:100%;background:none;border-left:none;border-right:none;border-bottom:none;text-align:left}
+.test-row:first-child{border-top:none}
+.test-row:hover{background:var(--ref-soft)}
+.test-row .dt{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px}
+.test-row .lb{font-size:12.8px;color:var(--muted);margin-top:2px}
+.test-row .ct{margin-left:auto;text-align:right;font-size:13px;color:var(--muted);flex:none}
+
+/* Einzelbefund */
+.back{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);background:none;border:none;padding:0;margin-bottom:16px}
+.back:hover{color:var(--ink)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13.8px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:500}
+.panel{margin-bottom:14px;overflow:hidden}
+.panel>summary{padding:15px 20px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:11px;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15.5px}
+.panel>summary::-webkit-details-marker{display:none}
+.panel .cnt{margin-left:auto;font-size:12.5px;font-family:"IBM Plex Mono",monospace}
+.bm{border-top:1px solid var(--hair);padding:16px 20px;display:grid;grid-template-columns:1fr 1.15fr;gap:20px}
+.bm h4{font-size:14.8px;margin-bottom:7px}
+.bm .why{font-size:13.4px;color:var(--ink2);background:var(--ref-soft);border-radius:10px;padding:13px 15px}
+.bm .why .d{font-size:12.5px;color:var(--muted);margin-top:8px;font-family:"IBM Plex Mono",monospace}
+
+/* Bereichsbalken */
+.rb{position:relative;margin-top:44px;height:9px}
+.rb .seg{position:absolute;top:0;height:9px;border-radius:4px}
+.rb .ptr{position:absolute;top:-13px;transform:translateX(-50%);font-size:11px;color:var(--ink)}
+.rb .val{position:absolute;top:-38px;transform:translateX(-50%);font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;background:var(--card);border:1px solid var(--line);border-radius:7px;padding:2px 8px;white-space:nowrap}
+.rb .lab{position:absolute;top:15px;transform:translateX(-50%);font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted)}
+
+.empty{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:44px 34px;text-align:center;box-shadow:var(--shadow)}
+.empty h2{font-size:26px;margin-bottom:10px}
+.empty p{color:var(--ink2);max-width:46ch;margin:0 auto 22px}
+
+/* Dialoge */
+.veil{position:fixed;inset:0;background:rgba(17,24,32,.42);backdrop-filter:blur(3px);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow:auto}
+.veil[hidden]{display:none}
+.modal{background:var(--card);border-radius:var(--r);border:1px solid var(--line);width:100%;max-width:660px;box-shadow:0 30px 70px -20px rgba(17,24,32,.5);margin:auto}
+.modal-h{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--hair)}
+.modal-h h2{font-size:18px;margin-right:auto}
+.modal-b{padding:20px 22px}
+.modal-f{padding:14px 22px 20px;display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+label{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin:0 0 6px}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff}
+textarea{resize:vertical;min-height:84px;line-height:1.55}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.row>div{flex:1 1 160px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+.drop{border:1.5px dashed var(--line);border-radius:11px;padding:26px 18px;text-align:center;color:var(--muted);font-size:13.5px}
+.drop.hot{border-color:var(--opt);background:var(--opt-soft);color:var(--opt)}
+.detected{max-height:270px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:14px}
+.detected table{width:100%;border-collapse:collapse;font-size:13.4px}
+.detected th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:"IBM Plex Mono",monospace;padding:9px 12px;border-bottom:1px solid var(--hair);position:sticky;top:0;background:var(--card)}
+.detected td{padding:8px 12px;border-bottom:1px solid var(--hair)}
+.detected input[type=number]{padding:5px 8px;width:96px}
+.detected tr:last-child td{border-bottom:none}
+.answer{white-space:pre-wrap;font-size:14px;line-height:1.65;background:var(--ref-soft);border-radius:10px;padding:16px;margin-top:14px;max-height:400px;overflow:auto}
+.tabs{display:flex;gap:6px;margin-bottom:18px}
+.tabs button{flex:1;padding:9px;border:1px solid var(--line);background:transparent;border-radius:9px;font-size:13.4px}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.note{max-width:1180px;margin:34px auto 0;padding:0 20px;font-size:12.4px;color:var(--muted);line-height:1.6;text-align:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,80px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13.5px;z-index:90;transition:transform .28s cubic-bezier(.2,.8,.3,1);pointer-events:none}
+.toast.show{transform:translate(-50%,0)}
+.spinner{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:760px){ .bm{grid-template-columns:1fr;gap:14px} }
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .hbar{padding:11px 14px;gap:9px}
+  .nav{order:3;width:100%}
+  .nav button{flex:1;padding:8px 6px}
+  main{padding:18px 12px 80px}
+  .veil{padding:0}
+  .modal{border-radius:0;min-height:100%;max-width:none}
+  .readout .val{font-size:23px}
+  .stat .n{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbar">
+    <div class="brand">
+      <div class="tube" aria-hidden="true"></div>
+      <div><h1>Serum</h1><small>Blutwerte im Verlauf</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-view="dash" aria-current="page">Dashboard</button>
+      <button data-view="marks">Messwerte</button>
+      <button data-view="tests">Befunde</button>
+    </nav>
+    <button class="btn" id="btnData">Daten</button>
+    <button class="btn" id="btnProfile">Profil</button>
+    <button class="btn primary" id="btnAdd">Befund&nbsp;+</button>
+  </div>
+  <div class="filters" id="filterBar" hidden><div class="filters-in" id="filters"></div></div>
+</header>
+
+<main><div id="app"></div></main>
+
+<p class="note">
+  Serum ordnet und visualisiert deine Werte. Es stellt keine Diagnose und ersetzt keine ärztliche Beurteilung —
+  Referenzbereiche unterscheiden sich je nach Labor, Alter und Lebenssituation. Nimm die Verläufe mit zum nächsten Arzttermin.
+</p>
+
+<div class="veil" id="mAdd" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="modal-h"><h2 id="addTitle">Befund hinzufügen</h2><button class="btn ghost" data-close>Schließen</button></div>
+    <div class="modal-b">
+      <div class="tabs">
+        <button data-tab="file" aria-pressed="true">Datei</button>
+        <button data-tab="paste" aria-pressed="false">Text einfügen</button>
+        <button data-tab="manual" aria-pressed="false">Manuell</button>
+      </div>
+      <div class="row">
+        <div><label for="fDate">Datum der Blutabnahme</label><input type="date" id="fDate"></div>
+        <div><label for="fLab">Labor <span style="text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="fLab" placeholder="Labor an der Salzbrücke MVZ"></div>
+      </div>
+      <div data-pane="file">
+        <div class="drop" id="drop">PDF oder Foto hierher ziehen<br>
+          <button class="btn" id="pick" style="margin-top:12px">Datei auswählen</button>
+          <input type="file" id="file" accept="application/pdf,image/*" hidden></div>
+        <p class="hint">Aus PDFs liest Serum den Text direkt auf deinem Gerät aus — nichts wird hochgeladen.
+          Fotos und eingescannte PDFs brauchen einen API-Key (siehe Profil), weil dafür Bilderkennung nötig ist.</p>
+      </div>
+      <div data-pane="paste" hidden>
+        <label for="pasteBox">Befundtext</label>
+        <textarea id="pasteBox" style="min-height:180px" placeholder="Im PDF alles markieren, kopieren, hier einfügen.&#10;&#10;Ferritin        42   µg/l&#10;Estradiol        6   pg/ml&#10;SHBG          67,9   nmol/l"></textarea>
+        <button class="btn" id="parsePaste" style="margin-top:12px">Werte erkennen</button>
+      </div>
+      <div data-pane="manual" hidden>
+        <div class="row">
+          <div><label for="mSel">Messwert</label><select id="mSel"></select></div>
+          <div style="flex:0 0 130px"><label for="mVal">Wert</label><input type="number" step="any" id="mVal"></div>
+        </div>
+        <button class="btn" id="addManual">Zur Liste</button>
+      </div>
+      <div id="detected"></div>
+    </div>
+    <div class="modal-f"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="saveEntry">Werte speichern</button></div>
+  </div>
+</div>
+
+<div class="veil" id="mAsk" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="askTitle">
+    <div class="modal-h"><h2 id="askTitle">Frag Claude</h2><button class="btn ghost" data-close>Schließen</button></div>
+    <div class="modal-b">
+      <div id="askCtx" class="hint" style="margin:0 0 14px"></div>
+      <label for="askQ">Deine Frage</label>
+      <textarea id="askQ" placeholder="Mein Wert ist leicht verringert. Ich esse gerne Fleisch und mache viel Sport — was kann ich an Ernährung und Alltag ändern, damit er besser wird?"></textarea>
+      <p class="hint">Serum hängt automatisch deinen Verlauf, die Referenzbereiche, passende Begleitwerte und dein Profil an die Frage an.</p>
+      <div id="askOut"></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn" id="copyPrompt">Prompt kopieren</button>
+      <button class="btn" id="openClaude">In Claude öffnen</button>
+      <button class="btn primary" id="askDirect">Direkt fragen</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="mProfile" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+    <div class="modal-h"><h2 id="pTitle">Profil</h2><button class="btn ghost" data-close>Schließen</button></div>
+    <div class="modal-b">
+      <div class="row">
+        <div><label for="pName">Name</label><input type="text" id="pName" placeholder="Michael"></div>
+        <div><label for="pSex">Referenzbereiche für</label><select id="pSex"><option value="m">Männer</option><option value="f">Frauen</option></select></div>
+      </div>
+      <div class="row">
+        <div><label for="pYear">Geburtsjahr</label><input type="number" id="pYear" placeholder="1989"></div>
+        <div><label for="pKg">Gewicht (kg)</label><input type="number" id="pKg" placeholder="72"></div>
+        <div><label for="pCm">Größe (cm)</label><input type="number" id="pCm" placeholder="174"></div>
+      </div>
+      <label for="pCond">Bekannte Erkrankungen</label>
+      <input type="text" id="pCond" placeholder="Hashimoto, Heuschnupfen — mit Komma trennen">
+      <p class="hint" style="margin-bottom:16px">Erscheinen als Marker auf dem Dashboard und gehen in jede Claude-Anfrage mit ein.</p>
+      <label for="pCtx">Kontext für Claude</label>
+      <textarea id="pCtx" placeholder="z. B. 5× Woche Krafttraining, esse viel Fleisch, wenig Fisch, nehme Vitamin D im Winter …"></textarea>
+      <p class="hint">Damit Antworten zu dir passen statt allgemein zu bleiben.</p>
+      <hr style="border:none;border-top:1px solid var(--hair);margin:22px 0">
+      <label for="pKey">Anthropic API-Key <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input type="password" id="pKey" placeholder="sk-ant-…" autocomplete="off">
+      <p class="hint">Nur nötig, wenn Antworten direkt in der App erscheinen sollen und Fotos automatisch ausgelesen werden.
+        Der Key bleibt auf diesem Gerät. Kosten liegen bei etwa 1–3 Cent pro Frage und laufen über API-Guthaben —
+        ein Claude-Abo deckt das nicht ab.</p>
+    </div>
+    <div class="modal-f"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="saveProfile">Profil speichern</button></div>
+  </div>
+</div>
+
+<div class="veil" id="mData" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <div class="modal-h"><h2 id="dTitle">Daten</h2><button class="btn ghost" data-close>Schließen</button></div>
+    <div class="modal-b">
+      <p style="margin-top:0;color:var(--ink2);font-size:14px">Alles liegt lokal auf diesem Gerät. Zum Übertragen exportierst du die Datei — auf dem Handy am besten über „In Dateien sichern“ nach iCloud Drive — und importierst sie auf dem anderen Gerät. Der Import <strong>führt zusammen</strong>: Vorhandenes bleibt erhalten, Fehlendes kommt dazu. Der API-Key wird nie mitexportiert.</p>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin:18px 0">
+        <button class="btn" id="expJson">Exportieren</button>
+        <button class="btn" id="impJson">Importieren</button>
+        <input type="file" id="impFile" accept="application/json" hidden>
+        <button class="btn" id="loadDemo">Beispieldaten laden</button>
+      </div>
+      <div id="dataList"></div>
+    </div>
+    <div class="modal-f"><button class="btn ghost" data-close>Schließen</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* Service Worker nur registrieren, wenn die App über http(s) läuft.
+   Bei einer lokal geöffneten Datei gibt es keinen — das ist in Ordnung. */
+if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
+  addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
+</script>
+
+<script>
+/* ===== 1 — Wissensbasis ================================================ */
+const M = [
+{id:"hb",n:"Hämoglobin",u:"g/dl",g:"Blutbild",al:["hämoglobin","haemoglobin","hb "],ref:[13.5,17.5],opt:[14.5,16.5],refF:[12,16],optF:[13,15],
+ what:"Der rote Blutfarbstoff. Er bindet Sauerstoff in der Lunge und gibt ihn im Gewebe ab.",
+ why:"Bestimmt direkt, wie viel Sauerstoff dein Blut transportieren kann. Zu wenig heißt Müdigkeit, Kurzatmigkeit und spürbar weniger Ausdauer. Dauerhaft zu hoch macht das Blut zähflüssiger.",
+ imp:["Eisenquellen kombinieren: rotes Fleisch, Leber, Hülsenfrüchte, Haferflocken","Vitamin C zur pflanzlichen Eisenquelle verdoppelt die Aufnahme","Kaffee und schwarzen Tee nicht zur eisenreichen Mahlzeit","B12 und Folsäure mitprüfen — ohne sie kein Hämoglobin","Bei hohen Werten Flüssigkeitszufuhr prüfen, Dehydrierung täuscht"],rel:["ferritin","eisen","b12","folsaeure"]},
+{id:"erys",n:"Erythrozyten",u:"Mio/µl",g:"Blutbild",al:["erythrozyten","erys","rbc"],ref:[4.5,5.9],opt:[4.6,5.6],refF:[4.0,5.2],optF:[4.2,5.0],
+ what:"Die Anzahl roter Blutkörperchen pro Mikroliter.",why:"Ergänzt Hämoglobin und Hämatokrit. Erst zusammen mit MCV und MCH lässt sich sagen, ob eine Blutarmut von Eisen, B12 oder etwas anderem kommt.",
+ imp:["Nur zusammen mit Hb, Hkt, MCV und MCH bewerten","Ausdauersport senkt den Wert leicht durch mehr Blutplasma","Ausreichend trinken vor der Abnahme"],rel:["hb","hkt","mcv"]},
+{id:"hkt",n:"Hämatokrit",u:"%",g:"Blutbild",al:["hämatokrit","haematokrit","hkt","hct"],ref:[40,52],opt:[42,50],refF:[36,46],optF:[38,45],
+ what:"Der Anteil fester Bestandteile am Blutvolumen, im Wesentlichen rote Blutkörperchen.",why:"Ein hoher Wert macht das Blut zähflüssiger. Häufigste Ursache für einen zu hohen Wert ist schlicht Flüssigkeitsmangel am Tag der Abnahme.",
+ imp:["Am Abnahmetag normal trinken, nicht dursten","Sauna und langes Training am Vortag heben den Wert","Zusammen mit Hb bewerten"],rel:["hb","erys"]},
+{id:"mcv",n:"MCV",u:"fl",g:"Blutbild",al:["mcv"],ref:[80,96],opt:[84,93],
+ what:"Das mittlere Volumen eines roten Blutkörperchens.",why:"Der entscheidende Wegweiser bei Blutarmut: kleine Zellen sprechen für Eisenmangel, große für B12- oder Folsäuremangel.",
+ imp:["Bei niedrigem MCV Ferritin prüfen","Bei hohem MCV B12 und Folsäure prüfen","Alkohol hebt den Wert unabhängig von Vitaminen"],rel:["ferritin","b12","folsaeure"]},
+{id:"mch",n:"MCH",u:"pg",g:"Blutbild",al:["mch "],ref:[27,33],opt:[28,32],
+ what:"Der mittlere Hämoglobingehalt eines roten Blutkörperchens.",why:"Läuft meist parallel zum MCV und untermauert die Richtung: zu wenig Farbstoff pro Zelle spricht für Eisenmangel.",
+ imp:["Zusammen mit MCV und Ferritin lesen","Isoliert wenig aussagekräftig"],rel:["mcv","ferritin"]},
+{id:"leuko",n:"Leukozyten",u:"/nl",g:"Blutbild",al:["leukozyten","leukos","wbc","weiße blutkörperchen"],ref:[4.0,10.0],opt:[4.5,8.0],
+ what:"Die weißen Blutkörperchen, die Abwehrzellen des Immunsystems.",why:"Steigen bei bakteriellen Infekten und starkem Stress, fallen bei manchen Virusinfekten. Dauerhaft niedrige Werte bei Sportlern können auf Übertraining hindeuten.",
+ imp:["Nicht während oder kurz nach einem Infekt messen","Bei anhaltender Abweichung ärztlich abklären","Schlaf und Regeneration stabilisieren die Werte"],rel:["crp","hb"]},
+{id:"thrombo",n:"Thrombozyten",u:"/nl",g:"Blutbild",al:["thrombozyten","thrombos","plt"],ref:[150,400],opt:[180,320],
+ what:"Die Blutplättchen, zuständig für die Gerinnung.",why:"Zu wenige erhöhen die Blutungsneigung, zu viele die Gerinnungsneigung. Ausdauersport senkt den Wert leicht, das ist normal.",
+ imp:["Bei stabilen Werten im Referenzbereich kein Handlungsbedarf","Auffälligkeiten mit einer Kontrollmessung bestätigen","Alkohol senkt die Zahl vorübergehend"],rel:["leuko","hb"]},
+
+{id:"ferritin",n:"Ferritin",u:"µg/l",g:"Eisen",al:["ferritin"],ref:[30,300],opt:[80,180],refF:[15,150],optF:[50,120],
+ what:"Das Speicherprotein für Eisen. Es zeigt, wie voll dein Eisenlager ist — nicht wie viel gerade zirkuliert.",
+ why:"Der aussagekräftigste Einzelwert für den Eisenhaushalt. Leere Speicher machen müde und kraftlos, lange bevor das Hämoglobin absackt. Ausdauersportler verlieren zusätzlich Eisen über Schweiß, Darm und die Belastung der Fußsohlen.",
+ imp:["Rotes Fleisch, Innereien, Blutwurst — Häm-Eisen wird um ein Vielfaches besser aufgenommen","Bei pflanzlichen Quellen immer Vitamin C dazu","Milchprodukte, Kaffee und Calcium zeitlich trennen","Eisenpräparate nur nach Rücksprache, zu viel Eisen schadet der Leber","Ferritin steigt bei Entzündungen — immer zusammen mit CRP lesen"],rel:["hb","eisen","transferrin","crp"]},
+{id:"eisen",n:"Eisen (Serum)",u:"µg/dl",g:"Eisen",al:["serumeisen","eisen"],ref:[60,170],opt:[80,150],refF:[50,150],optF:[70,140],
+ what:"Das Eisen, das aktuell im Blut unterwegs ist — eine Momentaufnahme.",why:"Schwankt stark über den Tag und mit der letzten Mahlzeit, allein also wenig aussagekräftig. Erst mit Ferritin und Transferrinsättigung ergibt sich ein Bild.",
+ imp:["Immer im Zusammenhang mit Ferritin bewerten","Morgens und nüchtern abnehmen lassen","Kein Eisenpräparat in den 24 Stunden davor"],rel:["ferritin","transferrin","hb"]},
+{id:"transferrin",n:"Transferrinsättigung",u:"%",g:"Eisen",al:["transferrinsättigung","transferrinsaettigung","tsat"],ref:[16,45],opt:[25,40],
+ what:"Wie stark das Eisentransportprotein mit Eisen beladen ist.",why:"Zeigt, ob genug Eisen für die tägliche Blutbildung bereitsteht. Unter etwa 20 % wird es knapp, auch wenn Ferritin noch akzeptabel aussieht.",
+ imp:["Zusammen mit Ferritin lesen — beide niedrig spricht für echten Mangel","Bei niedrigem Wert Eisenaufnahme verbessern","Dauerhaft über 45 % ärztlich abklären lassen"],rel:["ferritin","eisen"]},
+
+{id:"vitd",n:"Vitamin D (25-OH)",u:"ng/ml",g:"Vitamine",al:["25-oh-vitamin","25 oh vitamin","vitamin d","calcidiol","vitamin-d"],ref:[30,70],opt:[40,60],
+ what:"Die Speicherform von Vitamin D. Sie zeigt die Versorgung der letzten Wochen.",
+ why:"Wirkt wie ein Hormon auf Knochen, Immunsystem, Muskelkraft und Stimmung. In Deutschland liegt der Wert von Oktober bis März bei den meisten zu niedrig, weil die Sonne zu flach steht, um überhaupt Vitamin D in der Haut zu bilden.",
+ imp:["April bis September regelmäßig kurz Sonne auf viel Haut, ohne Sonnenbrand","Fetter Seefisch: Lachs, Hering, Makrele","Im Winter ist Supplementierung meist sinnvoll — Dosis am gemessenen Wert ausrichten, nicht raten","Vitamin K2 und Magnesium unterstützen die Wirkung","Fettlöslich, also zu einer Mahlzeit mit Fett einnehmen"],rel:["calcium","magnesium"]},
+{id:"b12",n:"Vitamin B12",u:"pg/ml",g:"Vitamine",al:["vitamin b12","b12","cobalamin"],ref:[200,900],opt:[500,800],
+ what:"Wichtig für Blutbildung, Nervenzellen und Energiestoffwechsel.",
+ why:"Ein Mangel entwickelt sich über Jahre und kann Nerven dauerhaft schädigen, bevor sich das Blutbild verändert. Der Gesamt-B12-Wert ist im unteren Bereich unzuverlässig — Holo-Transcobalamin zeigt den funktionellen Status genauer.",
+ imp:["Kommt fast nur aus tierischen Quellen: Fleisch, Fisch, Eier, Milchprodukte","Bei vegetarischer oder veganer Ernährung ist Supplementierung Pflicht","Magensäureblocker und Metformin senken die Aufnahme","Unter 400 pg/ml zusätzlich Holo-TC bestimmen lassen"],rel:["hb","folsaeure","mcv"]},
+{id:"folsaeure",n:"Folsäure",u:"ng/ml",g:"Vitamine",al:["folsäure","folsaeure","folat","folate"],ref:[3,17],opt:[8,16],
+ what:"B-Vitamin für Zellteilung, Blutbildung und Homocystein-Abbau.",why:"Arbeitet eng mit B12 zusammen. Fehlt eines, werden rote Blutkörperchen zu groß und funktionieren schlechter.",
+ imp:["Grünes Blattgemüse, Hülsenfrüchte, Brokkoli, Rote Bete","Schonend garen, Folsäure zerfällt bei langem Kochen","Alkohol senkt den Spiegel deutlich","Nie isoliert hochdosieren ohne B12-Kontrolle"],rel:["b12","hb"]},
+{id:"homocystein",n:"Homocystein",u:"µmol/l",g:"Vitamine",al:["homocystein","homocysteine"],ref:[5,12],opt:[5,8],
+ what:"Ein Zwischenprodukt des Eiweißstoffwechsels, das mit B-Vitaminen abgebaut wird.",why:"Steigt an, wenn B12, B6 oder Folsäure knapp sind, und gilt als eigenständiger Risikofaktor für Gefäße. Ein guter Funktionstest für die B-Vitamin-Versorgung.",
+ imp:["B12, B6 und Folsäure prüfen und gezielt auffüllen","Kaffee und Alkohol in Maßen","Bewegung senkt den Wert leicht"],rel:["b12","folsaeure"]},
+
+{id:"tsh",n:"TSH",u:"mU/l",g:"Schilddrüse",al:["tsh basal","tsh"],ref:[0.4,4.0],opt:[0.5,2.2],
+ what:"Das Steuerhormon aus der Hirnanhangdrüse, das die Schilddrüse antreibt.",
+ why:"Reagiert umgekehrt: Ein hoher TSH bedeutet, dass die Schilddrüse zu wenig produziert und angetrieben werden muss. Der empfindlichste Frühindikator — beeinflusst Stoffwechsel, Gewicht, Temperaturempfinden, Stimmung und Regeneration.",
+ imp:["Morgens nüchtern messen, TSH schwankt über den Tag um bis zu 50 %","Ausreichend Jod über Seefisch und jodiertes Salz","Selen unterstützt die Schilddrüsenenzyme — Paranüsse, Fisch, Eier","Auffälliger TSH gehört mit fT3, fT4 und Antikörpern abgeklärt","Sehr niedrige Kalorienzufuhr und Übertraining drücken die Funktion"],rel:["ft3","ft4","selen"]},
+{id:"ft3",n:"fT3",u:"pg/ml",g:"Schilddrüse",al:["ft3","freies t3","ft-3"],ref:[2.0,4.4],opt:[2.8,4.0],
+ what:"Das freie, biologisch aktive Schilddrüsenhormon.",why:"Setzt den Grundumsatz in jeder Zelle. Unter starker Diät oder hohem Trainingsvolumen fährt der Körper fT3 gezielt herunter — ein häufiger Grund für Plateaus und ständiges Frieren.",
+ imp:["Nicht dauerhaft im starken Kaloriendefizit bleiben","Genug Kohlenhydrate, sie sind an der Umwandlung von T4 zu T3 beteiligt","Selen und Zink sind Cofaktoren","Nur zusammen mit TSH und fT4 bewerten"],rel:["tsh","ft4","zink","selen"]},
+{id:"ft4",n:"fT4",u:"ng/dl",g:"Schilddrüse",al:["ft4","freies t4","ft-4"],ref:[0.8,1.8],opt:[1.0,1.6],
+ what:"Das freie Thyroxin, Speicher- und Vorstufe von fT3.",why:"Zeigt die Produktionsleistung der Schilddrüse selbst. Der Körper wandelt es bei Bedarf in aktives fT3 um.",
+ imp:["Ausreichend Jod als Baustein","Bei niedrigem fT4 und hohem TSH ärztlich abklären","Im Paket mit TSH und fT3 lesen"],rel:["tsh","ft3"]},
+
+{id:"testo",n:"Testosteron (gesamt)",u:"ng/dl",g:"Sexualhormone",al:["gesamttestosteron","testosteron gesamt","testosteron","testosterone"],ref:[300,1000],opt:[550,900],refF:[15,70],optF:[25,60],
+ what:"Das wichtigste anabole Hormon für Muskelaufbau, Knochendichte, Antrieb und Libido.",
+ why:"Schwankt stark über den Tag, morgens am höchsten. Übertraining, zu wenig Schlaf, ein starkes Kaloriendefizit und chronischer Stress senken den Wert spürbar. Der Gesamtwert allein täuscht, wenn SHBG erhöht ist — dann ist weniger frei verfügbar.",
+ imp:["Sieben bis neun Stunden Schlaf — der größte einzelne Hebel","Krafttraining mit schweren Grundübungen","Nicht dauerhaft im starken Kaloriendefizit trainieren","Genug Fett in der Ernährung, unter etwa 20 % der Kalorien sinkt der Wert","Immer zwischen 7 und 10 Uhr messen, sonst nicht vergleichbar"],rel:["testofrei","shbg","estradiol","vitd","zink"]},
+{id:"testofrei",n:"Freies Testosteron",u:"pg/ml",g:"Sexualhormone",al:["freies testosteron","testosteron frei","free testosterone"],ref:[8.8,27],opt:[14,25],refF:[0.3,3.2],optF:[0.8,2.5],
+ what:"Der ungebundene Anteil des Testosterons, der tatsächlich an den Zellen wirken kann.",
+ why:"Aussagekräftiger als der Gesamtwert. Ein normales Gesamttestosteron bei hohem SHBG kann trotzdem zu wenig freies Hormon bedeuten — genau hier entsteht das Gefühl von Antriebslosigkeit trotz „unauffälligem“ Befund.",
+ imp:["Immer zusammen mit SHBG und Gesamttestosteron bewerten","Schlaf, Stressabbau und Krafttraining wirken auf beide Werte","Zink und Vitamin D als Cofaktoren im Blick behalten"],rel:["testo","shbg"]},
+{id:"shbg",n:"SHBG",u:"nmol/l",g:"Sexualhormone",al:["sex hormone binding globulin","shbg","sexualhormonbindendes globulin"],ref:[18,54],opt:[25,45],refF:[32,128],optF:[40,90],
+ what:"Ein Transportprotein, das Testosteron und Estradiol im Blut bindet.",
+ why:"Je mehr SHBG, desto weniger Hormon liegt frei und aktiv vor. Erhöhtes SHBG kommt bei Schilddrüsenüberfunktion, Lebererkrankungen, sehr niedrigem Körperfett, hohem Ausdauervolumen und im Alter vor — niedriges eher bei Insulinresistenz und Übergewicht.",
+ imp:["Schilddrüsenwerte und Leberwerte mitprüfen, beide steuern SHBG mit","Sehr hohes Trainingsvolumen bei knapper Energiezufuhr hebt SHBG","Ausreichend essen und ausreichend Fett in der Ernährung","Bei auffälligem Wert Gesamt- und freies Testosteron zusammen betrachten"],rel:["testo","testofrei","estradiol","ft4","gpt"]},
+{id:"estradiol",n:"Estradiol (E2)",u:"pg/ml",g:"Sexualhormone",al:["estradiol","östradiol","oestradiol"],ref:[11,44],opt:[20,40],refF:[30,400],optF:[50,250],
+ what:"Das wichtigste Östrogen. Beim Mann entsteht es aus Testosteron über das Enzym Aromatase.",
+ why:"Auch Männer brauchen Estradiol — für Knochendichte, Libido, Gelenkgesundheit und Stimmung. Ein zu niedriger Wert ist genauso ungünstig wie ein zu hoher und geht oft mit sehr niedrigem Körperfett, hohem SHBG oder Aromatasehemmern einher.",
+ imp:["Zusammen mit Testosteron und SHBG bewerten, isoliert kaum deutbar","Sehr niedriger Körperfettanteil senkt Estradiol, weil Fettgewebe an der Umwandlung beteiligt ist","Keine Aromatasehemmer ohne ärztliche Begleitung","Bei dauerhaft niedrigem Wert Knochendichte im Blick behalten"],rel:["testo","shbg","calcium","vitd"]},
+{id:"fsh",n:"FSH",u:"mIU/ml",g:"Sexualhormone",al:["follikelstimulierendes hormon","follicle-stimulating","fsh"],ref:[1.5,12.4],opt:[2,8],
+ what:"Steuerhormon aus der Hirnanhangdrüse für die Keimzellreifung.",why:"Zusammen mit LH zeigt es, ob eine Hormonstörung von den Hoden bzw. Eierstöcken selbst kommt oder von der übergeordneten Steuerung im Gehirn.",
+ imp:["Nur zusammen mit LH und Testosteron interpretieren","Bei Auffälligkeiten endokrinologisch abklären lassen"],rel:["lh","testo"]},
+{id:"lh",n:"LH",u:"mIU/ml",g:"Sexualhormone",al:["luteinisierendes hormon","luteinizing","lh "],ref:[1.7,8.6],opt:[2,7],
+ what:"Steuerhormon, das beim Mann die Testosteronproduktion in den Hoden anstößt.",why:"Niedriges LH bei niedrigem Testosteron deutet auf die Steuerung im Gehirn hin, hohes LH bei niedrigem Testosteron auf die Hoden selbst.",
+ imp:["Immer gemeinsam mit FSH und Testosteron bewerten","Schlafmangel und Übertraining senken LH","Bei Auffälligkeiten endokrinologisch abklären lassen"],rel:["fsh","testo"]},
+{id:"prolaktin",n:"Prolaktin",u:"ng/ml",g:"Sexualhormone",al:["prolaktin","prolactin"],ref:[4,15],opt:[4,12],refF:[4,23],optF:[4,18],
+ what:"Ein Hypophysenhormon, das in erhöhter Menge die Sexualhormone unterdrückt.",why:"Erhöhtes Prolaktin ist eine häufige und gut behandelbare Ursache für niedriges Testosteron und Libidoverlust. Stress, Schlafmangel und manche Medikamente heben den Wert.",
+ imp:["Morgens und ausgeruht messen, Stress vor der Abnahme verfälscht","Deutlich erhöhte Werte immer ärztlich abklären lassen","Medikamentenliste prüfen"],rel:["testo","lh"]},
+{id:"cortisol",n:"Cortisol (morgens)",u:"µg/dl",g:"Sexualhormone",al:["cortisol","kortisol"],ref:[6,23],opt:[10,18],
+ what:"Das Stresshormon der Nebennierenrinde, morgens am höchsten.",why:"Dauerhaft hohe Werte bremsen Regeneration, Muskelaufbau und Schlafqualität. Sehr niedrige Werte gehören ärztlich abgeklärt.",
+ imp:["Zwischen 7 und 9 Uhr messen, sonst nicht deutbar","Schlafrhythmus, Trainingsumfang und Alkohol beeinflussen den Wert stark","Kein hartes Training am Vortag"],rel:["testo","tsh"]},
+
+{id:"hba1c",n:"HbA1c",u:"%",g:"Stoffwechsel",al:["hba1c","hb a1c","langzeitzucker"],ref:[4.0,5.6],opt:[4.8,5.3],
+ what:"Der Anteil des Hämoglobins, an den Zucker gebunden ist — der Langzeitblutzucker über etwa drei Monate.",
+ why:"Lässt sich nicht durch kurzfristiges Fasten schönen und zeigt die tatsächliche Belastung. Ab 5,7 % beginnt der Vorstufenbereich für Diabetes.",
+ imp:["Zucker und Weißmehl reduzieren, Ballaststoffe erhöhen","Ein Spaziergang nach dem Essen senkt die Zuckerspitze spürbar","Krafttraining macht Muskeln empfindlicher für Insulin","Ausreichend Schlaf — eine kurze Nacht verschlechtert die Insulinempfindlichkeit schon am Folgetag"],rel:["glukose","trigl","insulin"]},
+{id:"glukose",n:"Nüchternglukose",u:"mg/dl",g:"Stoffwechsel",al:["nüchternglukose","nuechternglukose","glukose","glucose","blutzucker"],ref:[70,99],opt:[75,90],
+ what:"Der Blutzucker nach mindestens acht Stunden ohne Nahrung.",why:"Eine Momentaufnahme. Steigende Werte im oberen Normbereich sind oft das erste Zeichen einer beginnenden Insulinresistenz, Jahre vor einer Diagnose.",
+ imp:["Wirklich nüchtern messen, auch Kaffee mit Milch verfälscht","Späte, große Mahlzeiten am Vorabend vermeiden","Regelmäßige Bewegung wirkt hier schneller als jede Ernährungsumstellung","Zusammen mit HbA1c bewerten"],rel:["hba1c","trigl","insulin"]},
+{id:"insulin",n:"Insulin (nüchtern)",u:"µU/ml",g:"Stoffwechsel",al:["insulin"],ref:[2,25],opt:[2,8],
+ what:"Das Hormon, das Zucker in die Zellen schleust.",why:"Steigt oft jahrelang an, bevor der Blutzucker selbst auffällig wird — deshalb der früheste Marker für Insulinresistenz. Hohes Insulin bei normalem Zucker heißt: Die Bauchspeicheldrüse arbeitet gegen einen Widerstand an.",
+ imp:["Krafttraining und mehr Muskelmasse senken den Bedarf","Ballaststoffe und Eiweiß zu jeder Mahlzeit","Zwischenmahlzeiten reduzieren, dem Insulin Pausen geben","Bauchfett abbauen wirkt hier am stärksten"],rel:["glukose","hba1c","trigl"]},
+{id:"harnsaeure",n:"Harnsäure",u:"mg/dl",g:"Stoffwechsel",al:["harnsäure","harnsaeure","urat"],ref:[3.4,7.0],opt:[3.5,5.8],refF:[2.4,5.7],optF:[2.5,5.0],
+ what:"Das Endprodukt beim Abbau von Purinen aus Zellkernen und Nahrung.",
+ why:"Zu hohe Werte können als Kristalle in Gelenken ausfallen und einen Gichtanfall auslösen. Viel Fleisch, Innereien und Bier heben den Wert, hartes Training und Fasten kurzfristig ebenfalls.",
+ imp:["Innereien, Sardinen, Sardellen und Fleischextrakte reduzieren","Bier weglassen — auch alkoholfreies, wegen der Purine aus der Hefe","Fruchtzucker aus Softdrinks meiden, er treibt den Wert direkt hoch","Viel trinken, mindestens 2,5 Liter","Milchprodukte und Kaffee senken den Wert eher"],rel:["kreatinin","glukose"]},
+
+{id:"chol",n:"Gesamtcholesterin",u:"mg/dl",g:"Fette",al:["gesamtcholesterin","cholesterin","cholesterol"],ref:[120,200],opt:[150,190],
+ what:"Die Summe aller Cholesterinfraktionen.",why:"Für sich genommen wenig aussagekräftig, weil der Wert nicht zwischen LDL und HDL unterscheidet. Die Aufteilung ist entscheidend, nicht die Summe.",
+ imp:["LDL, HDL und Triglyceride einzeln betrachten","Gesättigte Fette teilweise durch Oliven-, Raps- und Nussfette ersetzen","Ballaststoffe aus Hafer und Hülsenfrüchten senken den Wert"],rel:["ldl","hdl","trigl"]},
+{id:"ldl",n:"LDL-Cholesterin",u:"mg/dl",g:"Fette",al:["ldl-cholesterin","ldl cholesterin","ldl"],ref:[50,130],opt:[50,100],
+ what:"Transportiert Cholesterin von der Leber in den Körper.",
+ why:"Der zentrale Risikofaktor für Ablagerungen in den Gefäßen. Der Zielwert hängt stark vom persönlichen Gesamtrisiko ab — nach einem Herzinfarkt gilt ein deutlich strengerer Wert als für einen gesunden Sportler.",
+ imp:["Gesättigte Fette reduzieren: Wurst, fette Käsesorten, Butter, Palmöl","Lösliche Ballaststoffe: Haferflocken, Flohsamenschalen, Bohnen","Täglich eine Handvoll Nüsse","Ausdauertraining wirkt langsam, aber verlässlich","Der Zielwert ist individuell — ärztlich festlegen"],rel:["chol","hdl","trigl","apob","lpa"]},
+{id:"hdl",n:"HDL-Cholesterin",u:"mg/dl",g:"Fette",al:["hdl-cholesterin","hdl cholesterin","hdl"],ref:[40,100],opt:[55,90],refF:[50,100],optF:[65,95],
+ what:"Transportiert überschüssiges Cholesterin aus dem Gewebe zurück zur Leber.",why:"Höher ist hier tendenziell günstiger. Sehr niedriges HDL kommt oft zusammen mit hohen Triglyceriden vor und deutet dann auf einen gestörten Fettstoffwechsel hin.",
+ imp:["Regelmäßiges Ausdauertraining ist der wirksamste Hebel","Olivenöl, Nüsse, Avocado","Rauchstopp hebt den Wert innerhalb weniger Wochen","Sehr fettarme, kohlenhydratreiche Ernährung senkt HDL eher"],rel:["ldl","trigl"]},
+{id:"trigl",n:"Triglyceride",u:"mg/dl",g:"Fette",al:["triglyceride","triglyzeride"],ref:[40,150],opt:[40,100],
+ what:"Die Transportform von Nahrungsfett und überschüssigen Kalorien.",why:"Reagiert schneller und stärker auf Ernährung als jeder andere Fettwert. Hohe Triglyceride bei gleichzeitig niedrigem HDL sind ein klassisches Zeichen für Insulinresistenz.",
+ imp:["Alkohol reduzieren — hier zeigt sich der Effekt am deutlichsten","Zucker und Fruchtzucker aus Softdrinks und Säften weglassen","Omega-3 aus Fisch oder Algenöl senkt den Wert zuverlässig","Mindestens 12 Stunden nüchtern messen"],rel:["hdl","hba1c","omega3"]},
+{id:"omega3",n:"Omega-3-Index",u:"%",g:"Fette",al:["omega-3-index","omega 3 index","omega-3","omega3"],ref:[4,12],opt:[8,11],
+ what:"Der Anteil von EPA und DHA an allen Fettsäuren in der Membran der roten Blutkörperchen.",
+ why:"Ein Langzeitmarker über etwa drei Monate, kaum von der letzten Mahlzeit beeinflusst — ideal zum Verfolgen über Jahre. Über 8 % gilt als günstig für Herz-Kreislauf und stille Entzündung. Die meisten Menschen in Mitteleuropa liegen bei 4–5 %.",
+ imp:["Zweimal pro Woche fetter Seefisch: Lachs, Makrele, Hering, Sardinen","Algenöl als pflanzliche Quelle, liefert direkt EPA und DHA","Leinöl und Walnüsse liefern nur ALA, davon wandelt der Körper wenige Prozent um","Viel Sonnenblumen- und Distelöl verschiebt das Verhältnis ungünstig","Wirkt langsam: Veränderungen frühestens nach drei bis vier Monaten sichtbar"],rel:["trigl","crp"]},
+{id:"apob",n:"Apolipoprotein B",u:"mg/dl",g:"Fette",al:["apolipoprotein b","apo b","apob"],ref:[40,100],opt:[40,80],
+ what:"Zählt die Anzahl der gefäßschädigenden Partikel, nicht deren Cholesterinmenge.",why:"Gilt als präziserer Risikomarker als LDL, weil viele kleine Partikel gefährlicher sind als wenige große mit gleichem Cholesteringehalt.",
+ imp:["Dieselben Hebel wie beim LDL: gesättigte Fette runter, Ballaststoffe hoch","Bei hohem ApoB trotz normalem LDL ärztlich besprechen"],rel:["ldl","lpa"]},
+{id:"lpa",n:"Lipoprotein(a)",u:"mg/dl",g:"Fette",al:["lipoprotein(a)","lipoprotein a","lp(a)","lpa"],ref:[0,30],opt:[0,30],
+ what:"Ein genetisch festgelegtes Lipoprotein mit eigenem Gefäßrisiko.",why:"Praktisch nicht durch Lebensstil beeinflussbar, deshalb genügt eine einzige Messung im Leben. Ein hoher Wert bedeutet, dass die anderen Risikofaktoren umso konsequenter angegangen werden sollten.",
+ imp:["Einmal messen reicht, der Wert bleibt lebenslang weitgehend stabil","Bei erhöhtem Wert LDL besonders konsequent senken","Familienanamnese für frühe Herzinfarkte besprechen"],rel:["ldl","apob"]},
+
+{id:"crp",n:"CRP",u:"mg/l",g:"Entzündung",al:["c-reaktives protein","hs-crp","crp"],ref:[0,5],opt:[0,1],
+ what:"Ein Eiweiß, das die Leber bei Entzündungen bildet.",
+ why:"Steigt bei jedem Infekt stark an, aber auch nach hartem Training. Der hochsensitive hs-CRP-Wert misst stille Dauerentzündung im niedrigen Bereich — dort gilt unter 1 mg/l als günstig.",
+ imp:["Nicht direkt nach einem Infekt oder Wettkampf messen","Regelmäßiger Schlaf und Stressabbau senken den Basiswert","Omega-3 und viel Gemüse wirken entzündungshemmend","Erhöhtes CRP hebt gleichzeitig das Ferritin — beide zusammen lesen"],rel:["ferritin","omega3","leuko"]},
+
+{id:"kreatinin",n:"Kreatinin",u:"mg/dl",g:"Niere",al:["kreatinin","creatinin"],ref:[0.7,1.2],opt:[0.7,1.1],refF:[0.5,1.0],optF:[0.5,0.95],
+ what:"Ein Abbauprodukt aus dem Muskelstoffwechsel, das über die Nieren ausgeschieden wird.",
+ why:"Maß für die Nierenfunktion. Wichtig für Sportler: Viel Muskelmasse, ein hoher Fleischanteil und Kreatin-Supplemente heben den Wert, ohne dass die Niere schlechter arbeitet. Die eGFR ist deshalb aussagekräftiger.",
+ imp:["48 Stunden vor der Abnahme kein intensives Training und kein Kreatin","Ausreichend trinken, mindestens 2 Liter am Tag","Bei viel Muskelmasse zusätzlich Cystatin C bestimmen lassen","Sehr hohe Proteinzufuhr über lange Zeit ärztlich begleiten"],rel:["egfr","cystatin","harnstoff"]},
+{id:"egfr",n:"eGFR",u:"ml/min",g:"Niere",al:["egfr","gfr","glomeruläre filtrationsrate"],ref:[90,140],opt:[95,140],
+ what:"Die geschätzte Filterleistung der Nieren, berechnet aus Kreatinin, Alter und Geschlecht.",why:"Der praktisch wichtigste Nierenwert. Nimmt mit dem Alter natürlich ab; ein rascher Abfall über wenige Jahre ist ein Warnsignal — hier lohnt der Verlauf besonders.",
+ imp:["Gut hydriert bleiben","Blutdruck und Blutzucker im Griff behalten, beides schädigt die Nieren schleichend","Ibuprofen und ähnliche Schmerzmittel nicht dauerhaft ohne Rücksprache","Trend über Jahre beobachten, nicht den Einzelwert"],rel:["kreatinin","cystatin"]},
+{id:"cystatin",n:"Cystatin C",u:"mg/l",g:"Niere",al:["cystatin c","cystatin"],ref:[0.5,0.96],opt:[0.5,0.9],
+ what:"Ein Eiweiß, das die Niere filtert — unabhängig von der Muskelmasse.",why:"Genau deshalb für Kraftsportler der ehrlichere Nierenwert als Kreatinin. Wer viel Muskeln hat, sollte die Nierenfunktion über diesen Wert beurteilen lassen.",
+ imp:["Bei auffälligem Kreatinin gezielt nachfordern","Wird von Kreatin-Supplementen nicht verfälscht","Schilddrüsenwerte beeinflussen ihn leicht"],rel:["kreatinin","egfr"]},
+{id:"harnstoff",n:"Harnstoff",u:"mg/dl",g:"Niere",al:["harnstoff","urea","bun"],ref:[17,43],opt:[20,40],
+ what:"Das Endprodukt des Eiweißabbaus, über die Niere ausgeschieden.",why:"Steigt bei sehr hoher Proteinzufuhr und bei Flüssigkeitsmangel, nicht nur bei Nierenproblemen — bei proteinreicher Sporternährung ein häufiger, meist harmloser Ausreißer.",
+ imp:["Ausreichend trinken","Proteinzufuhr am Tag vor der Abnahme nicht extrem hoch","Zusammen mit Kreatinin und eGFR lesen"],rel:["kreatinin","egfr"]},
+
+{id:"gpt",n:"GPT / ALT",u:"U/l",g:"Leber",al:["gpt (alt)","alt (gpt)","gpt","alat","alt "],ref:[0,50],opt:[0,30],refF:[0,35],optF:[0,25],
+ what:"Ein Enzym, das fast nur in Leberzellen vorkommt.",why:"Der spezifischste Marker für Leberzellschäden. Leicht erhöhte Werte kommen heute meist von einer Fettleber, nicht von Alkohol — deshalb lohnt der Blick auf Gewicht, Zucker und Bewegung.",
+ imp:["Alkohol pausieren, oft normalisiert sich der Wert in 4–8 Wochen","Fruchtzucker und Softdrinks meiden, sie fördern die Fettleber direkt","Bauchfett abbauen — schon 5–10 % Gewichtsverlust bessern den Wert deutlich","Supplements und Vorbereitungsmittel prüfen lassen"],rel:["got","ggt","trigl"]},
+{id:"got",n:"GOT / AST",u:"U/l",g:"Leber",al:["got (ast)","ast (got)","got","asat","ast "],ref:[0,50],opt:[0,30],refF:[0,35],optF:[0,25],
+ what:"Ein Enzym aus Leber, Herz und Skelettmuskulatur.",why:"Weniger leberspezifisch als GPT. Nach hartem Krafttraining steigt der Wert allein durch die Muskelbelastung — ein häufiger Fehlalarm bei Sportlern.",
+ imp:["Zwei bis drei Tage vor der Abnahme kein intensives Training","Hohes GOT bei normalem GPT spricht für Muskel, nicht Leber","Zusammen mit CK bewerten","Alkohol vor der Abnahme meiden"],rel:["gpt","ggt","ck"]},
+{id:"ggt",n:"Gamma-GT",u:"U/l",g:"Leber",al:["gamma-gt","gamma gt","γ-gt","ggt"],ref:[0,60],opt:[0,25],refF:[0,40],optF:[0,20],
+ what:"Ein Enzym aus Leber und Gallenwegen.",why:"Reagiert sehr empfindlich auf Alkohol und Medikamente und gilt als früher Marker für Leberbelastung.",
+ imp:["Alkohol ist hier der mit Abstand größte Hebel","Medikamentenliste ärztlich durchgehen","Bewegung und Gewichtsabnahme senken den Wert über einige Monate"],rel:["gpt","got"]},
+{id:"ap",n:"Alkalische Phosphatase",u:"U/l",g:"Leber",al:["alkalische phosphatase","ap "],ref:[40,130],opt:[50,110],
+ what:"Ein Enzym aus Gallenwegen und Knochen.",why:"Erhöhte Werte deuten auf Gallenstau oder gesteigerten Knochenumbau hin. Bei niedrigem Wert lohnt ein Blick auf Zink.",
+ imp:["Zusammen mit Gamma-GT und Bilirubin bewerten","Bei niedrigem Wert Zinkversorgung prüfen"],rel:["ggt","bilirubin","zink"]},
+{id:"bilirubin",n:"Bilirubin (gesamt)",u:"mg/dl",g:"Leber",al:["bilirubin gesamt","gesamtbilirubin","bilirubin"],ref:[0.2,1.2],opt:[0.3,1.0],
+ what:"Ein Abbauprodukt des roten Blutfarbstoffs.",why:"Leicht erhöhte Werte sind oft harmloses Gilbert-Syndrom, das etwa jeden zwanzigsten Menschen betrifft und besonders bei Fasten oder Stress auffällt.",
+ imp:["Nicht nach längerem Fasten messen, das hebt den Wert","Zusammen mit den übrigen Leberwerten bewerten","Deutlich erhöhte Werte ärztlich abklären"],rel:["gpt","ggt","ap"]},
+{id:"albumin",n:"Albumin",u:"g/dl",g:"Leber",al:["albumin"],ref:[3.5,5.2],opt:[4.0,5.0],
+ what:"Das wichtigste Transporteiweiß im Blut, in der Leber gebildet.",why:"Ein guter Marker für Ernährungszustand und Lebersyntheseleistung. Niedrige Werte bei zu geringer Eiweißzufuhr oder chronischer Entzündung.",
+ imp:["Ausreichend Eiweiß über den Tag verteilen","Dehydrierung täuscht hohe Werte vor","Zusammen mit CRP bewerten"],rel:["gpt","crp"]},
+{id:"ck",n:"Kreatinkinase (CK)",u:"U/l",g:"Muskel",al:["kreatinkinase","creatinkinase","cpk","ck "],ref:[0,190],opt:[0,190],
+ what:"Ein Enzym, das bei Muskelbelastung aus den Muskelzellen austritt.",
+ why:"Für Sportler ein Belastungs- und Regenerationsmarker. Nach einem harten Beintag kann der Wert um ein Vielfaches über der Norm liegen und trotzdem harmlos sein. Dauerhaft hohe Werte in Ruhephasen deuten auf zu wenig Erholung.",
+ imp:["Notieren, wann das letzte harte Training war — sonst nicht deutbar","Für eine Basismessung mindestens 72 Stunden Trainingspause","Schlaf, Flüssigkeit und Kohlenhydrate beschleunigen die Normalisierung"],rel:["got","kreatinin"]},
+
+{id:"magnesium",n:"Magnesium",u:"mmol/l",g:"Mineralien",al:["magnesium"],ref:[0.75,1.05],opt:[0.85,1.0],
+ what:"Mineralstoff für Muskelentspannung, Nervenleitung und über 300 Enzymreaktionen.",
+ why:"Der Serumwert ist nur eingeschränkt aussagekräftig, weil der Körper ihn streng konstant hält und dafür notfalls die Knochen plündert. Ein Wert im unteren Normbereich schließt einen Gewebemangel nicht aus — besonders bei viel Schwitzen.",
+ imp:["Nüsse, Kürbiskerne, Haferflocken, dunkle Schokolade, grünes Gemüse","Wer viel schwitzt, hat höheren Bedarf","Citrat oder Glycinat werden besser aufgenommen als Oxid","Abends eingenommen unterstützt es die Schlafqualität"],rel:["calcium","vitd","kalium"]},
+{id:"zink",n:"Zink",u:"µmol/l",g:"Mineralien",al:["zink","zinc"],ref:[11,20],opt:[14,19],
+ what:"Spurenelement für Immunsystem, Wundheilung, Testosteronproduktion und Haut.",why:"Sportler verlieren Zink über Schweiß. Ein Mangel zeigt sich oft zuerst durch häufige Infekte, schlechte Wundheilung und brüchige Nägel.",
+ imp:["Rindfleisch, Käse, Kürbiskerne, Haferflocken, Austern","Phytate aus Vollkorn hemmen die Aufnahme — Einweichen oder Sauerteig hilft","Nicht dauerhaft hochdosieren, das verdrängt Kupfer","Nicht zusammen mit Eisenpräparaten einnehmen"],rel:["testo","ft3","selen"]},
+{id:"selen",n:"Selen",u:"µg/l",g:"Mineralien",al:["selen","selenium"],ref:[60,140],opt:[100,130],
+ what:"Spurenelement für Schilddrüsenenzyme und den antioxidativen Schutz.",why:"Wird für die Umwandlung von T4 in aktives T3 gebraucht. Die Böden in Mitteleuropa sind selenarm, weshalb die Versorgung hier häufiger knapp ist als anderswo.",
+ imp:["Paranüsse — schon ein bis zwei täglich decken den Bedarf","Fisch, Eier, Fleisch","Nicht dauerhaft hochdosiert supplementieren, der Sicherheitsabstand ist gering"],rel:["ft3","tsh","zink"]},
+{id:"calcium",n:"Calcium",u:"mmol/l",g:"Mineralien",al:["calcium","kalzium"],ref:[2.2,2.65],opt:[2.3,2.55],
+ what:"Mineralstoff für Knochen, Muskelkontraktion und Blutgerinnung.",why:"Der Blutwert wird hormonell eng geregelt und sagt wenig über die Knochendichte aus. Auffällige Werte deuten eher auf Nebenschilddrüse, Vitamin D oder Niere hin.",
+ imp:["Milchprodukte, Mandeln, Brokkoli, calciumreiches Mineralwasser","Vitamin D wird für die Aufnahme im Darm gebraucht","Abweichungen mit Vitamin D und Nierenwerten zusammen abklären"],rel:["vitd","magnesium","ap"]},
+{id:"natrium",n:"Natrium",u:"mmol/l",g:"Mineralien",al:["natrium","sodium"],ref:[135,145],opt:[137,143],
+ what:"Der wichtigste Elektrolyt im Blutplasma, steuert den Wasserhaushalt.",why:"Sehr eng geregelt. Bei Ausdauersportlern kann übermäßiges Trinken ohne Salz den Wert gefährlich senken.",
+ imp:["Bei langen Belastungen Elektrolyte statt reinem Wasser","Abweichungen ärztlich abklären, der Bereich ist eng"],rel:["kalium"]},
+{id:"kalium",n:"Kalium",u:"mmol/l",g:"Mineralien",al:["kalium","potassium"],ref:[3.5,5.1],opt:[4.0,4.8],
+ what:"Elektrolyt für Nerven- und Herzmuskelfunktion.",why:"Abweichungen wirken direkt auf den Herzrhythmus. Achtung bei der Abnahme: Zu langes Stauen oder Fäusteballen lässt den Wert künstlich hoch erscheinen.",
+ imp:["Kartoffeln, Bananen, Hülsenfrüchte, Gemüse","Auffällige Werte immer mit einer zweiten Abnahme bestätigen","Bei Nierenerkrankungen nur nach ärztlicher Vorgabe erhöhen"],rel:["natrium","magnesium","egfr"]}
+];
+const byId = Object.fromEntries(M.map(m=>[m.id,m]));
+const GROUPS = [...new Set(M.map(m=>m.g))];
+/* ===== 2 — Speicher =================================================== */
+const WS = (typeof window.storage!=="undefined" && window.storage && typeof window.storage.get==="function");
+const MEM = {};
+async function sget(k){
+  if(WS){ try{ const r=await window.storage.get(k,false); return r?r.value:null }catch(e){ return null } }
+  try{ return localStorage.getItem(k) }catch(e){ return MEM[k]??null }
+}
+async function sset(k,v){
+  if(WS){ try{ await window.storage.set(k,v,false); return }catch(e){} }
+  try{ localStorage.setItem(k,v) }catch(e){ MEM[k]=v }
+}
+let DB={entries:[],profile:{name:"",sex:"m",year:"",kg:"",cm:"",cond:"",ctx:"",key:""}};
+async function loadDB(){ const r=await sget("serum.db"); if(r){ try{ const d=JSON.parse(r); DB.entries=d.entries||[]; DB.profile=Object.assign(DB.profile,d.profile||{}) }catch(e){} } }
+async function saveDB(){ await sset("serum.db",JSON.stringify(DB)) }
+
+/* ===== 3 — Bewertung ================================================== */
+const isF=()=>DB.profile.sex==="f";
+const refOf=m=>(isF()&&m.refF)?m.refF:m.ref;
+const optOf=m=>(isF()&&m.optF)?m.optF:m.opt;
+function status(m,v){
+  const [rl,rh]=refOf(m),[ol,oh]=optOf(m);
+  if(v<rl) return {k:"bad",t:"unter Referenz",s:"Niedrig"};
+  if(v>rh) return {k:"bad",t:"über Referenz",s:"Hoch"};
+  if(v>=ol&&v<=oh) return {k:"ok",t:"im Idealbereich",s:"Optimal"};
+  return v<ol?{k:"mid",t:"niedrig-normal",s:"Niedrig-normal"}:{k:"mid",t:"hoch-normal",s:"Hoch-normal"};
+}
+const fmt=n=>Number(n).toLocaleString("de-DE",{maximumFractionDigits:2});
+const dshort=s=>new Date(s+"T00:00:00").toLocaleDateString("de-DE",{month:"2-digit",year:"2-digit"});
+const dlong=s=>new Date(s+"T00:00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"});
+const dmed=s=>new Date(s+"T00:00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+const sortedEntries=()=>[...DB.entries].sort((a,b)=>b.date.localeCompare(a.date));
+const latest=()=>sortedEntries()[0]||null;
+function series(id){ return DB.entries.filter(e=>e.v[id]!==undefined).map(e=>({d:e.date,v:+e.v[id]})).sort((a,b)=>a.d.localeCompare(b.d)) }
+
+function trend(m,s){
+  if(s.length<2) return {arrow:"·",txt:"Erste Messung. Ab der zweiten zeigt Serum hier den Verlauf und bewertet die Richtung."};
+  const cur=s[s.length-1],prev=s[s.length-2],first=s[0];
+  const [ol,oh]=optOf(m),mid=(ol+oh)/2;
+  const d=cur.v-prev.v, closer=Math.abs(cur.v-mid)<Math.abs(prev.v-mid);
+  const rel=first.v?Math.abs(cur.v-first.v)/Math.abs(first.v)*100:0;
+  const flat=Math.abs(d)<(Math.abs(oh-ol)*0.06||0.01);
+  const arrow=flat?"→":(d>0?"↑":"↓");
+  let txt;
+  if(flat) txt=`Stabil seit der letzten Messung (${dmed(prev.d)} → ${dmed(cur.d)}). ${status(m,cur.v).k==="ok"?"Auf gutem Niveau — weiter so.":"Ohne Veränderung im Alltag wird sich daran wenig ändern."}`;
+  else txt=`Um ${fmt(Math.abs(d))} ${m.u} ${d>0?"gestiegen":"gesunken"} (${dmed(prev.d)} → ${dmed(cur.d)}) — ${closer?"näher an den Idealbereich heran":"weiter vom Idealbereich weg"}.`;
+  if(s.length>=3) txt+=` Über ${s.length} Messungen seit ${dmed(first.d)}: ${rel<8?"insgesamt weitgehend konstant":(cur.v>first.v?`insgesamt um rund ${Math.round(rel)} % höher`:`insgesamt um rund ${Math.round(rel)} % niedriger`)}.`;
+  return {arrow,txt};
+}
+
+/* ===== 4 — Regelwerk für Interpretation =============================== */
+function ctxOf(vals){
+  const has=id=>vals[id]!==undefined&&byId[id];
+  const v=id=>+vals[id];
+  const lo=id=>has(id)&&v(id)<refOf(byId[id])[0];
+  const hi=id=>has(id)&&v(id)>refOf(byId[id])[1];
+  const sLo=id=>has(id)&&v(id)<optOf(byId[id])[0];
+  const sHi=id=>has(id)&&v(id)>optOf(byId[id])[1];
+  const off=id=>lo(id)||hi(id);
+  return {has,v,lo,hi,sLo,sHi,off};
+}
+/* Jede Regel: wenn zutrifft, liefert sie Befund / Zustand / nächsten Schritt. */
+const RULES=[
+{id:"eisen_anaemie",c:["ferritin","hb"],sev:"bad",when:c=>(c.lo("ferritin")||c.sLo("ferritin"))&&c.lo("hb"),
+ f:c=>["Eisenmangel mit Blutarmut","Niedriges Ferritin trifft auf ein zu niedriges Hämoglobin. Die Eisenspeicher sind so weit geleert, dass die Blutbildung darunter leidet."],
+ z:["Eisenmangelanämie","Weniger Sauerstofftransport im Blut. Typisch sind Müdigkeit, Kurzatmigkeit bei Belastung und ein spürbarer Leistungseinbruch im Training."],
+ a:["Eisenstatus ärztlich abklären","Die Ursache gehört geklärt, nicht nur der Wert aufgefüllt. Eisenpräparate erst nach ärztlicher Rücksprache."]},
+{id:"ferritin_leer",c:["ferritin"],sev:"mid",when:c=>(c.lo("ferritin")||c.sLo("ferritin"))&&!c.lo("hb"),
+ f:c=>["Eisenspeicher knapp",`Ferritin liegt bei ${fmt(c.v("ferritin"))} µg/l. Das Hämoglobin hält sich noch, aber der Speicher ist dünn — bei Ausdauersport oft der erste Wert, der nachgibt.`],
+ z:["Beginnender Eisenmangel","Auch ohne Blutarmut können sich leere Speicher als Müdigkeit, schlechtere Regeneration und Haarausfall bemerkbar machen."],
+ a:["Eisenzufuhr über die Ernährung erhöhen","Rotes Fleisch oder Hülsenfrüchte mit Vitamin C kombinieren, Kaffee zeitlich trennen. In drei bis sechs Monaten nachmessen."]},
+{id:"ferritin_crp",c:["ferritin"],sev:"mid",when:c=>c.has("ferritin")&&c.has("crp")&&c.v("crp")>3,
+ f:c=>["Ferritin durch Entzündung verfälscht","Das CRP ist erhöht. Ferritin steigt bei jeder Entzündung mit an und erscheint dadurch höher, als der Eisenspeicher tatsächlich ist."],
+ a:["Eisenstatus nach dem Infekt wiederholen","Zwei bis vier Wochen nach Abklingen erneut messen, dann ist der Wert aussagekräftig. Alternativ Transferrinsättigung bestimmen lassen."]},
+{id:"vitd_mangel",c:["vitd"],sev:"bad",when:c=>c.lo("vitd"),
+ f:c=>["Vitamin-D-Mangel",`Mit ${fmt(c.v("vitd"))} ng/ml liegt der Wert unter dem Referenzbereich. Von Oktober bis März steht die Sonne in Deutschland zu flach, um überhaupt Vitamin D in der Haut zu bilden.`],
+ z:["Beeinträchtigte Knochen- und Immunfunktion","Ein länger bestehender Mangel wirkt auf Knochendichte, Muskelkraft, Infektanfälligkeit und Stimmung."],
+ a:["Supplementierung ärztlich abstimmen","Die Dosis sollte sich am gemessenen Wert orientieren. Nach drei Monaten nachmessen."]},
+{id:"vitd_sub",c:["vitd"],sev:"mid",when:c=>!c.lo("vitd")&&c.sLo("vitd"),
+ f:c=>["Vitamin D im unteren Bereich",`${fmt(c.v("vitd"))} ng/ml liegt im Referenzbereich, aber unter dem angestrebten Ideal von 40–60 ng/ml.`],
+ a:["Im Winterhalbjahr gezielt auffüllen","Zwischen Oktober und März reicht die Sonne hierzulande nicht aus. Fetter Seefisch und eine abgestimmte Supplementierung schließen die Lücke."]},
+{id:"b12_grau",c:["b12"],sev:"mid",when:c=>c.has("b12")&&c.v("b12")<400,
+ f:c=>["Vitamin B12 im Graubereich",`${fmt(c.v("b12"))} pg/ml gilt formal als normal, ist aber der Bereich, in dem der Gesamt-B12-Wert unzuverlässig wird.`],
+ a:["Holo-Transcobalamin nachfordern","Dieser Wert zeigt das tatsächlich verfügbare B12. Alternativ Methylmalonsäure bestimmen lassen."]},
+{id:"insulinresistenz",c:["trigl","hdl","hba1c","glukose","insulin"],sev:"mid",when:c=>[c.sHi("trigl"),c.sLo("hdl"),c.sHi("hba1c"),c.sHi("glukose"),c.sHi("insulin")].filter(Boolean).length>=2,
+ f:c=>["Muster im Zuckerstoffwechsel","Mehrere Werte zeigen in dieselbe Richtung: erhöhte Triglyceride, niedriges HDL und ein Blutzucker im oberen Bereich treten typischerweise gemeinsam auf."],
+ z:["Beginnende Insulinresistenz","Die Zellen sprechen schlechter auf Insulin an. Das entwickelt sich über Jahre und ist in dieser Phase durch Bewegung und Ernährung gut umkehrbar."],
+ a:["Bewegung und Ernährung gezielt ansetzen","Krafttraining, weniger Zucker und Alkohol, mehr Ballaststoffe. In drei bis sechs Monaten HbA1c und Triglyceride nachmessen."]},
+{id:"leber",c:["gpt","ggt"],sev:"bad",when:c=>c.hi("gpt")||c.hi("ggt"),
+ f:c=>["Leberwerte erhöht",`${c.hi("gpt")?"GPT":""}${c.hi("gpt")&&c.hi("ggt")?" und ":""}${c.hi("ggt")?"Gamma-GT":""} liegt über dem Referenzbereich. Häufigste Ursachen sind Fettleber, Alkohol und Medikamente.`],
+ z:["Belastung des Lebergewebes","Eine Fettleber verläuft lange beschwerdefrei und ist im Frühstadium vollständig rückbildungsfähig."],
+ a:["Leberwerte in acht Wochen kontrollieren","Bis dahin Alkohol pausieren, Fruchtzucker reduzieren und die Medikamentenliste ärztlich durchgehen."]},
+{id:"got_muskel",c:["got"],sev:"ok",when:c=>c.hi("got")&&!c.hi("gpt"),
+ f:c=>["GOT erhöht bei normalem GPT","Diese Kombination spricht eher für Muskelbelastung als für die Leber. Nach hartem Training ist das ein häufiger und harmloser Befund."],
+ a:["Vor der nächsten Abnahme drei Tage Trainingspause","Nur so ist der Wert vergleichbar. Zusätzlich CK bestimmen lassen, das bestätigt die Muskelherkunft."]},
+{id:"ldl_hoch",c:["ldl"],sev:"bad",when:c=>c.hi("ldl"),
+ f:c=>["LDL-Cholesterin über dem Referenzbereich",`${fmt(c.v("ldl"))} mg/dl. Der sinnvolle Zielwert hängt vom persönlichen Gesamtrisiko ab und ist für einen gesunden Sportler ein anderer als nach einem Herzereignis.`],
+ z:["Erhöhtes Gefäßrisiko","LDL-Partikel lagern sich über Jahre in Gefäßwänden ab. Der Effekt summiert sich, deshalb zählt die langfristige Höhe."],
+ a:["Zielwert ärztlich festlegen lassen","Dafür gehören Blutdruck, Familienanamnese und Lipoprotein(a) mit auf den Tisch."]},
+{id:"ldl_sub",c:["ldl"],sev:"mid",when:c=>!c.hi("ldl")&&c.sHi("ldl"),
+ f:c=>["LDL im oberen Normbereich",`${fmt(c.v("ldl"))} mg/dl liegt im Referenzbereich, aber über den 100 mg/dl, die als günstig gelten.`],
+ a:["Über Ernährung nachsteuern","Gesättigte Fette teilweise ersetzen, Haferflocken und Hülsenfrüchte einbauen, täglich eine Handvoll Nüsse."]},
+{id:"trigl_hoch",c:["trigl"],sev:"bad",when:c=>c.hi("trigl"),
+ f:c=>["Triglyceride erhöht",`${fmt(c.v("trigl"))} mg/dl. Dieser Wert reagiert stärker auf Alkohol, Zucker und die letzte Mahlzeit als jeder andere Fettwert.`],
+ a:["Nüchternstatus der Abnahme prüfen","Der Wert braucht mindestens 12 Stunden Nahrungskarenz. War das gegeben, sind Alkohol und Fruchtzucker die ersten Ansatzpunkte."]},
+{id:"entzuendung",c:["crp"],sev:"bad",when:c=>c.hi("crp"),
+ f:c=>["CRP erhöht",`${fmt(c.v("crp"))} mg/l. Ein akuter Infekt, eine Verletzung oder ein harter Wettkampf kurz vor der Abnahme heben den Wert deutlich.`],
+ z:["Aktive Entzündungsreaktion","Meist vorübergehend. Bleibt der Wert über Monate erhöht, spricht das für einen chronischen Prozess."],
+ a:["In vier Wochen ohne Infekt nachmessen","Bleibt das CRP erhöht, gehört die Ursache ärztlich gesucht."]},
+{id:"crp_still",c:["crp"],sev:"mid",when:c=>!c.hi("crp")&&c.has("crp")&&c.v("crp")>1&&c.v("crp")<=5,
+ f:c=>["Leicht erhöhtes CRP",`${fmt(c.v("crp"))} mg/l liegt im Referenzbereich. Für stille Dauerentzündung gilt allerdings ein Zielwert unter 1 mg/l.`],
+ a:["Schlaf, Stress und Omega-3 in den Blick nehmen","Alle drei wirken direkt auf den Basiswert. Vor der Kontrolle kein hartes Training."]},
+{id:"tsh_hoch",c:["tsh"],sev:"mid",when:c=>c.has("tsh")&&c.v("tsh")>2.5,
+ f:c=>["TSH im oberen Bereich",`${fmt(c.v("tsh"))} mU/l. ${c.hi("tsh")?"Der Wert liegt über dem Referenzbereich.":"Formal normal, viele Leitlinien sehen jedoch 0,5–2,2 als günstig an."} Ein hoher TSH bedeutet, dass die Schilddrüse angetrieben werden muss.`],
+ z:["Mögliche Schilddrüsenunterfunktion","Kann sich als Müdigkeit, Frieren, trockene Haut, Gewichtszunahme und langsamere Regeneration zeigen."],
+ a:["fT3, fT4 und Schilddrüsenantikörper ergänzen","Erst das Paket erlaubt eine Einordnung. Nächste Abnahme morgens und nüchtern."]},
+{id:"tsh_tief",c:["tsh"],sev:"bad",when:c=>c.lo("tsh"),
+ f:c=>["TSH unter dem Referenzbereich",`${fmt(c.v("tsh"))} mU/l. Ein niedriger TSH kann für eine Überfunktion sprechen.`],
+ z:["Mögliche Schilddrüsenüberfunktion","Typisch sind Herzrasen, Unruhe, Schwitzen, Gewichtsverlust und Schlafstörungen."],
+ a:["Zeitnah ärztlich abklären lassen","fT3 und fT4 gehören unbedingt dazu."]},
+{id:"shbg_hoch",c:["shbg"],sev:"mid",when:c=>c.hi("shbg")||c.sHi("shbg"),
+ f:c=>["SHBG erhöht",`${fmt(c.v("shbg"))} nmol/l. Je mehr SHBG, desto mehr Sexualhormone sind gebunden und desto weniger liegt frei und wirksam vor.`],
+ z:["Verminderte Hormonverfügbarkeit","Das Gesamttestosteron kann dabei normal aussehen, während das freie Testosteron zu niedrig ist — ein häufiger Grund für Antriebslosigkeit trotz unauffälligem Befund."],
+ a:["Freies Testosteron und Schilddrüsenwerte ergänzen","Schilddrüse, Leber, sehr niedriger Körperfettanteil und hohes Ausdauervolumen steuern SHBG mit."]},
+{id:"e2_tief",c:["estradiol"],sev:"bad",when:c=>c.lo("estradiol")&&!isF(),
+ f:c=>["Estradiol unter dem Referenzbereich",`${fmt(c.v("estradiol"))} pg/ml. Auch Männer brauchen Estradiol — für Knochendichte, Libido, Gelenke und Stimmung.`],
+ z:["Geringere Estrogenwirkung","Ein dauerhaft niedriger Wert kann langfristig die Knochenstabilität und das Wohlbefinden beeinträchtigen."],
+ a:["Estradiol und SHBG gemeinsam kontrollieren","Bei anhaltend niedrigem Wert endokrinologische Beratung und eine Knochendichtemessung besprechen."]},
+{id:"testo_tief",c:["testo","testofrei"],sev:"bad",when:c=>c.lo("testo")||c.lo("testofrei"),
+ f:c=>["Testosteron unter dem Referenzbereich","Schlafmangel, Übertraining, ein starkes Kaloriendefizit und chronischer Stress senken den Wert deutlich — häufiger als eine echte Hormonstörung."],
+ z:["Verminderte androgene Wirkung","Kann sich als Antriebslosigkeit, schlechterer Muskelaufbau, geringere Libido und schlechtere Regeneration zeigen."],
+ a:["Zwischen 7 und 10 Uhr nachmessen","Der Wert schwankt über den Tag stark. LH, FSH, Prolaktin und SHBG gehören zur Abklärung dazu."]},
+{id:"prolaktin_hoch",c:["prolaktin"],sev:"bad",when:c=>c.hi("prolaktin"),
+ f:c=>["Prolaktin erhöht","Erhöhtes Prolaktin unterdrückt die Sexualhormone und ist eine häufige, gut behandelbare Ursache für niedriges Testosteron."],
+ a:["Kontrolle morgens und ausgeruht","Stress vor der Abnahme hebt den Wert. Bleibt er erhöht, gehört er ärztlich abgeklärt."]},
+{id:"harnsaeure_hoch",c:["harnsaeure"],sev:"bad",when:c=>c.hi("harnsaeure"),
+ f:c=>["Harnsäure erhöht",`${fmt(c.v("harnsaeure"))} mg/dl. Viel Fleisch, Innereien und Bier heben den Wert, hartes Training und Fasten kurzfristig ebenfalls.`],
+ z:["Erhöhtes Gichtrisiko","Bei dauerhaft hohen Werten können Kristalle in Gelenken ausfallen — meist zuerst im Großzehengrundgelenk."],
+ a:["Purinzufuhr und Flüssigkeit anpassen","Innereien und Bier reduzieren, mindestens 2,5 Liter trinken. In drei Monaten nachmessen."]},
+{id:"niere",c:["egfr","kreatinin"],sev:"bad",when:c=>c.lo("egfr")||c.hi("kreatinin"),
+ f:c=>["Nierenwerte auffällig","Bei viel Muskelmasse, hohem Fleischanteil oder Kreatin-Einnahme ist Kreatinin regelmäßig erhöht, ohne dass die Niere schlechter arbeitet."],
+ a:["Cystatin C nachfordern","Dieser Wert ist unabhängig von der Muskelmasse und für Kraftsportler der ehrlichere Nierenmarker. Vor der Abnahme 48 Stunden kein Training und kein Kreatin."]},
+{id:"omega3_tief",c:["omega3"],sev:"mid",when:c=>c.sLo("omega3"),
+ f:c=>["Omega-3-Index unter dem Zielbereich",`${fmt(c.v("omega3"))} %. Als günstig gelten über 8 %. Die meisten Menschen in Mitteleuropa liegen bei 4–5 %.`],
+ a:["Zwei Fischmahlzeiten pro Woche oder Algenöl","Der Wert verändert sich langsam — frühestens nach drei bis vier Monaten nachmessen."]},
+{id:"homocystein_hoch",c:["homocystein"],sev:"mid",when:c=>c.hi("homocystein")||c.sHi("homocystein"),
+ f:c=>["Homocystein erhöht","Steigt an, wenn B12, B6 oder Folsäure knapp sind, und gilt als eigenständiger Risikofaktor für die Gefäße."],
+ a:["B-Vitamin-Status prüfen","B12, B6 und Folsäure bestimmen und gezielt auffüllen, statt blind zu supplementieren."]},
+{id:"lpa_hoch",c:["lpa"],sev:"bad",when:c=>c.hi("lpa"),
+ f:c=>["Lipoprotein(a) erhöht","Dieser Wert ist genetisch festgelegt und praktisch nicht durch Lebensstil beeinflussbar. Eine einzige Messung im Leben genügt."],
+ z:["Erhöhtes kardiovaskuläres Grundrisiko","Bedeutet nicht, dass etwas passieren muss — wohl aber, dass die beeinflussbaren Faktoren umso konsequenter angegangen werden sollten."],
+ a:["Familienanamnese ärztlich besprechen","Bei erhöhtem Lp(a) wird der LDL-Zielwert in der Regel strenger gesetzt."]},
+{id:"ck_hoch",c:["ck"],sev:"mid",when:c=>c.hi("ck"),
+ f:c=>["Kreatinkinase erhöht",`${fmt(c.v("ck"))} U/l. Nach hartem Training tritt CK aus den Muskelzellen aus — ein Vielfaches der Norm ist dann normal und harmlos.`],
+ a:["Vor der nächsten Abnahme 72 Stunden Trainingspause","Nur eine Messung in Ruhe sagt etwas über die Regeneration aus. Bleibt CK auch ohne Training hoch, ärztlich abklären lassen."]},
+{id:"mcv_tief",c:["mcv"],sev:"mid",when:c=>c.lo("mcv"),
+ f:c=>["Rote Blutkörperchen zu klein","Ein niedriges MCV ist der klassische Wegweiser Richtung Eisenmangel."],
+ a:["Ferritin und Transferrinsättigung prüfen","Auch bei noch normalem Hämoglobin lohnt der Blick auf die Speicher."]},
+{id:"mcv_hoch",c:["mcv"],sev:"mid",when:c=>c.hi("mcv"),
+ f:c=>["Rote Blutkörperchen zu groß","Ein hohes MCV weist Richtung B12- oder Folsäuremangel. Auch Alkohol hebt den Wert unabhängig davon."],
+ a:["B12 und Folsäure bestimmen lassen","Beide gehören zusammen geprüft, weil sie sich gegenseitig maskieren können."]}
+];
+
+function assess(vals){
+  const c=ctxOf(vals), out={f:[],z:[],a:[]}, seen=new Set();
+  RULES.forEach(r=>{
+    let ok=false; try{ ok=r.when(c) }catch(e){}
+    if(!ok) return;
+    (r.c||[]).forEach(id=>seen.add(id));
+    if(r.f){const[t,p]=r.f(c);out.f.push({t,p,sev:r.sev})}
+    if(r.z) out.z.push({t:r.z[0],p:r.z[1]});
+    if(r.a) out.a.push({t:r.a[0],p:r.a[1]});
+  });
+  /* Kein Wert soll unerwähnt bleiben, sonst passen Zählung und Text nicht zusammen. */
+  Object.keys(vals).forEach(id=>{
+    const m=byId[id]; if(!m||seen.has(id)) return;
+    const v=+vals[id], st=status(m,v);
+    if(st.k==="bad"){
+      const hoch=v>refOf(m)[1];
+      out.f.push({t:`${m.n} ${hoch?"über":"unter"} dem Referenzbereich`,
+        p:`${fmt(v)} ${m.u} gegenüber ${fmt(refOf(m)[0])}–${fmt(refOf(m)[1])}. ${m.why.split(". ")[0]}.`,sev:"bad"});
+      out.a.push({t:`${m.n} kontrollieren`,p:`Einzelwerte schwanken. Vor einer Bewertung mit einer zweiten Messung bestätigen und ärztlich besprechen.`});
+    }
+  });
+  if(!out.f.length) out.f.push({t:"Keine Auffälligkeiten",p:"Alle gemessenen Werte liegen im Referenzbereich, die meisten davon im angestrebten Idealbereich.",sev:"ok"});
+  return out;
+}
+function counts(vals){
+  const ids=Object.keys(vals).filter(id=>byId[id]);
+  let bad=0,mid=0;
+  ids.forEach(id=>{const k=status(byId[id],+vals[id]).k; if(k==="bad")bad++; else if(k==="mid")mid++});
+  return {total:ids.length,bad,mid,ok:ids.length-bad-mid,pct:ids.length?Math.round((ids.length-bad)/ids.length*100):0};
+}
+
+/* ===== 5 — Grafiken =================================================== */
+function chart(m,s){
+  const W=460,H=204,L=54,R=16,T=18,B=30,pw=W-L-R,ph=H-T-B;
+  const [rl,rh]=refOf(m),[ol,oh]=optOf(m),vals=s.map(p=>p.v);
+  const dmin=Math.min.apply(null,vals), dmax=Math.max.apply(null,vals);
+  let lo=Math.min(rl,dmin), hi=Math.max(rh,dmax);
+  /* Abstand am Referenzband bemessen, damit ein Ausreisser das Band nicht plattdrueckt. */
+  const refSpan=(rh-rl)||Math.abs(hi-lo)||1;
+  const pad=Math.max(refSpan*0.2,(hi-lo)*0.07,Math.abs(hi||1)*0.02);
+  lo-=pad; hi+=pad;
+  if(rl===0&&dmin>=0) lo=Math.max(0,lo);
+  if(hi-lo<1e-9){ lo-=1; hi+=1 }
+  const y=v=>T+ph-((v-lo)/(hi-lo))*ph, cl=v=>Math.max(T,Math.min(T+ph,y(v)));
+  const x=i=>s.length<2?L+pw/2:L+(i/(s.length-1))*pw;
+  const cur=s[s.length-1], oor=cur.v<rl||cur.v>rh;
+
+  /* Aussenzonen einfaerben, damit "ausserhalb" nicht als leerer Raum wirkt */
+  const hiZone=cl(rh)-T>1?`<rect x="${L}" y="${T}" width="${pw}" height="${(cl(rh)-T).toFixed(1)}" fill="var(--alert-soft)" opacity=".5"/>`:"";
+  const loZone=(T+ph)-cl(rl)>1?`<rect x="${L}" y="${cl(rl).toFixed(1)}" width="${pw}" height="${((T+ph)-cl(rl)).toFixed(1)}" fill="var(--alert-soft)" opacity=".5"/>`:"";
+
+  const axis=v=>`<text x="${L-8}" y="${(cl(v)+3.5).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" fill="var(--muted)">${fmt(v)}</text>`;
+  const gl=[rl,rh].map(v=>`<line x1="${L}" x2="${L+pw}" y1="${cl(v).toFixed(1)}" y2="${cl(v).toFixed(1)}" stroke="var(--line)" stroke-dasharray="3 4"/>${axis(v)}`).join("");
+
+  /* Liegt der aktuelle Wert draussen, bekommt er eine eigene Hilfslinie mit Beschriftung */
+  let mark="";
+  if(oor && Math.abs(cl(cur.v)-cl(rh))>11 && Math.abs(cl(cur.v)-cl(rl))>11){
+    mark=`<line x1="${L}" x2="${L+pw}" y1="${cl(cur.v).toFixed(1)}" y2="${cl(cur.v).toFixed(1)}" stroke="var(--alert)" stroke-dasharray="2 3" opacity=".55"/>
+      <text x="${L-8}" y="${(cl(cur.v)+3.5).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" font-weight="600" fill="var(--alert)">${fmt(cur.v)}</text>`;
+  }
+  const line=s.length>1?`<polyline fill="none" stroke="var(--ink)" stroke-width="1.9" stroke-linejoin="round" points="${s.map((p,i)=>x(i).toFixed(1)+","+cl(p.v).toFixed(1)).join(" ")}"/>`:"";
+  const dots=s.map((p,i)=>{const st=status(m,p.v);const col=st.k==="ok"?"var(--opt)":st.k==="mid"?"var(--serum)":"var(--alert)";
+    return `<g><circle cx="${x(i).toFixed(1)}" cy="${cl(p.v).toFixed(1)}" r="${i===s.length-1?5.5:4}" fill="${col}" stroke="var(--card)" stroke-width="2"/><title>${dlong(p.d)}: ${fmt(p.v)} ${m.u} — ${st.t}</title></g>`}).join("");
+  const xl=s.map((p,i)=>(s.length>6&&i%Math.ceil(s.length/5)!==0&&i!==s.length-1)?"":`<text x="${x(i).toFixed(1)}" y="${H-9}" text-anchor="middle" class="mono" font-size="9.5" fill="var(--muted)">${dshort(p.d)}</text>`).join("");
+  const optLab=(cl(oh)-T)>13?`<text x="${L+pw-4}" y="${(cl(oh)+12).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" fill="var(--opt)">ideal ${fmt(ol)}–${fmt(oh)}</text>`:"";
+
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Verlauf ${m.n}, aktuell ${fmt(cur.v)} ${m.u}">
+    ${hiZone}${loZone}
+    <rect x="${L}" y="${cl(rh).toFixed(1)}" width="${pw}" height="${Math.max(0,cl(rl)-cl(rh)).toFixed(1)}" fill="var(--ref-soft)"/>
+    <rect x="${L}" y="${cl(oh).toFixed(1)}" width="${pw}" height="${Math.max(0,cl(ol)-cl(oh)).toFixed(1)}" fill="var(--opt-soft)"/>
+    ${gl}${optLab}${mark}${line}${dots}${xl}
+    <line x1="${L}" x2="${L+pw}" y1="${T+ph}" y2="${T+ph}" stroke="var(--line)"/></svg>`;
+}
+/* 0 = im Idealbereich, groesser = weiter weg. Am Referenzband normiert. */
+function deviation(m,v){
+  const [ol,oh]=optOf(m),[rl,rh]=refOf(m);
+  const span=(rh-rl)||Math.abs(oh-ol)||1;
+  if(v<ol) return (ol-v)/span;
+  if(v>oh) return (v-oh)/span;
+  return 0;
+}
+const RANK={bad:0,mid:1,ok:2};
+
+function ring(pct){
+  const r=40,c=2*Math.PI*r;
+  return `<svg class="ring" viewBox="0 0 100 100" role="img" aria-label="${pct} Prozent im Normbereich">
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--hair)" stroke-width="8"/>
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--opt)" stroke-width="8" stroke-linecap="round"
+      stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pct/100)).toFixed(1)}" transform="rotate(-90 50 50)"/>
+    <text x="50" y="57" text-anchor="middle" class="mono" font-size="23" font-weight="600" fill="var(--ink)">${pct}%</text></svg>`;
+}
+function rangebar(m,v){
+  const [rl,rh]=refOf(m),[ol,oh]=optOf(m);
+  const span=(rh-rl)||1, d0=rl-span*0.28, d1=rh+span*0.28;
+  const P=x=>Math.max(0,Math.min(100,((x-d0)/(d1-d0))*100));
+  const seg=(a,b,col)=>`<span class="seg" style="left:${a}%;width:${Math.max(0,b-a)}%;background:${col}"></span>`;
+  const pv=P(v), st=status(m,v);
+  const col=st.k==="ok"?"var(--opt)":st.k==="mid"?"var(--serum)":"var(--alert)";
+  return `<div class="rb">
+    ${seg(0,P(rl),"var(--alert)")}${seg(P(rl)+.6,P(ol),"var(--serum)")}${seg(P(ol)+.6,P(oh),"var(--opt)")}${seg(P(oh)+.6,P(rh),"var(--serum)")}${seg(P(rh)+.6,100,"var(--alert)")}
+    <span class="val" style="left:${pv}%;color:${col}">${fmt(v)}</span>
+    <span class="ptr" style="left:${pv}%;color:${col}">▼</span>
+    <span class="lab" style="left:${P(rl)}%">${fmt(rl)}</span>
+    <span class="lab" style="left:${P(rh)}%">${fmt(rh)}</span></div>`;
+}
+/* ===== 6 — Ansichten ================================================== */
+const $=s=>document.querySelector(s);
+const app=$("#app");
+let view={name:"dash",entry:null};
+/* Installation: Chrome und Edge liefern einen Prompt, Safari nicht. */
+let installEvent=null;
+addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installEvent=e; if(view.name==="dash") render() });
+const installed=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+async function installApp(){
+  if(installEvent){ installEvent.prompt(); await installEvent.userChoice; installEvent=null; render(); return }
+  alert("Serum als App installieren\n\n"+
+    "iPhone und iPad (Safari): Teilen-Symbol antippen, dann „Zum Home-Bildschirm“.\n\n"+
+    "Android (Chrome): Menü oben rechts, dann „App installieren“.\n\n"+
+    "Mac (Safari): Ablage, dann „Zum Dock hinzufügen“.\n\n"+
+    "Windows und Mac (Chrome oder Edge): Installations-Symbol rechts in der Adressleiste, sonst Menü, dann „Installieren“.");
+}
+window.installApp=installApp;
+let filter="Alle";
+const esc=s=>String(s).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+
+function setView(n,e){ view={name:n,entry:e||null}; document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===n?"page":"false")); render(); window.scrollTo({top:0}) }
+window.setView=setView;
+
+function assessBlock(title,kind,items,lead){
+  if(!items.length&&!lead) return "";
+  const icon={i:"◎",c:"◇",a:"!"}[kind];
+  return `<details class="assess card" ${kind==="i"?"open":""}>
+    <summary><span class="ico ${kind}">${icon}</span>${title}</summary>
+    <div class="body">${lead?`<p class="lead">${lead}</p>`:""}
+      ${items.map(x=>`<div class="find">${x.sev?`<span class="dot ${x.sev}"></span>`:`<span class="dot ok" style="background:var(--muted)"></span>`}
+        <div><h4>${x.t}</h4><p>${x.p}</p></div></div>`).join("")}
+    </div></details>`;
+}
+
+/* --- Dashboard --- */
+function viewDash(){
+  const p=DB.profile, last=latest();
+  const nm=p.name||"Dein Profil", init=(p.name||"?").trim().charAt(0).toUpperCase()||"?";
+  const age=p.year?`${new Date().getFullYear()-(+p.year)} Jahre`:null;
+  const meta=[age,p.sex==="f"?"Weiblich":"Männlich",p.kg?p.kg+" kg":null,p.cm?p.cm+" cm":null].filter(Boolean).join(" · ");
+  const conds=(p.cond||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const head=`<div class="who card">
+      <div class="avatar">${esc(init)}</div>
+      <div style="flex:1">
+        <h2>${esc(nm)}</h2>
+        <div class="meta">${esc(meta)||"Profil noch nicht ausgefüllt"}</div>
+        ${conds.length?`<div class="cond">${conds.map(c=>`<span class="tag">${esc(c)}</span>`).join("")}</div>`:""}
+      </div>
+      <button class="btn sm" onclick="document.getElementById('btnProfile').click()">Bearbeiten</button>
+    </div>`;
+
+  if(!last){
+    return head+`<div class="empty"><h2>Noch keine Werte</h2>
+      <p>Lade deinen ersten Befund als PDF hoch, füge den Text ein oder trag ein paar Werte von Hand ein.
+         Ab der zweiten Messung entsteht hier ein Verlauf.</p>
+      <button class="btn primary" onclick="openAdd()">Befund hinzufügen</button>
+      <button class="btn ghost" onclick="demo()">Beispieldaten ansehen</button></div>`;
+  }
+
+  const c=counts(last.v), a=assess(last.v);
+  const off=Object.keys(last.v).filter(id=>byId[id]&&status(byId[id],+last.v[id]).k!=="ok")
+    .sort((x,y)=>(status(byId[y],+last.v[y]).k==="bad")-(status(byId[x],+last.v[x]).k==="bad"));
+
+  /* Verlauf über alle Werte */
+  const moves=[];
+  M.forEach(m=>{ const s=series(m.id); if(s.length<2) return;
+    const cur=s[s.length-1],prev=s[s.length-2],[ol,oh]=optOf(m),mid=(ol+oh)/2;
+    const dd=Math.abs(prev.v-mid)-Math.abs(cur.v-mid);
+    if(Math.abs(dd)<(Math.abs(oh-ol)*0.08||0.01)) return;
+    moves.push({m,dd,cur,prev});
+  });
+  const up=moves.filter(x=>x.dd>0).sort((a,b)=>b.dd-a.dd).slice(0,4);
+  const dn=moves.filter(x=>x.dd<0).sort((a,b)=>a.dd-b.dd).slice(0,4);
+  const nTests=DB.entries.length;
+
+  const lead = `Stand vom ${dlong(last.date)}: ${c.total} Messwerte, davon ${c.bad===0?"keiner außerhalb":c.bad+" außerhalb"} des Referenzbereichs${c.mid?` und ${c.mid} im Grenzbereich`:""}.` +
+    (nTests>1?` Insgesamt ${nTests} Befunde seit ${dlong(sortedEntries()[nTests-1].date)}.`:" Ab dem zweiten Befund bewertet Serum hier zusätzlich den Verlauf.");
+
+  const trendItems=[...up.map(x=>({t:`${x.m.n} verbessert`,p:`Von ${fmt(x.prev.v)} auf ${fmt(x.cur.v)} ${x.m.u} — Richtung Idealbereich.`,sev:"ok"})),
+                    ...dn.map(x=>({t:`${x.m.n} verschlechtert`,p:`Von ${fmt(x.prev.v)} auf ${fmt(x.cur.v)} ${x.m.u} — weg vom Idealbereich.`,sev:"mid"}))];
+
+  return head+`
+    <div class="stats">
+      <div class="stat card"><div class="k">Letzter Befund</div><div class="n small">${dmed(last.date)}</div><div class="s">${esc(last.lab||"Labor nicht angegeben")}</div></div>
+      <div class="stat card"><div class="k">Biomarker</div><div class="n">${c.total}</div><div class="s">in diesem Befund</div></div>
+      <div class="stat card"><div class="k">Auffällig</div><div class="n" style="color:${c.bad?"var(--alert)":"var(--opt)"}">${c.bad}</div><div class="s">${c.mid} im Grenzbereich</div></div>
+      <div class="stat card ringbox">${ring(c.pct)}<div><div class="k">Im Normbereich</div><div class="s" style="margin-top:4px">${c.ok+c.mid} von ${c.total} Werten</div></div></div>
+    </div>
+    <div class="sect-h">Übersicht</div>
+    ${assessBlock("Interpretation","i",a.f,lead)}
+    ${a.z.length?assessBlock("Möglicher Gesundheitszustand","c",a.z):""}
+    ${assessBlock("Achtung — nächste Schritte","a",a.a.length?a.a:[{t:"Keine dringenden Punkte",p:"Aus den vorliegenden Werten ergibt sich kein akuter Handlungsbedarf. Behalte den Rhythmus bei und miss in etwa zwölf Monaten nach."}],"Diese Hinweise ersetzen keinen ärztlichen Rat. Sie sollen dir helfen, im Gespräch die richtigen Fragen zu stellen.")}
+    ${trendItems.length?`<div class="sect-h">Verlauf seit dem letzten Befund</div>${assessBlock("Was sich bewegt hat","c",trendItems)}`:""}
+    ${off.length?`<div class="sect-h">Werte außerhalb des Idealbereichs</div>
+      <div class="rows card">${off.map(id=>{const m=byId[id],st=status(m,+last.v[id]);
+        return `<button class="row-i" onclick="jumpTo('${id}')">
+          <span class="dot ${st.k}" style="margin:0"></span>
+          <span><span class="nm">${m.n}</span><br><span class="sm">${m.g} · Referenz ${fmt(refOf(m)[0])}–${fmt(refOf(m)[1])} ${m.u}</span></span>
+          <span class="rv"><b>${fmt(last.v[id])}</b><br><span class="pill ${st.k}">${st.s}</span></span>
+          <span class="chev">›</span></button>`}).join("")}</div>`:""}
+    <div class="sect-h">Alles im Blick</div>
+    <div class="rows card">
+      <button class="row-i" onclick="setView('marks')"><span><span class="nm">Alle Messwerte im Verlauf</span><br><span class="sm">Diagramme, Trends und Erklärungen</span></span><span class="chev" style="margin-left:auto">›</span></button>
+      <button class="row-i" onclick="setView('tests')"><span><span class="nm">Einzelne Befunde</span><br><span class="sm">${nTests} gespeichert</span></span><span class="chev" style="margin-left:auto">›</span></button>
+      ${installed()?"":`<button class="row-i" onclick="installApp()"><span><span class="nm">Serum als App installieren</span><br><span class="sm">Eigenes Icon, Vollbild, offline nutzbar</span></span><span class="chev" style="margin-left:auto">›</span></button>`}
+      <button class="row-i" onclick="openData()"><span><span class="nm">Daten sichern oder übertragen</span><br><span class="sm">Export und Import als Datei</span></span><span class="chev" style="margin-left:auto">›</span></button>
+    </div>`;
+}
+
+/* --- Messwerte --- */
+function markerCard(m){
+  const s=series(m.id),cur=s[s.length-1],st=status(m,cur.v),tr=trend(m,s);
+  return `<article class="mcard" id="m-${m.id}">
+    <div class="card-top"><div><h3>${m.n}</h3><div class="sub">${m.g} · Referenz ${fmt(refOf(m)[0])}–${fmt(refOf(m)[1])}</div></div>
+      <div class="readout"><div class="val">${fmt(cur.v)}</div><div class="unit">${m.u}</div><span class="pill ${st.k}">${st.t}</span></div></div>
+    ${chart(m,s)}
+    <div class="trend"><span class="arrow">${tr.arrow}</span><span>${tr.txt}</span></div>
+    <details class="acc"><summary>Was wird gemessen und warum zählt es?</summary><div class="body"><p>${m.what}</p><p>${m.why}</p></div></details>
+    <details class="acc"><summary>Was den Wert beeinflusst</summary><div class="body"><ul>${m.imp.map(i=>`<li>${i}</li>`).join("")}</ul></div></details>
+    <div class="card-foot"><button class="btn primary" onclick="openAsk('${m.id}')">Frag Claude</button>
+      ${m.rel&&m.rel.length?`<span class="hint" style="margin:0;align-self:center">Hängt zusammen mit ${m.rel.map(r=>byId[r]&&byId[r].n).filter(Boolean).join(", ")}</span>`:""}</div>
+  </article>`;
+}
+/* Am weitesten vom Idealbereich entfernt zuerst. */
+function sortByDeviation(list){
+  return list.map(m=>{const s=series(m.id),v=s[s.length-1].v;return {m,r:RANK[status(m,v).k],d:deviation(m,v)}})
+    .sort((a,b)=>a.r-b.r||b.d-a.d).map(x=>x.m);
+}
+function groupHead(g,list){
+  const bad=list.filter(m=>{const s=series(m.id);return status(m,s[s.length-1].v).k==="bad"}).length;
+  const mid=list.filter(m=>{const s=series(m.id);return status(m,s[s.length-1].v).k==="mid"}).length;
+  const txt=bad?`${bad} außerhalb der Referenz`:mid?`${mid} im Grenzbereich`:"alle im Idealbereich";
+  return `<div class="grp-h"><h3>${g}</h3><span style="color:${bad?"var(--alert)":mid?"var(--serum)":"var(--opt)"}">${txt}</span><span class="n">${list.length} Werte</span></div>`;
+}
+function viewMarks(){
+  const have=M.filter(m=>series(m.id).length);
+  if(!have.length) return `<div class="empty"><h2>Noch keine Werte</h2><p>Füge deinen ersten Befund hinzu, dann entstehen hier die Verlaufsdiagramme.</p><button class="btn primary" onclick="openAdd()">Befund hinzufügen</button></div>`;
+  if(filter!=="Alle"){
+    const list=sortByDeviation(have.filter(m=>m.g===filter));
+    if(!list.length) return `<div class="empty"><h2>Keine Werte in dieser Kategorie</h2><p>Wähle oben eine andere Kategorie.</p></div>`;
+    return groupHead(filter,list)+`<div class="grid">${list.map(markerCard).join("")}</div>`;
+  }
+  /* Kategorien nach ihrem schlechtesten Wert ordnen, innerhalb jeder Kategorie ebenso. */
+  const secs=GROUPS.map(g=>{const list=sortByDeviation(have.filter(m=>m.g===g)); if(!list.length) return null;
+      const top=list[0], s=series(top.id), v=s[s.length-1].v;
+      return {g,list,r:RANK[status(top,v).k],d:deviation(top,v)}})
+    .filter(Boolean).sort((a,b)=>a.r-b.r||b.d-a.d);
+  return `<p class="hint" style="margin:0 0 18px">Sortiert nach Abweichung — was am weitesten vom Idealbereich entfernt liegt, steht oben.</p>`+
+    secs.map(sec=>groupHead(sec.g,sec.list)+`<div class="grid">${sec.list.map(markerCard).join("")}</div>`).join("");
+}
+/* --- Befundliste --- */
+function viewTests(){
+  const es=sortedEntries();
+  if(!es.length) return `<div class="empty"><h2>Noch keine Befunde</h2><p>Jeder hochgeladene Befund erscheint hier als eigener Eintrag mit Auswertung.</p><button class="btn primary" onclick="openAdd()">Befund hinzufügen</button></div>`;
+  return `<div class="sect-h">${es.length} Befunde</div><div class="rows card">${es.map(e=>{const c=counts(e.v);
+    return `<button class="test-row" onclick="setView('test','${e.date}')">
+      <div><div class="dt">${dlong(e.date)}</div><div class="lb">${esc(e.lab||"Labor nicht angegeben")}</div></div>
+      <div class="ct">${c.total} Biomarker<br><span style="color:${c.bad?"var(--alert)":"var(--opt)"}">${c.bad?c.bad+" auffällig":"alle im Referenzbereich"}</span></div>
+      <span class="chev">›</span></button>`}).join("")}</div>`;
+}
+
+/* --- Einzelbefund --- */
+function viewTest(date){
+  const e=DB.entries.find(x=>x.date===date);
+  if(!e) return viewTests();
+  const c=counts(e.v), a=assess(e.v), p=DB.profile;
+  const prev=sortedEntries().filter(x=>x.date<date)[0]||null;
+  const ids=Object.keys(e.v).filter(id=>byId[id]);
+  const groups=GROUPS.filter(g=>ids.some(id=>byId[id].g===g));
+  const lead=`In diesem Befund wurden ${c.total} Werte bestimmt. ${c.bad?`${c.bad} liegen außerhalb des Referenzbereichs`:"Alle liegen im Referenzbereich"}${c.mid?`, ${c.mid} im Grenzbereich zwischen Norm und Ideal`:""}.${prev?` Verglichen wird jeweils mit dem Befund vom ${dmed(prev.date)}.`:""}`;
+
+  return `<button class="back" onclick="setView('tests')">‹ Alle Befunde</button>
+    <div class="stats">
+      <div class="stat card"><div class="k">Befund</div><div class="n small">${dmed(e.date)}</div>
+        <dl class="kv" style="margin-top:12px"><dt>Labor</dt><dd>${esc(e.lab||"—")}</dd>
+        <dt>Person</dt><dd>${esc(p.name||"—")}${p.year?`, ${new Date(e.date).getFullYear()-(+p.year)} J.`:""}</dd></dl></div>
+      <div class="stat card"><div class="k">Biomarker</div><div class="n">${c.total}</div><div class="s">${c.bad} auffällig</div></div>
+      <div class="stat card ringbox">${ring(c.pct)}<div><div class="k">Im Normbereich</div><div class="s" style="margin-top:4px">${c.ok+c.mid} von ${c.total}</div></div></div>
+    </div>
+    <div class="sect-h">Übersicht</div>
+    ${assessBlock("Interpretation","i",a.f,lead)}
+    ${a.z.length?assessBlock("Möglicher Gesundheitszustand","c",a.z):""}
+    ${assessBlock("Achtung — nächste Schritte","a",a.a.length?a.a:[{t:"Keine dringenden Punkte",p:"Aus diesem Befund ergibt sich kein akuter Handlungsbedarf."}],"Diese Hinweise ersetzen keinen ärztlichen Rat.")}
+    <div class="sect-h">Alle Werte dieses Befunds</div>
+    ${groups.map(g=>{const gi=ids.filter(id=>byId[id].g===g);const gb=gi.filter(id=>status(byId[id],+e.v[id]).k==="bad").length;
+      return `<details class="panel card" ${gb?"open":""}><summary>${g}<span class="cnt" style="color:${gb?"var(--alert)":"var(--opt)"}">${gb?gb+" auffällig":"alle normal"} · ${gi.length}</span></summary>
+      ${gi.map(id=>{const m=byId[id],v=+e.v[id],st=status(m,v);
+        const pv=prev&&prev.v[id]!==undefined?+prev.v[id]:null;
+        const d=pv!==null?v-pv:null;
+        return `<div class="bm"><div>
+            <h4>${m.n} <span class="pill ${st.k}">${st.s}</span></h4>
+            <div class="sub" style="font-size:11.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace">${m.u}</div>
+            ${rangebar(m,v)}
+          </div>
+          <div class="why">${m.what} ${m.why}
+            <div class="d">${d!==null?`Vorher ${fmt(pv)} · ${d>0?"+":""}${fmt(d)} ${m.u}`:"Erste Messung dieses Werts"}
+              &nbsp;·&nbsp; ideal ${fmt(optOf(m)[0])}–${fmt(optOf(m)[1])}</div>
+            <div style="margin-top:10px"><button class="btn sm" onclick="openAsk('${id}')">Frag Claude</button>
+            <button class="btn sm ghost" onclick="jumpTo('${id}')">Verlauf</button></div>
+          </div></div>`}).join("")}</details>`}).join("")}`;
+}
+
+function jumpTo(id){
+  filter="Alle"; setView("marks");
+  setTimeout(()=>{const el=document.getElementById("m-"+id); if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1700)}},60);
+}
+window.jumpTo=jumpTo;
+
+function renderFilters(){
+  const known=M.filter(m=>series(m.id).length).map(m=>m.g);
+  const gs=["Alle",...GROUPS.filter(g=>known.includes(g))];
+  $("#filters").innerHTML=gs.map(g=>`<button class="chip" data-g="${g}" aria-pressed="${g===filter}">${g}</button>`).join("");
+}
+function render(){
+  $("#filterBar").hidden = view.name!=="marks";
+  if(view.name==="marks") renderFilters();
+  app.innerHTML = view.name==="dash"?viewDash() : view.name==="marks"?viewMarks() : view.name==="test"?viewTest(view.entry) : viewTests();
+}
+
+/* ===== 7 — Befund hinzufügen ========================================== */
+let staged={};
+function openAdd(){
+  staged={}; $("#fDate").value=new Date().toISOString().slice(0,10); $("#fLab").value="";
+  $("#pasteBox").value=""; $("#detected").innerHTML="";
+  $("#mSel").innerHTML=M.map(m=>`<option value="${m.id}">${m.n} (${m.u})</option>`).join("");
+  show("#mAdd");
+}
+window.openAdd=openAdd;
+
+function parseText(txt){
+  /* Pro Zeile gewinnt die laengste passende Bezeichnung, damit
+     "LDL-Cholesterin" nicht als "Cholesterin" gelesen wird. */
+  const found={};
+  txt.split(/\r?\n/).forEach(raw=>{
+    const line=raw.toLowerCase().replace(/\s+/g," ").trim(); if(!line) return;
+    let best=null;
+    for(const m of M){
+      for(const a of m.al){
+        const i=line.indexOf(a); if(i<0) continue;
+        if(!best || a.length>best.a.length || (a.length===best.a.length && i<best.i)) best={m,a,i};
+      }
+    }
+    if(!best) return;
+    const after=line.slice(best.i+best.a.length);
+    const num=after.match(/-?\d+(?:[.,]\d+)?/); if(!num) return;
+    const v=parseFloat(num[0].replace(",",".")); if(!isFinite(v)) return;
+    if(found[best.m.id]===undefined) found[best.m.id]=v;
+  });
+  return found;
+}
+function showDetected(){
+  const ids=Object.keys(staged);
+  if(!ids.length){ $("#detected").innerHTML=`<p class="hint">Keine bekannten Werte gefunden. Trag sie über „Manuell“ ein — oder schick mir den Text, dann erweitern wir die Erkennung.</p>`; return }
+  $("#detected").innerHTML=`<div class="detected"><table><thead><tr><th>Messwert</th><th>Wert</th><th>Referenz</th><th></th></tr></thead><tbody>
+    ${ids.map(id=>{const m=byId[id],r=refOf(m);return `<tr><td><strong>${m.n}</strong><br><span class="hint" style="margin:0">${m.u}</span></td>
+      <td><input type="number" step="any" value="${staged[id]}" data-v="${id}"></td>
+      <td class="mono" style="font-size:12.5px;color:var(--muted)">${fmt(r[0])}–${fmt(r[1])}</td>
+      <td><button class="btn ghost sm" data-del="${id}">Entfernen</button></td></tr>`}).join("")}</tbody></table></div>
+    <p class="hint">${ids.length} Wert${ids.length>1?"e":""} erkannt. Bitte gegen den Befund prüfen und bei Bedarf korrigieren.</p>`;
+  $("#detected").querySelectorAll("[data-v]").forEach(i=>i.oninput=()=>staged[i.dataset.v]=+i.value);
+  $("#detected").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{delete staged[b.dataset.del];showDetected()});
+}
+async function readPDF(file){
+  toast("PDF wird gelesen …");
+  if(!window.pdfjsLib){
+    await new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";s.onload=res;s.onerror=rej;document.head.appendChild(s)})
+      .catch(()=>{throw new Error("PDF-Bibliothek nicht erreichbar. Nutze „Text einfügen“.")});
+    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  let txt="";
+  for(let p=1;p<=pdf.numPages;p++){
+    const c=await (await pdf.getPage(p)).getTextContent(); let last=null;
+    c.items.forEach(it=>{ if(last!==null&&Math.abs(last-it.transform[5])>3) txt+="\n"; txt+=it.str+" "; last=it.transform[5] });
+    txt+="\n";
+  }
+  return txt;
+}
+async function readImage(file){
+  if(!DB.profile.key) throw new Error("Für Fotos und Scans wird ein API-Key gebraucht — er steht im Profil. Alternativ die Werte über „Manuell“ eintragen.");
+  toast("Bild wird ausgelesen …");
+  const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(file)});
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+    headers:{"content-type":"application/json","x-api-key":DB.profile.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1600,messages:[{role:"user",content:[
+      {type:"image",source:{type:"base64",media_type:file.type,data:b64}},
+      {type:"text",text:"Dies ist ein Laborbefund. Gib jeden erkennbaren Messwert als eine Zeile im Format „Name Zahl Einheit“ aus. Keine Erklärungen, keine Überschriften, kein Markdown."}]}]})});
+  if(!r.ok) throw new Error("API-Fehler "+r.status+" — Key und Guthaben prüfen.");
+  return (await r.json()).content.map(x=>x.text||"").join("\n");
+}
+async function handleFile(f){
+  if(!f) return;
+  try{
+    const txt=f.type==="application/pdf"?await readPDF(f):await readImage(f);
+    const found=parseText(txt);
+    if(!Object.keys(found).length&&f.type==="application/pdf"){ $("#pasteBox").value=txt; tab("paste"); toast("Kein Treffer — Text steht jetzt im Feld"); return }
+    Object.assign(staged,found); showDetected(); toast(Object.keys(found).length+" Werte erkannt");
+  }catch(e){ alert(e.message) }
+}
+
+/* ===== 8 — Frag Claude =============================================== */
+let askId=null;
+function buildPrompt(id,q){
+  const m=byId[id],s=series(id),p=DB.profile;
+  const age=p.year?`${new Date().getFullYear()-(+p.year)} Jahre`:"Alter nicht angegeben";
+  const body=[p.sex==="f"?"Weiblich":"Männlich",age,p.kg?p.kg+" kg":null,p.cm?p.cm+" cm":null].filter(Boolean).join(", ");
+  const hist=s.map(x=>`  ${dmed(x.d)}: ${fmt(x.v)} ${m.u} (${status(m,x.v).t})`).join("\n");
+  const rel=(m.rel||[]).map(r=>{const rm=byId[r],rs=series(r); if(!rm||!rs.length) return null;
+    const c=rs[rs.length-1];
+    return `  ${rm.n}: ${fmt(c.v)} ${rm.u} vom ${dmed(c.d)} — Referenz ${fmt(refOf(rm)[0])}–${fmt(refOf(rm)[1])} (${status(rm,c.v).t})`}).filter(Boolean).join("\n");
+  return `Ich verfolge meine Blutwerte über die Zeit und habe eine Frage zu einem davon.
+
+MEIN PROFIL
+  ${body}
+  ${p.cond?"Bekannte Erkrankungen: "+p.cond:"Keine Erkrankungen angegeben."}
+  ${p.ctx||"Kein weiterer Kontext angegeben."}
+
+MESSWERT: ${m.n} (${m.u})
+  Referenzbereich: ${fmt(refOf(m)[0])}–${fmt(refOf(m)[1])}
+  Angestrebter Idealbereich: ${fmt(optOf(m)[0])}–${fmt(optOf(m)[1])}
+
+MEIN VERLAUF
+${hist}
+${rel?`\nBEGLEITWERTE (aktuellster Stand)\n${rel}`:""}
+
+MEINE FRAGE
+${q}
+
+Bitte geh konkret auf meine Situation und meinen Verlauf ein statt allgemein zu bleiben. Wenn die Begleitwerte für die Antwort relevant sind, beziehe sie mit ein. Sag mir auch, wenn etwas ärztlich abgeklärt gehört.`;
+}
+function openAsk(id){
+  askId=id; const m=byId[id],s=series(id),cur=s[s.length-1];
+  $("#askTitle").textContent="Frag Claude — "+m.n;
+  $("#askCtx").innerHTML=`Aktuell <strong class="mono">${fmt(cur.v)} ${m.u}</strong> · ${s.length} Messung${s.length>1?"en":""} seit ${dmed(s[0].d)} · ${status(m,cur.v).t}`;
+  $("#askQ").value=""; $("#askOut").innerHTML="";
+  $("#askDirect").textContent=DB.profile.key?"Direkt fragen":"Direkt fragen (API-Key nötig)";
+  show("#mAsk");
+}
+window.openAsk=openAsk;
+async function askDirect(){
+  if(!DB.profile.key){ alert("Dafür brauchst du einen API-Key im Profil.\n\nOhne Key: „Prompt kopieren“ und in Claude einfügen — das kostet nichts."); return }
+  const q=$("#askQ").value.trim(); if(!q) return alert("Bitte formuliere zuerst deine Frage.");
+  $("#askOut").innerHTML=`<div class="answer"><span class="spinner"></span> Claude denkt nach …</div>`;
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+      headers:{"content-type":"application/json","x-api-key":DB.profile.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1400,messages:[{role:"user",content:buildPrompt(askId,q)}]})});
+    if(!r.ok) throw new Error("API-Fehler "+r.status);
+    const d=await r.json();
+    $("#askOut").innerHTML=`<div class="answer">${esc(d.content.map(x=>x.text||"").join("\n"))}</div>`;
+  }catch(e){ $("#askOut").innerHTML=`<div class="answer">Das hat nicht geklappt: ${esc(e.message)}\n\nNutz solange „Prompt kopieren“.</div>` }
+}
+
+/* ===== 9 — Kleinkram ================================================== */
+const show=s=>$(s).hidden=false, hide=s=>$(s).hidden=true;
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),2200)}
+function tab(n){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===n));document.querySelectorAll("[data-pane]").forEach(p=>p.hidden=p.dataset.pane!==n)}
+function openData(){ dataList(); show("#mData") }
+window.openData=openData;
+
+async function demo(){
+  const y=new Date().getFullYear();
+  DB.profile=Object.assign(DB.profile,{name:DB.profile.name||"Michael",year:DB.profile.year||"1989",kg:DB.profile.kg||"72",cm:DB.profile.cm||"174",cond:DB.profile.cond||"Heuschnupfen"});
+  DB.entries=[
+    {date:`${y-4}-03-14`,lab:"Labor an der Salzbrücke MVZ",v:{hb:14.6,hkt:44,mcv:86,leuko:6.1,thrombo:242,ferritin:38,eisen:74,vitd:19,b12:340,tsh:2.8,crp:2.1,ldl:142,hdl:48,trigl:158,chol:212,hba1c:5.4,harnsaeure:6.6,omega3:4.2,gpt:41,ggt:38,kreatinin:1.05,magnesium:0.81}},
+    {date:`${y-3}-04-02`,lab:"Labor an der Salzbrücke MVZ",v:{hb:14.9,hkt:45,mcv:88,leuko:5.8,thrombo:236,ferritin:52,eisen:86,vitd:26,b12:420,tsh:2.4,crp:1.6,ldl:131,hdl:52,trigl:132,chol:203,hba1c:5.3,harnsaeure:6.2,omega3:5.1,gpt:34,ggt:31,kreatinin:1.03,magnesium:0.84}},
+    {date:`${y-2}-03-28`,lab:"MVZ Labor Saarbrücken",v:{hb:15.2,hkt:46,mcv:89,leuko:5.5,thrombo:228,ferritin:71,eisen:98,vitd:34,b12:510,tsh:2.1,crp:1.1,ldl:118,hdl:57,trigl:110,chol:194,hba1c:5.2,harnsaeure:5.9,omega3:6.4,gpt:29,ggt:24,kreatinin:1.02,magnesium:0.88,testo:520,shbg:58,estradiol:14}},
+    {date:`${y-1}-04-11`,lab:"MVZ Labor Saarbrücken",v:{hb:15.4,hkt:46,mcv:90,leuko:5.4,thrombo:221,ferritin:94,eisen:112,vitd:43,b12:610,tsh:1.9,crp:0.8,ldl:106,hdl:61,trigl:94,chol:186,hba1c:5.1,harnsaeure:5.5,omega3:7.6,gpt:26,ggt:20,kreatinin:1.04,magnesium:0.9,testo:610,shbg:62,estradiol:11,testofrei:12.4,zink:13.2}},
+    {date:`${y}-04-09`,lab:"MVZ Labor Saarbrücken",v:{hb:15.6,hkt:47,mcv:90,leuko:5.2,thrombo:218,ferritin:118,eisen:121,vitd:51,b12:690,folsaeure:9.4,tsh:1.7,ft3:3.2,ft4:1.3,crp:0.6,ldl:98,hdl:64,trigl:82,chol:180,hba1c:5.0,glukose:86,harnsaeure:5.2,omega3:8.9,gpt:24,got:34,ggt:18,ck:210,kreatinin:1.06,egfr:96,magnesium:0.92,zink:14.8,selen:98,testo:640,testofrei:13.1,shbg:67.9,estradiol:6,fsh:3.4,lh:4.1,prolaktin:9.2}}
+  ];
+  await saveDB(); setView("dash"); hide("#mData"); toast("Beispieldaten geladen");
+}
+window.demo=demo;
+
+function dataList(){
+  if(!DB.entries.length){ $("#dataList").innerHTML=`<p class="hint">Noch keine Befunde gespeichert.</p>`; return }
+  $("#dataList").innerHTML=`<div class="detected"><table><thead><tr><th>Datum</th><th>Labor</th><th>Werte</th><th></th></tr></thead><tbody>
+    ${sortedEntries().map(e=>`<tr><td class="mono">${dmed(e.date)}</td><td>${esc(e.lab||"—")}</td><td>${Object.keys(e.v).length}</td>
+      <td><button class="btn ghost sm" data-rm="${e.date}">Löschen</button></td></tr>`).join("")}</tbody></table></div>`;
+  $("#dataList").querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{
+    if(!confirm("Befund vom "+dlong(b.dataset.rm)+" wirklich löschen?")) return;
+    DB.entries=DB.entries.filter(e=>e.date!==b.dataset.rm); await saveDB(); dataList(); render();
+  });
+}
+
+/* ===== 10 — Verdrahtung ============================================== */
+document.addEventListener("click",e=>{
+  if(e.target.matches("[data-close]")) e.target.closest(".veil").hidden=true;
+  if(e.target.matches(".veil")) e.target.hidden=true;
+  if(e.target.matches("[data-tab]")) tab(e.target.dataset.tab);
+  if(e.target.matches(".chip")){ filter=e.target.dataset.g; render() }
+  if(e.target.matches("#nav button")) setView(e.target.dataset.view);
+});
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") document.querySelectorAll(".veil").forEach(v=>v.hidden=true) });
+
+$("#btnAdd").onclick=openAdd;
+$("#btnData").onclick=openData;
+$("#pick").onclick=()=>$("#file").click();
+$("#file").onchange=e=>handleFile(e.target.files[0]);
+const dz=$("#drop");
+["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("hot")}));
+["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("hot")}));
+dz.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
+$("#parsePaste").onclick=()=>{const f=parseText($("#pasteBox").value);Object.assign(staged,f);showDetected();toast(Object.keys(f).length+" Werte erkannt")};
+$("#addManual").onclick=()=>{const id=$("#mSel").value,v=parseFloat($("#mVal").value);
+  if(!isFinite(v)) return alert("Bitte einen Wert eintragen."); staged[id]=v; $("#mVal").value=""; showDetected()};
+$("#saveEntry").onclick=async()=>{
+  const date=$("#fDate").value; if(!date) return alert("Bitte das Datum der Blutabnahme eintragen.");
+  if(!Object.keys(staged).length) return alert("Noch keine Werte in der Liste.");
+  const lab=$("#fLab").value.trim(), ex=DB.entries.find(e=>e.date===date);
+  if(ex){ Object.assign(ex.v,staged); if(lab) ex.lab=lab } else DB.entries.push({date,lab,v:{...staged}});
+  await saveDB(); hide("#mAdd"); setView("test",date); toast("Befund gespeichert");
+};
+$("#btnProfile").onclick=()=>{const p=DB.profile;
+  $("#pName").value=p.name;$("#pSex").value=p.sex;$("#pYear").value=p.year;$("#pKg").value=p.kg;$("#pCm").value=p.cm;
+  $("#pCond").value=p.cond;$("#pCtx").value=p.ctx;$("#pKey").value=p.key; show("#mProfile")};
+$("#saveProfile").onclick=async()=>{
+  DB.profile={name:$("#pName").value.trim(),sex:$("#pSex").value,year:$("#pYear").value,kg:$("#pKg").value,cm:$("#pCm").value,
+    cond:$("#pCond").value.trim(),ctx:$("#pCtx").value,key:$("#pKey").value.trim()};
+  await saveDB(); hide("#mProfile"); render(); toast("Profil gespeichert")};
+$("#copyPrompt").onclick=async()=>{const q=$("#askQ").value.trim(); if(!q) return alert("Bitte formuliere zuerst deine Frage.");
+  try{ await navigator.clipboard.writeText(buildPrompt(askId,q)); toast("Prompt kopiert — jetzt in Claude einfügen") }
+  catch(e){ $("#askOut").innerHTML=`<div class="answer">${esc(buildPrompt(askId,q))}</div>`; toast("Kopieren blockiert — Text steht unten") }};
+$("#openClaude").onclick=()=>{const q=$("#askQ").value.trim(); if(!q) return alert("Bitte formuliere zuerst deine Frage.");
+  navigator.clipboard.writeText(buildPrompt(askId,q)).catch(()=>{}); window.open("https://claude.ai/new","_blank"); toast("Prompt kopiert — in Claude einfügen")};
+$("#askDirect").onclick=askDirect;
+async function exportData(){
+  /* Der API-Key bleibt draußen — eine Sicherungsdatei landet in der Cloud oder bei Freunden. */
+  const json=JSON.stringify({entries:DB.entries, profile:Object.assign({},DB.profile,{key:""})},null,2);
+  const name="serum-"+new Date().toISOString().slice(0,10)+".json";
+  const file=new File([json],name,{type:"application/json"});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file],title:"Serum-Sicherung"}); return }
+    catch(err){ if(err && err.name==="AbortError") return }
+  }
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([json],{type:"application/json"}));
+  a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast("Datei exportiert");
+}
+$("#expJson").onclick=exportData;
+$("#impJson").onclick=()=>$("#impFile").click();
+
+/* Führt einen Import mit dem vorhandenen Bestand zusammen, statt ihn zu ersetzen.
+   Vorhandene Werte werden nie überschrieben — im Zweifel gewinnt dieses Gerät. */
+function mergeEntries(incoming){
+  const r={neueBefunde:0, ergaenzt:0, werte:0, konflikte:0};
+  incoming.forEach(inc=>{
+    if(!inc || !inc.date || typeof inc.v!=="object") return;
+    const ex=DB.entries.find(e=>e.date===inc.date);
+    if(!ex){ DB.entries.push({date:inc.date, lab:inc.lab||"", v:Object.assign({},inc.v)}); r.neueBefunde++; return; }
+    let touched=false;
+    Object.keys(inc.v).forEach(k=>{
+      if(ex.v[k]===undefined){ ex.v[k]=inc.v[k]; r.werte++; touched=true }
+      else if(+ex.v[k]!==+inc.v[k]) r.konflikte++;
+    });
+    if(!ex.lab && inc.lab) ex.lab=inc.lab;
+    if(touched) r.ergaenzt++;
+  });
+  return r;
+}
+
+$("#impFile").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  e.target.value="";
+  try{
+    const d=JSON.parse(await f.text());
+    if(!Array.isArray(d.entries)) throw new Error("Format");
+    const r=mergeEntries(d.entries);
+    /* Profilfelder nur füllen, wenn hier noch nichts steht. Der API-Key wird nie übernommen. */
+    if(d.profile) ["name","sex","year","kg","cm","cond","ctx"].forEach(k=>{
+      if(!DB.profile[k] && d.profile[k]) DB.profile[k]=d.profile[k];
+    });
+    await saveDB(); dataList(); render();
+    const teile=[];
+    if(r.neueBefunde) teile.push(r.neueBefunde+" neue"+(r.neueBefunde===1?"r Befund":" Befunde"));
+    if(r.werte) teile.push(r.werte+" ergänzte Werte");
+    if(!teile.length) teile.push("nichts Neues — war schon alles vorhanden");
+    let msg="Zusammengeführt: "+teile.join(", ")+".";
+    if(r.konflikte) msg+="\n\n"+r.konflikte+" Wert"+(r.konflikte===1?" wich":"e wichen")+" vom Bestand ab. Dieses Gerät behält seine Zahlen — bitte im Zweifel gegen den Befund prüfen.";
+    alert(msg);
+  }catch(err){ alert("Die Datei lässt sich nicht lesen. Erwartet wird ein Export aus Serum.") }
+};
+
+$("#loadDemo").onclick=demo;
+
+(async()=>{ await loadDB(); render() })();
+</script></body></html>
