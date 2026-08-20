@@ -1,7 +1,7 @@
 /* Serum — Service Worker
    Legt die App im Gerätespeicher ab, damit sie ohne Internet startet.
    Bei jeder Änderung an index.html die Versionsnummer hochzählen. */
-const CACHE = "serum-v2";
+const CACHE = "serum-v5";
 
 const ASSETS = [
   "./",
