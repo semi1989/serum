@@ -225,6 +225,11 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 .tabs button{flex:1;padding:9px;border:1px solid var(--line);background:transparent;border-radius:9px;font-size:13.4px}
 .tabs button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .note{max-width:1180px;margin:34px auto 0;padding:0 20px;font-size:12.4px;color:var(--muted);line-height:1.6;text-align:center}
+.upbar{position:fixed;left:50%;bottom:22px;transform:translate(-50%,140px);z-index:95;
+  display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+  border-radius:99px;padding:9px 10px 9px 20px;box-shadow:0 12px 34px -12px rgba(17,24,32,.4);
+  font-size:13.5px;transition:transform .3s cubic-bezier(.2,.8,.3,1);max-width:calc(100vw - 24px)}
+.upbar.show{transform:translate(-50%,0)}
 .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,80px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13.5px;z-index:90;transition:transform .28s cubic-bezier(.2,.8,.3,1);pointer-events:none}
 .toast.show{transform:translate(-50%,0)}
 .spinner{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:-2px}
@@ -373,6 +378,11 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
         <button class="btn" id="loadDemo">Beispieldaten laden</button>
       </div>
       <div id="dataList"></div>
+      <hr style="border:none;border-top:1px solid var(--hair);margin:20px 0 14px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="hint" style="margin:0">Serum Version <span id="verNum">–</span></span>
+        <button class="btn sm" id="btnUpdate" style="margin-left:auto">Nach Update suchen</button>
+      </div>
     </div>
     <div class="modal-f"><button class="btn ghost" data-close>Schließen</button></div>
   </div>
@@ -380,11 +390,58 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 
 <div class="toast" id="toast"></div>
 
+<div class="upbar" id="upbar">
+  <span>Neue Fassung verfügbar</span>
+  <button class="btn sm primary" onclick="serumApplyUpdate()">Jetzt aktualisieren</button>
+  <button class="btn sm ghost" onclick="document.getElementById('upbar').classList.remove('show')">Später</button>
+</div>
+
 <script>
-/* Service Worker nur registrieren, wenn die App über http(s) läuft.
-   Bei einer lokal geöffneten Datei gibt es keinen — das ist in Ordnung. */
+/* --- Aktualisierung ------------------------------------------------
+   Ohne das hier merkt eine installierte App nicht, dass es eine neue
+   Fassung gibt — sie startet aus ihrem Zwischenspeicher weiter. */
+window.SERUM_VERSION = "6";
+window.serumApplyUpdate = function(){ location.reload() };
+window.serumCheckUpdate = function(){ alert("Aktualisierung ist nur möglich, wenn Serum über eine Adresse läuft."); };
+
 if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
-  addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+  var wartend=null, laedtNeu=false;
+  function zeigeUpdate(w){
+    wartend=w;
+    var b=document.getElementById("upbar");
+    if(b) b.classList.add("show");
+  }
+  window.serumApplyUpdate=function(){
+    var b=document.getElementById("upbar"); if(b) b.classList.remove("show");
+    if(wartend) wartend.postMessage({type:"SKIP_WAITING"});   /* loest controllerchange aus */
+    else location.reload();
+  };
+  navigator.serviceWorker.addEventListener("controllerchange",function(){
+    if(laedtNeu) return; laedtNeu=true; location.reload();
+  });
+  addEventListener("load",function(){
+    navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(function(reg){
+      if(reg.waiting && navigator.serviceWorker.controller) zeigeUpdate(reg.waiting);
+      reg.addEventListener("updatefound",function(){
+        var neu=reg.installing; if(!neu) return;
+        neu.addEventListener("statechange",function(){
+          if(neu.state==="installed" && navigator.serviceWorker.controller) zeigeUpdate(neu);
+        });
+      });
+      /* Beim Start, beim Zurückkehren zur App und stündlich nachsehen */
+      var pruefe=function(){ if(!document.hidden) reg.update().catch(function(){}) };
+      pruefe();
+      document.addEventListener("visibilitychange",pruefe);
+      setInterval(pruefe, 3600000);
+      window.serumCheckUpdate=function(){
+        reg.update().then(function(){
+          setTimeout(function(){
+            if(!wartend) alert("Serum ist auf dem neuesten Stand.\n\nVersion "+window.SERUM_VERSION);
+          },1500);
+        }).catch(function(){ alert("Konnte nicht nachsehen — besteht eine Internetverbindung?") });
+      };
+    }).catch(function(){});
+  });
 }
 </script>
 
@@ -1631,7 +1688,7 @@ async function askDirect(){
 const show=s=>$(s).hidden=false, hide=s=>$(s).hidden=true;
 function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),2200)}
 function tab(n){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===n));document.querySelectorAll("[data-pane]").forEach(p=>p.hidden=p.dataset.pane!==n)}
-function openData(){ dataList(); show("#mData") }
+function openData(){ dataList(); $("#verNum").textContent=window.SERUM_VERSION||"–"; show("#mData") }
 window.openData=openData;
 
 async function demo(){
@@ -1672,6 +1729,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape") document.querySele
 
 $("#btnAdd").onclick=openAdd;
 $("#btnData").onclick=openData;
+$("#btnUpdate").onclick=()=>window.serumCheckUpdate&&window.serumCheckUpdate();
 $("#pick").onclick=()=>$("#file").click();
 $("#file").onchange=e=>handleFile(e.target.files[0]);
 const dz=$("#drop");

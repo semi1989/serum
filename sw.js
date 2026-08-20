@@ -1,7 +1,7 @@
 /* Serum — Service Worker
-   Legt die App im Gerätespeicher ab, damit sie ohne Internet startet.
-   Bei jeder Änderung an index.html die Versionsnummer hochzählen. */
-const CACHE = "serum-v5";
+   Legt die App im Geraetespeicher ab und meldet der Seite, wenn eine neue Fassung bereitliegt.
+   Bei jeder Aenderung an index.html die Versionsnummer hochzaehlen. */
+const CACHE = "serum-v6";
 
 const ASSETS = [
   "./",
@@ -13,12 +13,14 @@ const ASSETS = [
   "./icons/apple-touch-icon.png"
 ];
 
+/* Bewusst ohne skipWaiting: Die neue Fassung wartet, bis die Seite grünes Licht gibt.
+   Sonst würde sie mitten in einer Eingabe übernehmen. */
 self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(ASSETS))
-      .then(() => self.skipWaiting())
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+});
+
+self.addEventListener("message", e => {
+  if (e.data && e.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", e => {
@@ -36,8 +38,7 @@ self.addEventListener("fetch", e => {
   let url;
   try { url = new URL(req.url); } catch (err) { return; }
 
-  /* Anfragen an die Claude-API niemals zwischenspeichern —
-     Antworten sind einmalig und enthalten persönliche Angaben. */
+  /* Anfragen an die Claude-API niemals zwischenspeichern. */
   if (url.hostname === "api.anthropic.com") return;
 
   if (url.origin === location.origin) {
