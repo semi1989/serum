@@ -1,7 +1,7 @@
 /* Serum — Service Worker
    Legt die App im Geraetespeicher ab und meldet der Seite, wenn eine neue Fassung bereitliegt.
    Bei jeder Aenderung an index.html die Versionsnummer hochzaehlen. */
-const CACHE = "serum-v6";
+const CACHE = "serum-v7";
 
 const ASSETS = [
   "./",
