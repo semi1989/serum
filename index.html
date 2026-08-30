@@ -194,6 +194,10 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 90px}
 .care p{margin:8px 0 0;font-size:13.6px;color:var(--ink2)}
 .care-w{margin-top:7px;font-size:12px;color:var(--opt);font-family:"IBM Plex Mono",monospace}
 .care-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px;align-items:center}
+.askall{display:flex;align-items:center;gap:18px;padding:20px 22px;margin:8px 0 4px;flex-wrap:wrap}
+.askall h3{font-size:17px;margin-bottom:5px}
+.askall p{margin:0;font-size:13.6px;color:var(--ink2);max-width:52ch}
+.askall .btn{margin-left:auto;flex:none}
 .empty{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:44px 34px;text-align:center;box-shadow:var(--shadow)}
 .empty h2{font-size:26px;margin-bottom:10px}
 .empty p{color:var(--ink2);max-width:46ch;margin:0 auto 22px}
@@ -336,6 +340,11 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
     <div class="modal-h"><h2 id="askTitle">Frag Claude</h2><button class="btn ghost" data-close>Schließen</button></div>
     <div class="modal-b">
       <div id="askCtx" class="hint" style="margin:0 0 14px"></div>
+      <div id="askQuick" hidden style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn sm" onclick="askQuick('Wie ist mein Gesamtbild? Was fällt dir auf, im Guten wie im Schlechten?')">Gesamtbeurteilung</button>
+        <button class="btn sm" onclick="askQuick('Was sollte ich an Ernährung, Training und Alltag ändern? Bitte konkret und nach Wirkung sortiert.')">Was soll ich ändern?</button>
+        <button class="btn sm" onclick="askQuick('Was davon gehört ärztlich abgeklärt und welche Fragen sollte ich beim nächsten Termin stellen?')">Fürs Arztgespräch</button>
+      </div>
       <label for="askQ">Deine Frage</label>
       <textarea id="askQ" placeholder="Mein Wert ist leicht verringert. Ich esse gerne Fleisch und mache viel Sport — was kann ich an Ernährung und Alltag ändern, damit er besser wird?"></textarea>
       <p class="hint">Serum hängt automatisch deinen Verlauf, die Referenzbereiche, passende Begleitwerte und dein Profil an die Frage an.</p>
@@ -413,7 +422,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 /* --- Aktualisierung ------------------------------------------------
    Ohne das hier merkt eine installierte App nicht, dass es eine neue
    Fassung gibt — sie startet aus ihrem Zwischenspeicher weiter. */
-window.SERUM_VERSION = "7";
+window.SERUM_VERSION = "10";
 window.serumApplyUpdate = function(){ location.reload() };
 window.serumCheckUpdate = function(){ alert("Aktualisierung ist nur möglich, wenn Serum über eine Adresse läuft."); };
 
@@ -557,7 +566,7 @@ const M = [
 {id:"glukose",n:"Nüchternglukose",u:"mg/dl",g:"Stoffwechsel",al:["glukoza","s-glukoza","glukoza","nüchternglukose","nuechternglukose","glukose","glucose","blutzucker"],ref:[70,99],opt:[75,90],cv:{"mmol/l":18.016},
  what:"Der Blutzucker nach mindestens acht Stunden ohne Nahrung.",why:"Eine Momentaufnahme. Steigende Werte im oberen Normbereich sind oft das erste Zeichen einer beginnenden Insulinresistenz, Jahre vor einer Diagnose.",
  imp:["Wirklich nüchtern messen, auch Kaffee mit Milch verfälscht","Späte, große Mahlzeiten am Vorabend vermeiden","Regelmäßige Bewegung wirkt hier schneller als jede Ernährungsumstellung","Zusammen mit HbA1c bewerten"],rel:["hba1c","trigl","insulin"]},
-{id:"insulin",n:"Insulin (nüchtern)",u:"µU/ml",g:"Stoffwechsel",al:["insulin"],ref:[2,25],opt:[2,8],cv:{"pmol/l":0.1739,"mU/l":1,"µIU/ml":1},
+{id:"insulin",n:"Insulin (nüchtern)",u:"µU/ml",g:"Stoffwechsel",al:["s-inzulin","inzulin","insulin"],ref:[2,25],opt:[2,8],cv:{"pmol/l":0.1739,"mU/l":1,"µIU/ml":1},
  what:"Das Hormon, das Zucker in die Zellen schleust.",why:"Steigt oft jahrelang an, bevor der Blutzucker selbst auffällig wird — deshalb der früheste Marker für Insulinresistenz. Hohes Insulin bei normalem Zucker heißt: Die Bauchspeicheldrüse arbeitet gegen einen Widerstand an.",
  imp:["Krafttraining und mehr Muskelmasse senken den Bedarf","Ballaststoffe und Eiweiß zu jeder Mahlzeit","Zwischenmahlzeiten reduzieren, dem Insulin Pausen geben","Bauchfett abbauen wirkt hier am stärksten"],rel:["glukose","hba1c","trigl"]},
 {id:"harnsaeure",n:"Harnsäure",u:"mg/dl",g:"Stoffwechsel",al:["s-urat","s-urat","urat","harnsäure","harnsaeure"],ref:[3.4,7.0],opt:[3.5,5.8],refF:[2.4,5.7],optF:[2.5,5.0],cv:{"µmol/l":0.01681,"mg/l":0.1},
@@ -854,6 +863,14 @@ const M = [
  why:"Wird zur Verlaufskontrolle bei Lebererkrankungen und bestimmten Hodentumoren eingesetzt. Bei Leberentzündungen ebenfalls erhöht, in der Schwangerschaft physiologisch stark erhöht.",
  imp:["Zusammen mit den Leberwerten bewerten","Als alleiniger Suchtest nicht geeignet"],rel:["gpt","ggt"]},
 
+{id:"u_albumin",n:"Urin Albumin",u:"mg/l",g:"Urin",al:["u-albumin","urin albumin","mikroalbumin"],ref:[0,20],opt:[0,10],
+ what:"Eiweiß im Urin, gemessen als Albumin.",
+ why:"Gesunde Nieren lassen praktisch kein Albumin durch. Ein Anstieg gehört zu den frühesten Zeichen einer Nierenschädigung, oft Jahre bevor Kreatinin oder eGFR reagieren — besonders bei Bluthochdruck und Diabetes.",
+ imp:["Aussagekräftiger im Verhältnis zum Urin-Kreatinin als allein","Nicht nach intensivem Sport oder bei Infekt messen, das hebt den Wert vorübergehend","Blutdruck und Blutzucker sind die wirksamsten Hebel"],rel:["kreatinin","egfr","u_kreatinin"]},
+{id:"u_kreatinin",n:"Urin Kreatinin",u:"mmol/l",g:"Urin",al:["u-kreatinin","urin kreatinin"],ref:[3,20],opt:[5,15],
+ what:"Kreatinin im Urin, im Wesentlichen ein Maß für die Konzentration der Probe.",
+ why:"Für sich genommen wenig aussagekräftig. Es dient dazu, andere Urinwerte auf die Verdünnung umzurechnen — ein niedriger Wert bedeutet meist einfach, dass du viel getrunken hast.",
+ imp:["Nur im Verhältnis zu Albumin oder Protein deuten","Niedrige Werte bei stark verdünntem Urin sind normal"],rel:["u_albumin","kreatinin"]},
 {id:"u_ph",n:"Urin pH-Wert",u:"",g:"Urin",al:["u-ph","urin ph"],ref:[4.5,8],opt:[5.5,7],
  what:"Wie sauer oder basisch der Urin ist.",
  why:"Schwankt stark mit der Ernährung: viel Fleisch macht sauren Urin, viel Gemüse basischen. Dauerhaft sehr saurer Urin begünstigt Harnsäuresteine, dauerhaft basischer kann auf einen Harnwegsinfekt hinweisen.",
@@ -1003,16 +1020,32 @@ function series(id){
 function trend(m,s){
   if(s.length<2) return {arrow:"·",txt:"Erste Messung. Ab der zweiten zeigt Serum hier den Verlauf und bewertet die Richtung."};
   const cur=s[s.length-1],prev=s[s.length-2],first=s[0];
-  const ph=cur.ph;
-  const [ol,oh]=optOf(m,ph),mid=(ol+oh)/2;
-  const d=cur.v-prev.v, closer=Math.abs(cur.v-mid)<Math.abs(prev.v-mid);
-  const rel=first.v?Math.abs(cur.v-first.v)/Math.abs(first.v)*100:0;
+  const ph=cur.ph, [ol,oh]=optOf(m,ph);
+  /* Abstand zum Idealband, nicht zu dessen Mitte. Sonst gilt bei einseitigen Werten
+     wie Gamma-GT (ideal 0–25) ein Rückgang von 17 auf 0,3 als Verschlechterung. */
+  const abst=v => v<ol ? ol-v : (v>oh ? v-oh : 0);
+  const dCur=abst(cur.v), dPrev=abst(prev.v);
+  const d=cur.v-prev.v, e=m.u?" "+m.u:"";
   const flat=Math.abs(d)<(Math.abs(oh-ol)*0.06||0.01);
   const arrow=flat?"→":(d>0?"↑":"↓");
+  const per=dmed(prev.d)+" → "+dmed(cur.d);
   let txt;
-  if(flat) txt=`Stabil seit der letzten Messung (${dmed(prev.d)} → ${dmed(cur.d)}). ${status(m,cur.v,ph).k==="ok"?"Auf gutem Niveau — weiter so.":"Ohne Veränderung im Alltag wird sich daran wenig ändern."}`;
-  else txt=`Um ${fmt(Math.abs(d))} ${m.u} ${d>0?"gestiegen":"gesunken"} (${dmed(prev.d)} → ${dmed(cur.d)}) — ${closer?"näher an den Idealbereich heran":"weiter vom Idealbereich weg"}.`;
-  if(s.length>=3) txt+=` Über ${s.length} Messungen seit ${dmed(first.d)}: ${rel<8?"insgesamt weitgehend konstant":(cur.v>first.v?`insgesamt um rund ${Math.round(rel)} % höher`:`insgesamt um rund ${Math.round(rel)} % niedriger`)}.`;
+  if(flat){
+    txt=`Stabil seit der letzten Messung (${per}). ${dCur===0?"Auf gutem Niveau — weiter so.":"Ohne Veränderung im Alltag wird sich daran wenig ändern."}`;
+  }else{
+    let bewertung;
+    if(dCur===0&&dPrev===0)   bewertung="beide Messungen liegen im Idealbereich";
+    else if(dCur===0)         bewertung="damit im Idealbereich angekommen";
+    else if(dPrev===0)        bewertung="damit aus dem Idealbereich heraus";
+    else if(dCur<dPrev)       bewertung="näher an den Idealbereich heran";
+    else if(dCur>dPrev)       bewertung="weiter vom Idealbereich weg";
+    else                      bewertung="der Abstand zum Idealbereich bleibt gleich";
+    txt=`Um ${fmt(Math.abs(d))}${e} ${d>0?"gestiegen":"gesunken"} (${per}) — ${bewertung}.`;
+  }
+  if(s.length>=3){
+    const rel=first.v?Math.abs(cur.v-first.v)/Math.abs(first.v)*100:0;
+    txt+=` Über ${s.length} Messungen seit ${dmed(first.d)}: ${rel<8?"insgesamt weitgehend konstant":(cur.v>first.v?`insgesamt um rund ${Math.round(rel)} % höher`:`insgesamt um rund ${Math.round(rel)} % niedriger`)}.`;
+  }
   return {arrow,txt};
 }
 
@@ -1039,12 +1072,23 @@ function convertTo(m, val, unit){
   if(!u || !target || target===":1") return {v:val};
   if(u===target) return {v:val};
   const cv=m.cv||{};
-  for(const k in cv){
-    if(normU(k)!==u) continue;
-    const f=cv[k];
+  const rechne=(f,von)=>{
     let nv=Array.isArray(f)? val*f[0]+f[1] : val*f;
-    nv=Number(nv.toPrecision(4));   /* 14.9787 -> 14.98, ohne kleine Werte zu verlieren */
-    return {v:nv, note:fmt(val)+" "+unit+" → "+fmt(nv)+" "+m.u};
+    nv=Number(nv.toPrecision(4));
+    return {v:nv, note:fmt(val)+" "+von+" → "+fmt(nv)+" "+m.u};
+  };
+  for(const k in cv){ if(normU(k)===u) return rechne(cv[k],unit) }
+
+  /* PDF-Ausgaben verlieren häufig das µ — aus „µg/L“ wird „g/L“, aus „µkat/L“ wird „kat/L“.
+     Deshalb zweiter Versuch mit wiederhergestelltem Vorsatz. */
+  const mikro="u"+u;
+  if(mikro===target) return {v:val, note:"Einheit im PDF ohne µ gelesen, als µ"+unit+" gewertet"};
+  for(const k in cv){
+    if(normU(k)===mikro){
+      const r=rechne(cv[k],"µ"+unit);
+      r.note="Einheit im PDF ohne µ gelesen · "+r.note;
+      return r;
+    }
   }
   return {v:val, warn:true, note:"Einheit „"+unit+"“ unbekannt, erwartet "+m.u+" — bitte prüfen"};
 }
@@ -1443,8 +1487,10 @@ function deviation(m,v,ph){
 }
 const RANK={bad:0,mid:1,ok:2};
 
+/* Ampel statt Ja/Nein: unter 40 rot, bis 80 gelb, darüber grün. */
+function ringFarbe(pct){ return pct<40?"var(--alert)":pct<80?"var(--serum)":"var(--opt)" }
 function ring(pct,col){
-  col=col||"var(--opt)";
+  col=col||ringFarbe(pct);
   const r=40,c=2*Math.PI*r;
   return `<svg class="ring" viewBox="0 0 100 100" role="img" aria-label="${pct} Prozent im Normbereich">
     <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--hair)" stroke-width="8"/>
@@ -1534,8 +1580,9 @@ function viewDash(){
   /* Verlauf über alle Werte */
   const moves=[];
   M.forEach(m=>{ const s=series(m.id); if(s.length<2) return;
-    const cur=s[s.length-1],prev=s[s.length-2],[ol,oh]=optOf(m,cur.ph),mid=(ol+oh)/2;
-    const dd=Math.abs(prev.v-mid)-Math.abs(cur.v-mid);
+    const cur=s[s.length-1],prev=s[s.length-2],[ol,oh]=optOf(m,cur.ph);
+    const abst=v => v<ol ? ol-v : (v>oh ? v-oh : 0);
+    const dd=abst(prev.v)-abst(cur.v);   /* größer null heißt: näher am Idealbereich */
     if(Math.abs(dd)<(Math.abs(oh-ol)*0.08||0.01)) return;
     moves.push({m,dd,cur,prev});
   });
@@ -1554,12 +1601,17 @@ function viewDash(){
       <div class="stat card"><div class="k">Letzter Befund</div><div class="n small">${dmed(last.date)}</div><div class="s">${esc(last.lab||"Labor nicht angegeben")}</div></div>
       <div class="stat card"><div class="k">Biomarker</div><div class="n">${c.total}</div><div class="s">in diesem Befund</div></div>
       <div class="stat card ringbox">${ring(c.pctIdeal)}<div><div class="k">Im Idealbereich</div><div class="s" style="margin-top:4px">${c.ok} von ${c.total}<br>${c.mid} noch im Grenzbereich</div></div></div>
-      <div class="stat card ringbox">${ring(c.pctNorm, c.bad?"var(--alert)":"var(--opt)")}<div><div class="k">Im Normbereich</div><div class="s" style="margin-top:4px">${c.bad?c.bad+" außerhalb der Referenz":"nichts außerhalb der Referenz"}</div></div></div>
+      <div class="stat card ringbox">${ring(c.pctNorm)}<div><div class="k">Im Normbereich</div><div class="s" style="margin-top:4px">${c.bad?`<span style="color:var(--alert);font-weight:600">${c.bad} außerhalb der Referenz</span>`:"nichts außerhalb der Referenz"}</div></div></div>
     </div>
     <div class="sect-h">Übersicht</div>
     ${assessBlock("Interpretation","i",a.f,lead)}
     ${a.z.length?assessBlock("Möglicher Gesundheitszustand","c",a.z):""}
     ${assessBlock("Achtung — nächste Schritte","a",a.a.length?a.a:[{t:"Keine dringenden Punkte",p:"Aus den vorliegenden Werten ergibt sich kein akuter Handlungsbedarf. Behalte den Rhythmus bei und miss in etwa zwölf Monaten nach."}],"Diese Hinweise ersetzen keinen ärztlichen Rat. Sie sollen dir helfen, im Gespräch die richtigen Fragen zu stellen.")}
+    <div class="askall card">
+      <div><h3>Gesamtanalyse</h3>
+        <p>Alle ${c.total} Werte, ihre Verläufe, dein Profil und die offenen Kontrollen zusammen betrachtet — statt Wert für Wert.</p></div>
+      <button class="btn primary" onclick="openAskAll()">Frag Claude</button>
+    </div>
     ${trendItems.length?`<div class="sect-h">Verlauf seit dem letzten Befund</div>${assessBlock("Was sich bewegt hat","c",trendItems)}`:""}
     ${off.length?`<div class="sect-h">Werte außerhalb des Idealbereichs</div>
       <div class="rows card">${off.map(id=>{const m=byId[id],st=status(m,+lv[id],lph);
@@ -1742,7 +1794,7 @@ function viewTest(date){
         ${e.zeit?`<dt>Abnahme</dt><dd>${esc(e.zeit)} Uhr</dd>`:""}
 </dl></div>
       <div class="stat card ringbox">${ring(c.pctIdeal)}<div><div class="k">Im Idealbereich</div><div class="s" style="margin-top:4px">${c.ok} von ${c.total}<br>${c.mid} im Grenzbereich</div></div></div>
-      <div class="stat card ringbox">${ring(c.pctNorm, c.bad?"var(--alert)":"var(--opt)")}<div><div class="k">Im Normbereich</div><div class="s" style="margin-top:4px">${c.bad?c.bad+" außerhalb der Referenz":"nichts außerhalb"}</div></div></div>
+      <div class="stat card ringbox">${ring(c.pctNorm)}<div><div class="k">Im Normbereich</div><div class="s" style="margin-top:4px">${c.bad?`<span style="color:var(--alert);font-weight:600">${c.bad} außerhalb der Referenz</span>`:"nichts außerhalb"}</div></div></div>
     </div>
     <div class="sect-h">Übersicht</div>
     ${assessBlock("Interpretation","i",a.f,lead)}
@@ -1834,14 +1886,18 @@ window.openEdit=openEdit;
    deutsche wie slowenische Bezeichnungen, SI- wie konventionelle Einheiten,
    ein- wie zweispaltige Tabellen und Schriftfehler in der PDF-Ausgabe. */
 
-M.forEach(m=>{ m._al=m.al.map(flach) });
+M.forEach(m=>{
+  m._al=m.al.map(flach);
+  /* Manche PDF-Ausgaben lassen Sonderzeichen ersatzlos weg: aus „Sečnina“ wird „Senina“. */
+  m._al2=m.al.map(a=>flach(a.replace(/[^\u0000-\u007f]/g,""))).filter(a=>a.length>3);
+});
 
 const UNITS=(function(){
   const set=new Set();
   M.forEach(m=>{ if(m.u) set.add(normU(m.u)); Object.keys(m.cv||{}).forEach(k=>set.add(normU(k))) });
   ["mm/h","kiu/l","iu/l","u/ml","ukat/l","l/l","10^9/l","10^12/l","mmol/mol","ml/min","poe",
    "g/l","mg/l","ug/l","ng/l","pg/ml","fl","pg","%","mmol/l","umol/l","nmol/l","pmol/l",
-   "mg/dl","g/dl","u/l","mio/ul","/nl"].forEach(x=>set.add(normU(x)));
+   "mg/dl","g/dl","u/l","mio/ul","/nl","kat/l","mol/l","g/mol","mmol/l"].forEach(x=>set.add(normU(x)));
   set.delete(""); set.delete(":1"); set.delete("-");
   return set;
 })();
@@ -1852,7 +1908,8 @@ function prepZeile(raw){
     .replace(/\b10\s*9\s*\/\s*l\b/g,"10^9/l")
     .replace(/\b10\s*12\s*\/\s*l\b/g,"10^12/l")
     .replace(/mmol\/\s*mol/g,"mmol/mol")
-    .replace(/ml\/min\/?\s*1[.,]73\s*m2?/g,"ml/min");
+    .replace(/ml\/min\/?\s*1[.,]73\s*m2?/g,"ml/min")
+    .replace(/\b([usk])-\s+(?=[a-z])/g,"$1-");   /* "U- Proteini" wieder zusammenfügen */
 }
 /* Freistehende Zahlen. "25-oh" und "1,73m2" fallen bewusst heraus. */
 function zahlenIn(txt){
@@ -1881,7 +1938,7 @@ function zerlege(line){
   for(const m of M){
     if(m.calc) continue;
     let best=null;
-    for(const a of m._al){ const i=line.indexOf(a); if(i>=0 && (!best||a.length>best.a.length)) best={a,i} }
+    for(const a of m._al.concat(m._al2)){ const i=line.indexOf(a); if(i>=0 && (!best||a.length>best.a.length)) best={a,i} }
     if(best) roh.push({m, a:best.a, i:best.i, end:best.i+best.a.length});
   }
   if(!roh.length) return [];
@@ -1892,7 +1949,11 @@ function zerlege(line){
     if(g && t.i<g.end){ g.mit.push(t); g.end=Math.max(g.end,t.end) }
     else grp.push({i:t.i, end:t.end, mit:[t]});
   });
-  return grp.map((g,k)=>({kand:g.mit, rest:line.slice(g.end, k+1<grp.length?grp[k+1].i:line.length)}));
+  return grp.map((g,k)=>({
+    kand:g.mit,
+    urin: line.slice(Math.max(0,g.i-2), g.i)==="u-",   /* "U-Proteini" ist kein Serumwert */
+    rest: line.slice(g.end, k+1<grp.length?grp[k+1].i:line.length)
+  }));
 }
 
 function parseText(txt){
@@ -1938,10 +1999,23 @@ function parseText(txt){
     }
     if(wert===null||!isFinite(wert)) return;
 
+    /* Quotienten wie „U-Albumin/Kreatinin  g/mol“ tragen den Namen eines Messwerts,
+       sind aber keiner. Lieber überspringen als einem fremden Wert zuschlagen. */
+    if(einheit && /\/(m?mol|dan)\b/.test(normU(einheit)) && !t.kand.some(k=>passtEinheit(k.m,einheit))) return;
+
     /* Gleiche Bezeichnung, zwei Messwerte — etwa Neutrophile absolut und in Prozent.
        Dann entscheidet die Einheit, sonst die längste Übereinstimmung. */
-    let passend=t.kand.filter(k=>found[k.m.id]===undefined && passtEinheit(k.m,einheit));
-    if(!passend.length) passend=t.kand.filter(k=>found[k.m.id]===undefined);
+    /* Steht ein "U-" davor, kommt nur ein Urinwert in Frage — sonst landet
+       „U-Proteini" als Gesamteiweiß im Serum. */
+    let moegl=t.urin ? t.kand.filter(k=>k.m.g==="Urin") : t.kand;
+    if(!moegl.length) return;
+    /* Der spezifischere Name gewinnt immer: „U-Proteini" schlägt „Proteini",
+       „LDL-Cholesterin" schlägt „Cholesterin". Die Einheit entscheidet erst
+       zwischen gleich langen Namen, etwa Neutrophile absolut gegen Prozent. */
+    const laengste=Math.max.apply(null,moegl.map(k=>k.a.length));
+    moegl=moegl.filter(k=>k.a.length===laengste);
+    let passend=moegl.filter(k=>found[k.m.id]===undefined && passtEinheit(k.m,einheit));
+    if(!passend.length) passend=moegl.filter(k=>found[k.m.id]===undefined);
     if(!passend.length) return;
     passend.sort((x,y)=>y.a.length-x.a.length);
     const m=passend[0].m;
@@ -1960,7 +2034,7 @@ function parseText(txt){
   Object.keys(found).forEach(id=>{
     if(notes[id]) return;
     const m=byId[id], v=found[id], r=refOf(m);
-    if(!(v>0 && (v>r[1]*5 || (r[0]>0 && v<r[0]/5)))) return;
+    if(!(v>0 && (v>r[1]*5 || (r[0]>=0.1 && v<r[0]/5)))) return;   /* Spurenwerte wie Basophile ausnehmen */
     let best=null;
     Object.keys(m.cv||{}).forEach(k=>{
       const f=m.cv[k], nv=Array.isArray(f)? v*f[0]+f[1] : v*f;
@@ -1971,6 +2045,8 @@ function parseText(txt){
     });
     if(best) notes[id]={warn:true, vorschlag:best.nv,
       t:`${fmt(v)} liegt weit außerhalb ${fmt(r[0])}–${fmt(r[1])} ${m.u}. Als ${best.k} gelesen wären es ${fmt(best.nv)} ${m.u} — bitte im Befund nachsehen.`};
+    else notes[id]={warn:true,
+      t:`${fmt(v)} liegt weit außerhalb ${fmt(r[0])}–${fmt(r[1])} ${m.u} und keine Einheit erklärt das. Möglicherweise wurde eine fremde Zeile eingelesen — bitte gegen den Befund prüfen oder entfernen.`};
   });
   return {values:found, notes, layout};
 }
@@ -2000,7 +2076,12 @@ async function readPDF(file){
   let txt="";
   for(let p=1;p<=pdf.numPages;p++){
     const c=await (await pdf.getPage(p)).getTextContent(); let last=null;
-    c.items.forEach(it=>{ if(last!==null&&Math.abs(last-it.transform[5])>3) txt+="\n"; txt+=it.str+" "; last=it.transform[5] });
+    c.items.forEach(it=>{
+      if(last!==null&&Math.abs(last-it.transform[5])>2) txt+="\n";
+      txt+=it.str+" ";
+      if(it.hasEOL) txt+="\n";      /* pdf.js kennt die echten Zeilenenden — die sind zuverlässiger */
+      last=it.transform[5];
+    });
     txt+="\n";
   }
   return txt;
@@ -2029,7 +2110,75 @@ async function handleFile(f){
 }
 
 /* ===== 8 — Frag Claude =============================================== */
-let askId=null;
+let askId=null, askMode="marker";
+
+/* Sammelt den kompletten Stand für eine Gesamtbeurteilung. */
+function buildGesamtPrompt(q){
+  const p=DB.profile, last=latest();
+  if(!last) return "";
+  const lv=valuesOf(last), ph=phaseOf(last), c=counts(lv,ph), a=assess(lv,{ph,zeit:last.time});
+  const age=p.year?`${new Date().getFullYear()-(+p.year)} Jahre`:"Alter nicht angegeben";
+  const kopf=[p.sex==="f"?"Weiblich":"Männlich",age,p.kg?p.kg+" kg":null,p.cm?p.cm+" cm":null].filter(Boolean).join(", ");
+
+  const ids=Object.keys(lv).filter(id=>byId[id]);
+  const zeilen=GROUPS.filter(g=>ids.some(id=>byId[id].g===g)).map(g=>{
+    const rows=ids.filter(id=>byId[id].g===g).map(id=>{
+      const m=byId[id], v=+lv[id], st=status(m,v,ph), s=series(id);
+      let verlauf="";
+      if(s.length>1){ const vor=s[s.length-2]; verlauf=` | vorher ${fmt(vor.v)} am ${dmed(vor.d)}`; }
+      return `  ${m.n}: ${fmt(v)}${m.u?" "+m.u:""} | Referenz ${fmt(refOf(m,ph)[0])}–${fmt(refOf(m,ph)[1])} | ideal ${fmt(optOf(m,ph)[0])}–${fmt(optOf(m,ph)[1])} | ${st.t}${verlauf}`;
+    });
+    return g+"\n"+rows.join("\n");
+  }).join("\n\n");
+
+  const cp=carePlan();
+  const fehlt=cp.fehlt.filter(x=>x.t!=="erweitert").map(x=>x.k||byId[x.id].n);
+  const faellig=cp.faellig.map(x=>`${x.k||byId[x.id].n} (zuletzt ${dmed(x.last.d)})`);
+
+  return `Ich möchte eine Gesamteinschätzung meiner Blutwerte, nicht die Beurteilung eines einzelnen Werts.
+
+MEIN PROFIL
+  ${kopf}
+  ${p.cond?"Bekannte Erkrankungen: "+p.cond:"Keine Erkrankungen angegeben."}
+  ${p.ctx||"Kein weiterer Kontext angegeben."}
+
+LETZTER BEFUND
+  ${dlong(last.date)}${last.time?", "+last.time+" Uhr":""}${last.lab?", "+last.lab:""}${ph?", "+PHASEN[ph]:""}
+  ${c.total} Werte, davon ${c.bad} außerhalb des Referenzbereichs und ${c.mid} im Grenzbereich
+  ${DB.entries.length>1?`Insgesamt ${DB.entries.length} Befunde seit ${dlong(sortedEntries()[DB.entries.length-1].date)}.`:"Bisher nur dieser eine Befund."}
+
+ALLE WERTE
+${zeilen}
+
+WAS DIE APP SELBST ERKANNT HAT
+${a.f.map(x=>"  · "+x.t+": "+x.p).join("\n")||"  Nichts Auffälliges."}
+${a.z.length?"\nMögliche Zusammenhänge\n"+a.z.map(x=>"  · "+x.t+": "+x.p).join("\n"):""}
+
+NOCH NICHT GEMESSEN${fehlt.length?"\n  "+fehlt.join(", "):"\n  nichts Wesentliches"}
+KONTROLLE FÄLLIG${faellig.length?"\n  "+faellig.join(", "):"\n  nichts"}
+
+MEINE FRAGE
+${q}
+
+Bitte betrachte die Werte im Zusammenhang statt einzeln. Nenne die drei wichtigsten Punkte zuerst, gern auch das, was gut aussieht. Sag mir konkret, was ich an Ernährung und Alltag ändern könnte und was ärztlich abgeklärt gehört. Berücksichtige Abnahmezeit und Profil bei der Einordnung.`;
+}
+
+function openAskAll(){
+  const last=latest(); if(!last) return;
+  askMode="gesamt"; askId=null;
+  const lv=valuesOf(last), ph=phaseOf(last), c=counts(lv,ph);
+  $("#askTitle").textContent="Frag Claude — Gesamtanalyse";
+  $("#askCtx").innerHTML=`Befund vom <strong>${dmed(last.date)}</strong> · ${c.total} Werte · ${c.bad} außerhalb der Referenz, ${c.mid} im Grenzbereich · alle Verläufe und dein Profil werden mitgeschickt`;
+  $("#askQ").value=""; $("#askQ").placeholder="Wie ist mein Gesamtbild? Worauf sollte ich achten und was würdest du an Ernährung und Alltag ändern?";
+  $("#askOut").innerHTML="";
+  $("#askQuick").hidden=false;
+  $("#askDirect").textContent=DB.profile.key?"Direkt fragen":"Direkt fragen (API-Key nötig)";
+  show("#mAsk");
+}
+window.openAskAll=openAskAll;
+function askQuick(t){ $("#askQ").value=t; $("#askQ").focus() }
+window.askQuick=askQuick;
+function promptFor(q){ return askMode==="gesamt" ? buildGesamtPrompt(q) : buildPrompt(askId,q) }
 function buildPrompt(id,q){
   const m=byId[id],s=series(id),p=DB.profile,letzt=s[s.length-1];
   const age=p.year?`${new Date().getFullYear()-(+p.year)} Jahre`:"Alter nicht angegeben";
@@ -2063,7 +2212,8 @@ ${q}
 Bitte geh konkret auf meine Situation und meinen Verlauf ein statt allgemein zu bleiben. Wenn die Begleitwerte für die Antwort relevant sind, beziehe sie mit ein. Sag mir auch, wenn etwas ärztlich abgeklärt gehört.`;
 }
 function openAsk(id){
-  askId=id; const m=byId[id],s=series(id),cur=s[s.length-1];
+  askMode="marker"; askId=id; $("#askQuick").hidden=true;
+  $("#askQ").placeholder="Mein Wert ist leicht verringert. Ich esse gerne Fleisch und mache viel Sport — was kann ich an Ernährung und Alltag ändern, damit er besser wird?"; const m=byId[id],s=series(id),cur=s[s.length-1];
   $("#askTitle").textContent="Frag Claude — "+m.n;
   $("#askCtx").innerHTML=`Aktuell <strong class="mono">${fmt(cur.v)} ${m.u}</strong> · ${s.length} Messung${s.length>1?"en":""} seit ${dmed(s[0].d)} · ${status(m,cur.v,cur.ph).t}`;
   $("#askQ").value=""; $("#askOut").innerHTML="";
@@ -2078,7 +2228,7 @@ async function askDirect(){
   try{
     const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
       headers:{"content-type":"application/json","x-api-key":DB.profile.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1400,messages:[{role:"user",content:buildPrompt(askId,q)}]})});
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:askMode==="gesamt"?2600:1400,messages:[{role:"user",content:promptFor(q)}]})});
     if(!r.ok) throw new Error("API-Fehler "+r.status);
     const d=await r.json();
     $("#askOut").innerHTML=`<div class="answer">${esc(d.content.map(x=>x.text||"").join("\n"))}</div>`;
@@ -2179,10 +2329,10 @@ $("#saveProfile").onclick=async()=>{
     cond:$("#pCond").value.trim(),ctx:$("#pCtx").value,key:$("#pKey").value.trim()};
   await saveDB(); hide("#mProfile"); zyklusFeld(); render(); toast("Profil gespeichert")};
 $("#copyPrompt").onclick=async()=>{const q=$("#askQ").value.trim(); if(!q) return alert("Bitte formuliere zuerst deine Frage.");
-  try{ await navigator.clipboard.writeText(buildPrompt(askId,q)); toast("Prompt kopiert — jetzt in Claude einfügen") }
-  catch(e){ $("#askOut").innerHTML=`<div class="answer">${esc(buildPrompt(askId,q))}</div>`; toast("Kopieren blockiert — Text steht unten") }};
+  try{ await navigator.clipboard.writeText(promptFor(q)); toast("Prompt kopiert — jetzt in Claude einfügen") }
+  catch(e){ $("#askOut").innerHTML=`<div class="answer">${esc(promptFor(q))}</div>`; toast("Kopieren blockiert — Text steht unten") }};
 $("#openClaude").onclick=()=>{const q=$("#askQ").value.trim(); if(!q) return alert("Bitte formuliere zuerst deine Frage.");
-  navigator.clipboard.writeText(buildPrompt(askId,q)).catch(()=>{}); window.open("https://claude.ai/new","_blank"); toast("Prompt kopiert — in Claude einfügen")};
+  navigator.clipboard.writeText(promptFor(q)).catch(()=>{}); window.open("https://claude.ai/new","_blank"); toast("Prompt kopiert — in Claude einfügen")};
 $("#askDirect").onclick=askDirect;
 async function exportData(){
   /* Der API-Key bleibt draußen — eine Sicherungsdatei landet in der Cloud oder bei Freunden. */
