@@ -251,6 +251,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 .hist-i .answer{margin:0 10px 10px}
 .badge{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:99px;background:rgba(255,255,255,.22);font-size:11.5px;line-height:18px;text-align:center}
 .notecard{padding:14px 20px;margin:0 0 8px}
+.warnbox{margin:12px 0 0;padding:11px 14px;border-radius:10px;background:var(--alert-soft);color:var(--alert);font-size:13.4px;font-weight:600;line-height:1.45}
 .notecard .k{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .notecard p{margin:5px 0 0;font-size:14px;color:var(--ink2);white-space:pre-wrap}
 .search-in{max-width:1180px;margin:0 auto;padding:10px 20px 0}
@@ -436,11 +437,12 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
       <div class="conds" id="pConds"></div>
       <p class="hint" style="margin:8px 0 16px">Die Auswahl passt die Vorsorge an — zusätzliche Werte und kürzere Kontrollabstände.</p>
       <label for="pCond">Weitere Erkrankungen <span style="text-transform:none;letter-spacing:0">(Freitext)</span></label>
-      <input type="text" id="pCond" placeholder="z. B. Heuschnupfen, leichte Herzklappenveränderung — mit Komma trennen">
-      <p class="hint" style="margin-bottom:16px">Erscheint auf dem Dashboard und geht in jede Frage an Claude ein. Erkennt Serum darin etwas aus der Liste, wird es oben angehakt.</p>
+      <input type="text" id="pCond" placeholder="Stichworte, z. B. Heuschnupfen, leichte Mitralinsuffizienz">
+      <p class="hint" id="pCondWarn" style="color:var(--serum);font-weight:600;margin-bottom:4px" hidden></p>
+      <p class="hint" style="margin-bottom:16px">Nur kurze Stichworte, mit Komma getrennt — jedes wird ein eigener Eintrag auf dem Dashboard. Beschreibungen und Befunde gehören unter „Kontext für Claude“. Erkennt Serum etwas aus der Liste, wird es oben angehakt.</p>
       <label for="pCtx">Kontext für Claude</label>
       <textarea id="pCtx" placeholder="z. B. 5× Woche Krafttraining, esse viel Fleisch, wenig Fisch, nehme Vitamin D im Winter …"></textarea>
-      <p class="hint">Damit Antworten zu dir passen statt allgemein zu bleiben.</p>
+      <p class="hint">Hier darf es ausführlich sein: Vorbefunde, Medikamente, Training, Ernährung. Geht vollständig in jede Frage an Claude ein, damit Antworten zu dir passen.</p>
       <hr style="border:none;border-top:1px solid var(--hair);margin:22px 0">
       <label for="pKey">Anthropic API-Key <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
       <input type="password" id="pKey" placeholder="sk-ant-…" autocomplete="off">
@@ -486,7 +488,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 /* --- Aktualisierung ------------------------------------------------
    Ohne das hier merkt eine installierte App nicht, dass es eine neue
    Fassung gibt — sie startet aus ihrem Zwischenspeicher weiter. */
-window.SERUM_VERSION = "11";
+window.SERUM_VERSION = "12";
 window.serumApplyUpdate = function(){ location.reload() };
 window.serumCheckUpdate = function(){ alert("Aktualisierung ist nur möglich, wenn Serum über eine Adresse läuft."); };
 
@@ -564,9 +566,13 @@ const M = [
 {id:"eisen",n:"Eisen (Serum)",u:"µg/dl",g:"Eisen",al:["železo","zelezo","zelezo","železo","serumeisen","eisen"],tag:{von:7,bis:10,txt:"Serumeisen schwankt über den Tag um bis zu 40 % und reagiert auf die letzte Mahlzeit."},ref:[60,170],opt:[80,150],refF:[50,150],optF:[70,140],cv:{"µmol/l":5.587,"µg/l":0.1},zeit:{von:7,bis:11,txt:"Serumeisen schwankt im Tagesverlauf erheblich."},
  what:"Das Eisen, das aktuell im Blut unterwegs ist — eine Momentaufnahme.",why:"Schwankt stark über den Tag und mit der letzten Mahlzeit, allein also wenig aussagekräftig. Erst mit Ferritin und Transferrinsättigung ergibt sich ein Bild.",
  imp:["Immer im Zusammenhang mit Ferritin bewerten","Morgens und nüchtern abnehmen lassen","Kein Eisenpräparat in den 24 Stunden davor"],rel:["ferritin","transferrin","hb"]},
-{id:"transferrin",n:"Transferrinsättigung",u:"%",g:"Eisen",al:["transferrinsättigung","transferrinsaettigung","tsat"],ref:[16,45],opt:[25,40],
+{id:"transferrin",n:"Transferrinsättigung",u:"%",g:"Eisen",al:["transferrinsättigung","transferrinsaettigung","transferrin-sättigung","transferrin sättigung","transferrin-saettigung","sättigung transferrin","tf-sättigung","nasičenost transferina","nasicenost transferina","tsat"],ref:[16,45],opt:[25,40],
  what:"Wie stark das Eisentransportprotein mit Eisen beladen ist.",why:"Zeigt, ob genug Eisen für die tägliche Blutbildung bereitsteht. Unter etwa 20 % wird es knapp, auch wenn Ferritin noch akzeptabel aussieht.",
  imp:["Zusammen mit Ferritin lesen — beide niedrig spricht für echten Mangel","Bei niedrigem Wert Eisenaufnahme verbessern","Dauerhaft über 45 % ärztlich abklären lassen"],rel:["ferritin","eisen"]},
+{id:"transferrin_g",n:"Transferrin",u:"g/l",g:"Eisen",al:["transferrin","transferin","s-transferin"],ref:[2.0,3.6],opt:[2.2,3.3],cv:{"mg/dl":0.01,"µmol/l":0.0795},
+ what:"Das Transporteiweiß für Eisen im Blut.",
+ why:"Der Körper bildet mehr davon, wenn Eisen knapp wird — ein hoher Wert spricht deshalb für Eisenmangel. Bei Entzündungen und Eiweißmangel sinkt er. Zusammen mit dem Serumeisen ergibt sich daraus die Transferrinsättigung.",
+ imp:["Immer zusammen mit Ferritin und Transferrinsättigung lesen","Die Pille und eine Schwangerschaft heben den Wert","Bei erhöhtem CRP nur eingeschränkt deutbar"],rel:["ferritin","eisen","transferrin","crp"]},
 
 {id:"vitd",n:"Vitamin D (25-OH)",u:"ng/ml",g:"Vitamine",al:["25(0h) vitamin","25(oh) vitamin","25(0h) vitamin d","25-oh-vitamin","25 oh vitamin","vitamin d","calcidiol","vitamin-d"],ref:[30,100],opt:[40,70],cv:{"nmol/l":0.4006,"µg/l":1},
  what:"Die Speicherform von Vitamin D. Sie zeigt die Versorgung der letzten Wochen.",
@@ -576,12 +582,28 @@ const M = [
  what:"Wichtig für Blutbildung, Nervenzellen und Energiestoffwechsel.",
  why:"Ein Mangel entwickelt sich über Jahre und kann Nerven dauerhaft schädigen, bevor sich das Blutbild verändert. Der Gesamt-B12-Wert ist im unteren Bereich unzuverlässig — Holo-Transcobalamin zeigt den funktionellen Status genauer.",
  imp:["Kommt fast nur aus tierischen Quellen: Fleisch, Fisch, Eier, Milchprodukte","Bei vegetarischer oder veganer Ernährung ist Supplementierung Pflicht","Magensäureblocker und Metformin senken die Aufnahme","Unter 400 pg/ml zusätzlich Holo-TC bestimmen lassen"],rel:["hb","folsaeure","mcv"]},
+{id:"holotc",n:"Holo-TC (aktives B12)",u:"pmol/l",g:"Vitamine",al:["holotranscobalamin","holo-transcobalamin","holo-tc","holo tc","holotc","aktives vitamin b12","aktives b12","active b12","aktivni b12","aktivni vitamin b12"],ref:[35,150],opt:[50,150],
+ what:"Holotranscobalamin — der Teil des Vitamin B12, der an sein Transporteiweiß gebunden ist und tatsächlich von den Zellen aufgenommen werden kann.",
+ why:"Zeigt einen B12-Mangel früher und zuverlässiger als der Gesamt-B12-Wert, der im unteren Bereich wenig aussagt. Unter 35 pmol/l spricht für einen Mangel, 35–50 ist ein Graubereich, über 50 ist ein Mangel unwahrscheinlich.",
+ imp:["Liegt der Wert zwischen 35 und 50, klärt Methylmalonsäure die Frage","Vegetarische und vegane Ernährung, Magensäureblocker und Metformin senken den Wert","Nach B12-Spritzen oder hochdosierten Präparaten ist er vorübergehend erhöht und dann nicht aussagekräftig","Bei eingeschränkter Nierenfunktion kann er trotz Mangel normal aussehen"],rel:["b12","homocystein","folsaeure","mcv"]},
 {id:"folsaeure",n:"Folsäure",u:"ng/ml",g:"Vitamine",al:["folna kislina","folna kislina","folsäure","folsaeure","folat","folate"],ref:[3,17],opt:[8,16],cv:{"nmol/l":0.4413,"µg/l":1},
  what:"B-Vitamin für Zellteilung, Blutbildung und Homocystein-Abbau.",why:"Arbeitet eng mit B12 zusammen. Fehlt eines, werden rote Blutkörperchen zu groß und funktionieren schlechter.",
  imp:["Grünes Blattgemüse, Hülsenfrüchte, Brokkoli, Rote Bete","Schonend garen, Folsäure zerfällt bei langem Kochen","Alkohol senkt den Spiegel deutlich","Nie isoliert hochdosieren ohne B12-Kontrolle"],rel:["b12","hb"]},
 {id:"homocystein",n:"Homocystein",u:"µmol/l",g:"Vitamine",al:["homocistein","homocistein","homocystein","homocysteine"],ref:[5,12],opt:[5,8],cv:{"mg/l":7.397},
  what:"Ein Zwischenprodukt des Eiweißstoffwechsels, das mit B-Vitaminen abgebaut wird.",why:"Steigt an, wenn B12, B6 oder Folsäure knapp sind, und gilt als eigenständiger Risikofaktor für Gefäße. Ein guter Funktionstest für die B-Vitamin-Versorgung.",
  imp:["B12, B6 und Folsäure prüfen und gezielt auffüllen","Kaffee und Alkohol in Maßen","Bewegung senkt den Wert leicht"],rel:["b12","folsaeure"]},
+{id:"vita",n:"Vitamin A (Retinol)",u:"µg/l",g:"Vitamine",al:["vitamin a ","vitamin a (","vitamin-a","retinol"],ref:[300,800],opt:[400,750],cv:{"mg/l":1000,"µg/dl":10,"µmol/l":286.5},
+ what:"Fettlösliches Vitamin für Sehen, Haut, Schleimhäute und Immunsystem.",
+ why:"Ein Mangel ist hierzulande selten und betrifft vor allem Menschen mit gestörter Fettaufnahme. Häufiger ist ein zu hoher Wert durch hochdosierte Präparate — Vitamin A wird gespeichert, schadet in hoher Dosis der Leber und in der Schwangerschaft dem Kind.",
+ imp:["Leber, Eier und Milchprodukte liefern Retinol, Karotten und grünes Gemüse die Vorstufe Beta-Carotin","Keine hochdosierten Präparate ohne gemessenen Mangel","Bei Entzündungen sinkt der Wert vorübergehend, ohne dass ein Mangel besteht"],rel:["vite","vitd","crp"]},
+{id:"vite",n:"Vitamin E (Tocopherol)",u:"mg/l",g:"Vitamine",al:["vitamin e ","vitamin e (","vitamin-e","alpha-tocopherol","tocopherol"],ref:[5.5,17],opt:[8,15],cv:{"µmol/l":0.4307,"µg/ml":1,"mg/dl":10},
+ what:"Fettlösliches Vitamin, das Zellmembranen vor Oxidation schützt.",
+ why:"Wird zusammen mit den Blutfetten transportiert — bei hohem Cholesterin steigt auch Vitamin E, ohne dass mehr im Gewebe ankommt. Ein echter Mangel ist selten und betrifft vor allem Menschen mit gestörter Fettverdauung.",
+ imp:["Pflanzenöle, Nüsse und Samen sind die besten Quellen","Hochdosierte Präparate haben in Studien keinen Nutzen gezeigt","Immer zusammen mit den Blutfetten lesen"],rel:["chol","ldl","vita"]},
+{id:"vitk1",n:"Vitamin K1",u:"µg/l",g:"Vitamine",al:["vitamin k1","vitamin k 1","vitamin k-1","phyllochinon","phylloquinon"],ref:[0.1,2.2],opt:[0.3,2.2],cv:{"ng/ml":1,"ng/l":0.001,"nmol/l":0.4507},
+ what:"Phyllochinon, die Form des Vitamin K aus grünem Gemüse. Wichtig für Blutgerinnung und Knochen.",
+ why:"Spiegelt vor allem die Ernährung der letzten Tage. Ein Mangel entsteht bei gestörter Fettaufnahme oder langer Antibiotikagabe. Unter Blutverdünnern wie Marcumar beeinflusst Vitamin K die Wirkung direkt.",
+ imp:["Grünkohl, Spinat, Brokkoli und Salate liefern viel Vitamin K1","Fettlöslich — zu einer Mahlzeit mit etwas Fett","Bei Marcumar oder Phenprocoumon Ernährung und Präparate nur nach Rücksprache ändern","Vitamin K2 aus Präparaten erfasst dieser Wert nicht"],rel:["vitd","calcium"]},
 
 {id:"tsh",n:"TSH",u:"mU/l",g:"Schilddrüse",al:["tsh basal","tsh"],tag:{von:7,bis:10,txt:"TSH schwankt über den Tag um bis zu 50 % und ist am frühen Morgen am höchsten."},ref:[0.4,4.0],opt:[0.5,2.2],cv:{"µIU/ml":1,"mIU/l":1,"µU/ml":1,"mU/ml":1000},zeit:{von:7,bis:11,txt:"TSH schwankt über den Tag um bis zu 50 Prozent, mit dem Höchststand in den frühen Morgenstunden."},
  what:"Das Steuerhormon aus der Hirnanhangdrüse, das die Schilddrüse antreibt.",
@@ -593,6 +615,22 @@ const M = [
 {id:"ft4",n:"fT4",u:"ng/dl",g:"Schilddrüse",al:["t4 prosti","prosti t4","t4 prosti","ft4","freies t4","ft-4"],ref:[0.7,1.9],opt:[0.95,1.6],cv:{"pmol/l":0.0777,"ng/l":0.1,"pg/ml":0.1},
  what:"Das freie Thyroxin, Speicher- und Vorstufe von fT3.",why:"Zeigt die Produktionsleistung der Schilddrüse selbst. Der Körper wandelt es bei Bedarf in aktives fT3 um.",
  imp:["Ausreichend Jod als Baustein","Bei niedrigem fT4 und hohem TSH ärztlich abklären","Im Paket mit TSH und fT3 lesen"],rel:["tsh","ft3"]},
+{id:"tpoak",n:"TPO-Antikörper",u:"IU/ml",g:"Schilddrüse",al:["tpo-ak","tpo ak","tpo-antikorper","tpo antikorper","anti-tpo","anti tpo","thyreoperoxidase-ak","thyreoperoxidase-antikorper","thyreoperoxidase antikorper","thyroid peroxidase"],ref:[0,34],opt:[0,34],cv:{"U/ml":1,"kIU/l":1,"kU/l":1},
+ what:"Antikörper gegen die Thyreoperoxidase, ein Enzym, das die Schilddrüse für die Hormonbildung braucht.",
+ why:"Erhöhte Werte sind das Kennzeichen der Hashimoto-Thyreoiditis, der häufigsten Ursache einer Unterfunktion. Die Schilddrüsenwerte sind anfangs oft noch normal — die Antikörper zeigen das Risiko häufig Jahre vorher. Die Grenze hängt vom Testverfahren ab, je nach Labor etwa 34 bis 60 IU/ml; maßgeblich ist die Grenze auf deinem Befund.",
+ imp:["Ein positiver Befund muss nicht ständig wiederholt werden — wichtiger ist der TSH im Verlauf","Bei erhöhten Antikörpern TSH etwa einmal im Jahr kontrollieren","Selen senkt die Antikörper in Studien teilweise; ob das Beschwerden bessert, ist offen","Jod nicht hochdosiert nehmen, normale Jodzufuhr ist in Ordnung"],rel:["tsh","ft4","ft3","tgak","selen"]},
+{id:"tgak",n:"Thyreoglobulin-Antikörper",u:"IU/ml",g:"Schilddrüse",al:["tg-ak","tg ak","anti-tg","anti tg","thyreoglobulin-ak","thyreoglobulin ak","thyreoglobulin-antikorper","thyreoglobulin antikorper","anti-thyreoglobulin","thyroglobulin antibod"],ref:[0,115],opt:[0,115],cv:{"U/ml":1,"kIU/l":1,"kU/l":1},
+ what:"Antikörper gegen Thyreoglobulin, das Speichereiweiß der Schilddrüsenhormone.",
+ why:"Ergänzt die TPO-Antikörper bei der Suche nach einer Autoimmunerkrankung der Schilddrüse; allein erhöht ist er seltener und weniger aussagekräftig. Die Grenzwerte unterscheiden sich zwischen den Testverfahren sehr stark, je nach Labor etwa 4 bis 115 IU/ml. Serum rechnet mit 115 — steht auf deinem Befund eine niedrigere Grenze, gilt die.",
+ imp:["Immer zusammen mit TPO-Antikörpern und TSH lesen","Wie bei TPO-Antikörpern entscheidet der TSH-Verlauf"],rel:["tpoak","tsh","ft4"]},
+{id:"trak",n:"TRAK (TSH-Rezeptor-AK)",u:"IU/l",g:"Schilddrüse",al:["trak ","trak (","trak:","trab ","tsh-rezeptor-ak","tsh-rezeptor-antikorper","tsh-rezeptor antikorper","tsh rezeptor ak","tsh-r-ak","tsh-receptor","anti-tshr"],ref:[0,1.75],opt:[0,1],cv:{"U/l":1},
+ what:"Antikörper gegen den TSH-Rezeptor der Schilddrüse.",
+ why:"Erhöhte Werte sind typisch für Morbus Basedow: Die Antikörper reizen die Schilddrüse wie TSH und treiben sie in eine Überfunktion. Sinnvoll bei niedrigem TSH oder Verdacht auf Überfunktion — kein Wert für die Routine.",
+ imp:["Bei erhöhtem Wert und niedrigem TSH zeitnah ärztlich abklären lassen","Während einer Basedow-Behandlung zeigt der Verlauf, ob die Erkrankung zur Ruhe kommt","Zwischen etwa 1 und 1,75 IU/l liegt je nach Test ein Graubereich"],rel:["tsh","ft3","ft4"]},
+{id:"rt3",n:"Reverse T3 (rT3)",u:"ng/l",g:"Schilddrüse",al:["reverse t3","reverses t3","reverse-t3","rt3 ","rt-3","rt3 (","reverse triiodothyronin","reverses trijodthyronin"],ref:[80,350],opt:[80,250],cv:{"pg/ml":1,"ng/dl":10,"ng/ml":1000,"nmol/l":651,"pmol/l":0.651},
+ what:"Eine inaktive Form des T3. Der Körper bildet sie aus fT4, wenn er Energie sparen will.",
+ why:"Steigt bei Fasten, starkem Kaloriendefizit, Übertraining, schweren Erkrankungen und unter manchen Medikamenten — der Körper schaltet auf Sparflamme. Für die Diagnose einer Schilddrüsenerkrankung taugt rT3 nicht; Grundlage bleiben TSH, fT4 und fT3. Die Bereiche hängen stark vom Messverfahren ab.",
+ imp:["Nur zusammen mit TSH, fT4 und fT3 lesen","Ein erhöhter Wert spricht eher für Energiemangel oder Belastung als für die Schilddrüse selbst","Für den Normalzustand nicht in einer Diät- oder Wettkampfphase messen"],rel:["ft3","ft4","tsh"]},
 
 {id:"testo",n:"Testosteron (gesamt)",u:"ng/dl",g:"Sexualhormone",al:["s-testosteron","gesamttestosteron","testosteron gesamt","testosteron","testosterone"],tag:{von:7,bis:10,txt:"Testosteron ist morgens am höchsten und fällt bis zum Abend um bis zu 30 %."},ref:[300,1000],opt:[550,900],refF:[15,70],optF:[25,60],cv:{"ng/ml":100,"nmol/l":28.82,"µg/l":100},zeit:{von:7,bis:10,txt:"Testosteron ist morgens am höchsten und fällt bis zum Abend deutlich ab."},
  what:"Das wichtigste anabole Hormon für Muskelaufbau, Knochendichte, Antrieb und Libido.",
@@ -602,6 +640,16 @@ const M = [
  what:"Der ungebundene Anteil des Testosterons, der tatsächlich an den Zellen wirken kann.",
  why:"Aussagekräftiger als der Gesamtwert. Ein normales Gesamttestosteron bei hohem SHBG kann trotzdem zu wenig freies Hormon bedeuten — genau hier entsteht das Gefühl von Antriebslosigkeit trotz „unauffälligem“ Befund.",
  imp:["Immer zusammen mit SHBG und Gesamttestosteron bewerten","Schlaf, Stressabbau und Krafttraining wirken auf beide Werte","Zink und Vitamin D als Cofaktoren im Blick behalten"],rel:["testo","shbg"]},
+{id:"testofrei_calc",n:"Freies Testosteron (berechnet)",u:"pg/ml",g:"Sexualhormone",al:["freies testosteron (berechnet","freies testosteron berechnet","freies testosteron, berechnet","freies testosteron (calc","freies testosteron nach vermeulen","freies testosteron (vermeulen","berechnetes freies testosteron","testosteron frei (berechnet","testosteron frei, berechnet","testosteron, frei (berechnet","calculated free testosterone","free testosterone (calc","free testosterone, calc"],ref:[57,178],opt:[95,175],refF:[1,10],optF:[2,8],cv:{"nmol/l":288.4,"pmol/l":0.2884,"ng/l":1,"ng/dl":10,"µg/l":1000},
+ calc:["testo","shbg"],parsbar:true,
+ f:(g,e,v)=>{ const alb=(v.albumin!==undefined&&!(e.q&&e.q.albumin)&&+v.albumin>1)?+v.albumin:4.3;
+   const TT=g("testo")/28.84*1e-9, S=g("shbg")*1e-9, A=alb*10/69000, N=1+3.6e4*A, Kt=1e9;
+   if(!(TT>0&&S>=0)) return null;
+   const a=N*Kt, b=N+Kt*(S-TT), ft=(-b+Math.sqrt(b*b+4*a*TT))/(2*a);
+   return ft*1e9*288.4 },
+ what:"Der Anteil des Testosterons, der weder an SHBG noch an Albumin gebunden ist — berechnet nach der Formel von Vermeulen aus Gesamttestosteron, SHBG und Albumin. Serum rechnet ihn automatisch aus, sobald Testosteron und SHBG im selben Befund stehen. Fehlt Albumin, nimmt Serum den üblichen Standardwert von 4,3 g/dl.",
+ why:"Gilt als verlässlicher als das direkt gemessene freie Testosteron, das je nach Verfahren deutlich niedrigere Zahlen liefert — die beiden Werte deshalb nicht miteinander vergleichen. Ein normales Gesamttestosteron bei hohem SHBG kann rechnerisch trotzdem zu wenig freies Hormon ergeben. Der Referenzbereich gilt für Männer von 20 bis 49 Jahren, ab 50 liegt er etwas niedriger (etwa 47–136 pg/ml).",
+ imp:["Nur so gut wie die Eingangswerte: Testosteron morgens zwischen 7 und 10 Uhr abnehmen","SHBG steigt mit dem Alter, mit viel Ausdauertraining, sehr wenig Körperfett und einer Schilddrüsenüberfunktion","Wird automatisch berechnet — du musst nichts eintragen"],rel:["testo","shbg","albumin","testofrei"]},
 {id:"shbg",n:"SHBG",u:"nmol/l",g:"Sexualhormone",al:["sex hormone binding globulin","shbg","sexualhormonbindendes globulin"],ref:[18,54],opt:[25,45],refF:[32,128],optF:[40,90],cv:{"µg/ml":10.5},
  what:"Ein Transportprotein, das Testosteron und Estradiol im Blut bindet.",
  why:"Je mehr SHBG, desto weniger Hormon liegt frei und aktiv vor. Erhöhtes SHBG kommt bei Schilddrüsenüberfunktion, Lebererkrankungen, sehr niedrigem Körperfett, hohem Ausdauervolumen und im Alter vor — niedriges eher bei Insulinresistenz und Übergewicht.",
@@ -633,6 +681,12 @@ const M = [
 {id:"insulin",n:"Insulin (nüchtern)",u:"µU/ml",g:"Stoffwechsel",al:["s-inzulin","inzulin","insulin"],ref:[2,25],opt:[2,8],cv:{"pmol/l":0.1739,"mU/l":1,"µIU/ml":1},
  what:"Das Hormon, das Zucker in die Zellen schleust.",why:"Steigt oft jahrelang an, bevor der Blutzucker selbst auffällig wird — deshalb der früheste Marker für Insulinresistenz. Hohes Insulin bei normalem Zucker heißt: Die Bauchspeicheldrüse arbeitet gegen einen Widerstand an.",
  imp:["Krafttraining und mehr Muskelmasse senken den Bedarf","Ballaststoffe und Eiweiß zu jeder Mahlzeit","Zwischenmahlzeiten reduzieren, dem Insulin Pausen geben","Bauchfett abbauen wirkt hier am stärksten"],rel:["glukose","hba1c","trigl"]},
+{id:"homa",n:"HOMA-Index",u:"",g:"Stoffwechsel",al:["homa-index","homa-ir","homa index","homa ir","homa (","homa:"],ref:[0,2.5],opt:[0,1.5],
+ calc:["glukose","insulin"],parsbar:true,bed:"nur bei nüchterner Abnahme",
+ f:(g,e)=> e.fasting==="nein" ? null : g("glukose")*g("insulin")/405,
+ what:"Ein Maß für die Insulinresistenz: Nüchternglukose (mg/dl) mal Nüchterninsulin (µU/ml) geteilt durch 405. Serum berechnet ihn automatisch, wenn beide Werte im selben Befund stehen — außer der Befund ist als „nicht nüchtern“ markiert.",
+ why:"Zeigt, wie viel Insulin der Körper braucht, um den Zucker im Normalbereich zu halten. Steigt der Index, arbeitet die Bauchspeicheldrüse gegen einen Widerstand an — oft Jahre, bevor der Blutzucker selbst auffällt. Unter etwa 1,5 gilt als günstig, über 2,5 spricht für eine Insulinresistenz. Nur bei nüchterner Abnahme aussagekräftig.",
+ imp:["Zehn bis zwölf Stunden nüchtern abnehmen lassen","Krafttraining und Ausdauer senken den Wert, Bauchfett hebt ihn","Schlafmangel und akuter Stress verschlechtern ihn kurzfristig","Wird automatisch berechnet — du musst nichts eintragen"],rel:["glukose","insulin","hba1c","trigl"]},
 {id:"harnsaeure",n:"Harnsäure",u:"mg/dl",g:"Stoffwechsel",al:["s-urat","s-urat","urat","harnsäure","harnsaeure"],ref:[3.4,7.0],opt:[3.5,5.8],refF:[2.4,5.7],optF:[2.5,5.0],cv:{"µmol/l":0.01681,"mg/l":0.1},
  what:"Das Endprodukt beim Abbau von Purinen aus Zellkernen und Nahrung.",
  why:"Zu hohe Werte können als Kristalle in Gelenken ausfallen und einen Gichtanfall auslösen. Viel Fleisch, Innereien und Bier heben den Wert, hartes Training und Fasten kurzfristig ebenfalls.",
@@ -776,6 +830,15 @@ const M = [
  what:"Ein Eiweiß, das die Leber bei Entzündungen bildet.",
  why:"Steigt bei jedem Infekt stark an, aber auch nach hartem Training. Der hochsensitive hs-CRP-Wert misst stille Dauerentzündung im niedrigen Bereich — dort gilt unter 1 mg/l als günstig.",
  imp:["Nicht direkt nach einem Infekt oder Wettkampf messen","Regelmäßiger Schlaf und Stressabbau senken den Basiswert","Omega-3 und viel Gemüse wirken entzündungshemmend","Erhöhtes CRP hebt gleichzeitig das Ferritin — beide zusammen lesen"],rel:["ferritin","omega3","leuko"]},
+{id:"ntprobnp",n:"NT-proBNP",u:"pg/ml",g:"Herz",rcv:1,al:["nt-probnp","nt-pro-bnp","nt-pro bnp","nt probnp","ntprobnp","nt-pbnp","n-terminales pro-bnp","n-terminal pro-bnp","n-terminal pro b-type"],ref:[0,125],opt:[0,125],cv:{"ng/l":1,"pmol/l":8.457,"ng/ml":1000},
+ what:"Ein Bruchstück eines Hormons, das der Herzmuskel ausschüttet, wenn er gedehnt oder stärker belastet wird.",
+ why:"Steigt bei einer Herzschwäche und bei bedeutsamen Klappenfehlern. Für einen Verlauf eignet er sich gut, weil er auf eine zunehmende Belastung des Herzens früh reagiert. Er schwankt aber auch bei Gesunden deutlich — erst etwa eine Verdopplung zwischen zwei Messungen gilt als bedeutsam. Mit dem Alter, bei Frauen, bei eingeschränkter Nierenfunktion, bei Vorhofflimmern und nach intensivem Ausdauersport liegt er höher, bei starkem Übergewicht niedriger. Die Grenze von 125 pg/ml gilt bis etwa 75 Jahre, darüber etwa 450. Einen Herzultraschall ersetzt er nicht.",
+ imp:["Immer unter ähnlichen Bedingungen messen: ausgeruht, 48 Stunden ohne intensives Ausdauertraining","Kreatinin im selben Befund mitbestimmen — die Nierenfunktion verschiebt den Wert","Für den Verlauf möglichst dasselbe Labor wählen","Bei Atemnot, geschwollenen Beinen oder deutlichem Leistungsknick nicht auf den nächsten Messtermin warten"],rel:["kreatinin","egfr","hstnt"]},
+{id:"hstnt",n:"hs-Troponin T",u:"ng/l",g:"Herz",al:["troponin t","troponin-t","hs-tnt","hstnt","tnt-hs","tnt hs","hs-ctnt","hochsensitives troponin t"],ref:[0,14],opt:[0,14],cv:{"pg/ml":1,"µg/l":1000,"ng/ml":1000},
+ warn:"Bei Brustschmerz, Druck- oder Engegefühl in der Brust, Atemnot oder Schmerzen, die in Arm, Kiefer oder Rücken ausstrahlen: sofort 112 rufen — nicht auf einen Laborwert warten.",
+ what:"Ein Eiweiß aus dem Herzmuskel, das bei einer Schädigung von Herzmuskelzellen ins Blut übertritt. Ein Notfallmarker beim Verdacht auf Herzinfarkt.",
+ why:"Für die Vorsorge ist er nicht gedacht, und Serum empfiehlt ihn deshalb auch nicht. Ohne Beschwerden kann der Wert nach Marathon und sehr intensivem Ausdauertraining vorübergehend steigen, ebenso bei eingeschränkter Nierenfunktion. Ein erhöhter Wert gehört trotzdem zeitnah ärztlich abgeklärt.",
+ imp:["Bei Beschwerden in der Brust sofort 112","Erhöhter Wert ohne Beschwerden: zeitnah ärztlich abklären, nicht abwarten","Für einen Ruhewert mindestens 48 Stunden nach intensivem Ausdauersport messen","Kein Wert zum Selbstbeobachten"],rel:["ntprobnp","ck","kreatinin"]},
 
 {id:"kreatinin",n:"Kreatinin",u:"mg/dl",g:"Niere",al:["s-kreatinin","kreatinin","creatinin"],ref:[0.7,1.2],opt:[0.7,1.1],refF:[0.5,1.0],optF:[0.5,0.95],cv:{"µmol/l":0.01131},
  what:"Ein Abbauprodukt aus dem Muskelstoffwechsel, das über die Nieren ausgeschieden wird.",
@@ -885,6 +948,12 @@ const M = [
  what:"Der bereits in der Leber verarbeitete Anteil des Bilirubins.",
  why:"Die Aufteilung entscheidet: Ist überwiegend das indirekte Bilirubin erhöht, spricht das für das harmlose Gilbert-Syndrom. Ist das direkte erhöht, deutet es eher auf einen Abflussstau in den Gallenwegen.",
  imp:["Immer zusammen mit dem Gesamtbilirubin betrachten","Bei erhöhtem direktem Anteil ärztlich abklären lassen"],rel:["bilirubin","ggt","ap"]},
+{id:"bili_ind",n:"Bilirubin (indirekt)",u:"mg/dl",g:"Leber",al:["indirektes bilirubin","bilirubin indirekt","bilirubin (indirekt","bilirubin, indirekt","bili-indir","bili-ind","indirektni bilirubin","nekonjugirani bilirubin","unkonjugiertes bilirubin"],ref:[0,1.0],opt:[0,0.8],cv:{"µmol/l":0.05848},
+ calc:["bilirubin","bili_dir"],parsbar:true,
+ f:g=>{ const r=g("bilirubin")-g("bili_dir"); return r>=0?r:null },
+ what:"Der Anteil des Bilirubins, den die Leber noch nicht verarbeitet hat: Gesamtbilirubin minus direktes Bilirubin. Serum berechnet ihn automatisch, wenn beide im selben Befund stehen.",
+ why:"Ist vor allem das indirekte Bilirubin erhöht und sind die übrigen Leberwerte normal, steckt meist das harmlose Gilbert-Syndrom (Morbus Meulengracht) dahinter — eine angeborene Variante, die etwa jeden Zwanzigsten betrifft. Fasten, Infekte und harte Belastung lassen den Wert dann zusätzlich steigen. Seltener steckt ein verstärkter Abbau roter Blutkörperchen dahinter.",
+ imp:["Fasten und Kaloriendefizit vor der Abnahme heben den Wert deutlich","Ein einmal bestätigtes Gilbert-Syndrom braucht keine Behandlung","Bei erhöhtem Wert LDH und Blutbild mit ansehen, um einen verstärkten Zellabbau auszuschließen","Wird automatisch berechnet — du musst nichts eintragen"],rel:["bilirubin","bili_dir","ldh","hb"]},
 {id:"protein",n:"Gesamteiweiß",u:"g/dl",g:"Leber",al:["s-proteini","proteini","gesamteiweiss","gesamteiweiß","gesamtprotein"],ref:[6.4,8.3],opt:[6.8,7.8],cv:{"g/l":0.1},
  what:"Die Summe aller Eiweiße im Blut, überwiegend Albumin und Antikörper.",
  why:"Niedrige Werte deuten auf Eiweißmangel, Leber- oder Nierenprobleme. Hohe Werte entstehen oft schlicht durch Flüssigkeitsmangel am Abnahmetag.",
@@ -975,20 +1044,40 @@ const M = [
  what:"Teststreifen auf Bilirubin im Urin. 0 bedeutet unauffällig.",
  why:"Bilirubin gehört normalerweise nicht in den Urin. Ein positiver Befund weist auf einen Rückstau in Leber oder Gallenwegen hin und gehört abgeklärt.",
  imp:["Bei positivem Befund Leberwerte und direktes Bilirubin prüfen lassen"],rel:["bili_dir","ggt"]},
+{id:"jod_u",n:"Jod im Urin",u:"µg/l",g:"Urin",al:["jod im urin","jod (urin)","jod i. urin","jod im spontanurin","jodid im urin","jodid (urin)","urin-jod","u-jod","u-jodid","jodausscheidung","iodine urine","iodine (urine)","urinary iodine","jod v urinu","u-jod"],ref:[100,300],opt:[100,200],cv:{"µg/dl":10,"µmol/l":126.9},
+ what:"Die Jodausscheidung im Urin — ein Maß dafür, wie viel Jod du in den letzten Tagen aufgenommen hast.",
+ why:"Jod ist der Baustein der Schilddrüsenhormone, und Deutschland gilt wieder als Jodmangelgebiet. Ein einzelner Spontanurin schwankt aber stark mit der letzten Mahlzeit und der Trinkmenge — er zeigt eher eine Tendenz als einen sicheren Befund.",
+ imp:["Jodiertes Speisesalz verwenden, auch beim Kochen","Ein- bis zweimal pro Woche Seefisch","Milchprodukte liefern ebenfalls Jod","Bei Hashimoto oder Schilddrüsenknoten Jodpräparate nur nach Rücksprache"],rel:["tsh","ft4","tpoak"]},
 
 {id:"magnesium",n:"Magnesium",u:"mmol/l",g:"Mineralien",al:["magnezij","magnezij","magnesium"],ref:[0.75,1.05],opt:[0.85,1.0],cv:{"mg/dl":0.4114,"mg/l":0.04114,"mval/l":0.5},
  what:"Mineralstoff für Muskelentspannung, Nervenleitung und über 300 Enzymreaktionen.",
  why:"Der Serumwert ist nur eingeschränkt aussagekräftig, weil der Körper ihn streng konstant hält und dafür notfalls die Knochen plündert. Ein Wert im unteren Normbereich schließt einen Gewebemangel nicht aus — besonders bei viel Schwitzen.",
  imp:["Nüsse, Kürbiskerne, Haferflocken, dunkle Schokolade, grünes Gemüse","Wer viel schwitzt, hat höheren Bedarf","Citrat oder Glycinat werden besser aufgenommen als Oxid","Abends eingenommen unterstützt es die Schlafqualität"],rel:["calcium","vitd","kalium"]},
+{id:"mg_vb",n:"Magnesium (Vollblut)",u:"mmol/l",g:"Mineralien",al:["magnesium vollblut","magnesium (vollblut)","magnesium im vollblut","magnesium i. vollblut","magnesium i.vollblut","magnesium, vollblut","magnesium (vb)","vollblut-magnesium","vollblutmagnesium","magnesium (edta","magnesium edta","magnesium im edta","magnesium i. edta","magnesium whole blood","magnesium (whole blood","mg (vollblut)","mg i. vollblut","k-magnezij","magnezij (polna kri)","magnezij polna kri"],ref:[1.28,1.65],opt:[1.4,1.6],cv:{"mg/l":0.04114,"mg/dl":0.4114,"mval/l":0.5},
+ what:"Magnesium im ganzen Blut, also einschließlich der Blutzellen, in denen der größte Teil steckt.",
+ why:"Nur etwa ein Prozent des Magnesiums im Körper befindet sich außerhalb der Zellen, und der Serumwert wird lange konstant gehalten. Der Vollblutwert bildet die Speicher besser ab und zeigt einen Mangel früher. Die Bereiche unterscheiden sich etwas zwischen den Laboren.",
+ imp:["Nüsse, Kerne, Vollkorn, Hülsenfrüchte und grünes Gemüse sind die besten Quellen","Viel Schwitzen, Alkohol, Magensäureblocker und Entwässerungsmittel erhöhen den Bedarf","Nicht mit dem Serumwert vergleichen — die Bereiche sind verschieden","Präparate über den Tag verteilt oder abends vertragen sich besser"],rel:["magnesium","calcium","kalium"]},
 {id:"zink",n:"Zink",u:"µmol/l",g:"Mineralien",al:["zink","zinc"],ref:[11,20],opt:[14,19],cv:{"µg/l":0.0153,"µg/dl":0.153,"mg/l":15.3},
  what:"Spurenelement für Immunsystem, Wundheilung, Testosteronproduktion und Haut.",why:"Sportler verlieren Zink über Schweiß. Ein Mangel zeigt sich oft zuerst durch häufige Infekte, schlechte Wundheilung und brüchige Nägel.",
  imp:["Rindfleisch, Käse, Kürbiskerne, Haferflocken, Austern","Phytate aus Vollkorn hemmen die Aufnahme — Einweichen oder Sauerteig hilft","Nicht dauerhaft hochdosieren, das verdrängt Kupfer","Nicht zusammen mit Eisenpräparaten einnehmen"],rel:["testo","ft3","selen"]},
+{id:"zink_vb",n:"Zink (Vollblut)",u:"mg/l",g:"Mineralien",al:["zink vollblut","zink (vollblut)","zink im vollblut","zink i. vollblut","zink i.vollblut","zink, vollblut","zink (vb)","vollblut-zink","vollblutzink","zink (edta","zink edta","zink im edta","zink i. edta","zinc whole blood","zinc (whole blood","zn (vollblut)","zn i. vollblut","cink (polna kri)","cink polna kri"],ref:[4.0,7.5],opt:[5.5,7.5],cv:{"µg/dl":0.01,"µg/l":0.001,"µmol/l":0.06538},
+ what:"Zink im ganzen Blut einschließlich der roten Blutkörperchen.",
+ why:"Der Serumwert schwankt mit Mahlzeiten, Tageszeit, Entzündungen und dem Albumin. Der Vollblutwert ist stabiler und zeigt die Versorgung über längere Zeit. Ein Mangel macht sich durch häufige Infekte, langsame Wundheilung und Haarausfall bemerkbar.",
+ imp:["Fleisch, Meeresfrüchte, Käse, Haferflocken und Kürbiskerne liefern viel Zink","Phytat aus Vollkorn und Hülsenfrüchten hemmt die Aufnahme — Einweichen und Sauerteig helfen","Nicht dauerhaft hochdosiert nehmen, zu viel Zink verdrängt Kupfer","Nicht mit dem Serumwert vergleichen — Einheit und Bereich sind verschieden"],rel:["zink","ft3","testo"]},
 {id:"selen",n:"Selen",u:"µg/l",g:"Mineralien",al:["selen","selenium"],ref:[60,140],opt:[100,130],cv:{"µmol/l":78.96,"µg/dl":10,"nmol/l":0.07896},
  what:"Spurenelement für Schilddrüsenenzyme und den antioxidativen Schutz.",why:"Wird für die Umwandlung von T4 in aktives T3 gebraucht. Die Böden in Mitteleuropa sind selenarm, weshalb die Versorgung hier häufiger knapp ist als anderswo.",
  imp:["Paranüsse — schon ein bis zwei täglich decken den Bedarf","Fisch, Eier, Fleisch","Nicht dauerhaft hochdosiert supplementieren, der Sicherheitsabstand ist gering"],rel:["ft3","tsh","zink"]},
+{id:"selenop",n:"Selenoprotein P",u:"mg/l",g:"Mineralien",al:["selenoprotein p","selenoprotein-p","selenop","sepp1"],ref:[2.5,6.5],opt:[3.5,6.5],cv:{"µg/ml":1},
+ what:"Das Transporteiweiß, mit dem die Leber Selen zu den Organen bringt.",
+ why:"Gilt als funktioneller Marker der Selenversorgung: Erst wenn genug Selen da ist, bildet die Leber ausreichend davon. Ergänzt den Selenwert im Serum. Die Messverfahren sind noch wenig vereinheitlicht — die Grenzen deines Labors haben Vorrang.",
+ imp:["Zusammen mit dem Selenwert lesen","Paranüsse, Fisch, Eier und Fleisch liefern Selen — schon zwei Paranüsse decken den Tagesbedarf","Nicht hochdosiert und ohne Messung nehmen, die Spanne zwischen Bedarf und zu viel ist klein"],rel:["selen","tsh","ft3"]},
 {id:"calcium",n:"Calcium",u:"mmol/l",g:"Mineralien",al:["kalcij","kalcij","calcium","kalzium"],ref:[2.2,2.65],opt:[2.3,2.55],cv:{"mg/dl":0.2495,"mg/l":0.02495,"mval/l":0.5},
  what:"Mineralstoff für Knochen, Muskelkontraktion und Blutgerinnung.",why:"Der Blutwert wird hormonell eng geregelt und sagt wenig über die Knochendichte aus. Auffällige Werte deuten eher auf Nebenschilddrüse, Vitamin D oder Niere hin.",
  imp:["Milchprodukte, Mandeln, Brokkoli, calciumreiches Mineralwasser","Vitamin D wird für die Aufnahme im Darm gebraucht","Abweichungen mit Vitamin D und Nierenwerten zusammen abklären"],rel:["vitd","magnesium","ap"]},
+{id:"ica",n:"Calcium (ionisiert)",u:"mmol/l",g:"Mineralien",al:["ionisiertes calcium","calcium ionisiert","calcium (ionisiert","calcium, ionisiert","ionisiertes kalzium","kalzium ionisiert","freies calcium","ionized calcium","calcium, ionized","ionizirani kalcij","kalcij ionizirani","ca++","ca 2+","ca2+"],ref:[1.12,1.32],opt:[1.17,1.3],cv:{"mg/dl":0.2495,"mval/l":0.5},
+ what:"Das freie, biologisch wirksame Calcium im Blut — etwa die Hälfte des Gesamtcalciums.",
+ why:"Genauer als das Gesamtcalcium, weil es nicht vom Albumin abhängt. Wichtig bei auffälligem Gesamtcalcium, Nierenerkrankungen und Störungen der Nebenschilddrüse. Die Probe muss schnell und luftdicht gemessen werden, sonst verfälscht sich der Wert.",
+ imp:["Bei auffälligem Wert Parathormon und Vitamin D mitbestimmen lassen","Zusammen mit Gesamtcalcium und Albumin lesen","Einen einzelnen abweichenden Wert bestätigen lassen"],rel:["calcium","vitd","albumin","phosphat"]},
 {id:"natrium",n:"Natrium",u:"mmol/l",g:"Mineralien",al:["natrij","s-natrij","natrij","natrium","sodium"],ref:[135,145],opt:[137,143],cv:{"mval/l":1,"mEq/l":1},
  what:"Der wichtigste Elektrolyt im Blutplasma, steuert den Wasserhaushalt.",why:"Sehr eng geregelt. Bei Ausdauersportlern kann übermäßiges Trinken ohne Salz den Wert gefährlich senken.",
  imp:["Bei langen Belastungen Elektrolyte statt reinem Wasser","Abweichungen ärztlich abklären, der Bereich ist eng"],rel:["kalium"]},
@@ -1085,12 +1174,14 @@ const latest=()=>sortedEntries()[0]||null;
 function valuesOf(e){
   const v=Object.assign({},e.v);
   M.forEach(m=>{
-    if(!m.calc || v[m.id]!==undefined) return;
-    const [a,b]=m.calc;
-    if(v[a]===undefined||v[b]===undefined||!(+v[b])) return;
-    if(e.q&&(e.q[a]||e.q[b])) return;   /* ein Verhältnis aus einer Messgrenze wäre geraten */
-    const r=(+v[a])/(+v[b]);
-    if(isFinite(r)) v[m.id]=Math.round(r*100)/100;
+    if(!m.calc || v[m.id]!==undefined) return;          /* vom Labor gemeldet: der Laborwert gilt */
+    if(m.calc.some(a=>v[a]===undefined)) return;
+    if(e.q&&m.calc.some(a=>e.q[a])) return;   /* aus einer Messgrenze wäre das Ergebnis geraten */
+    const g=id=>+v[id];
+    let r=null;
+    if(m.f){ try{ r=m.f(g,e,v) }catch(err){ r=null } }
+    else if(g(m.calc[1])) r=g(m.calc[0])/g(m.calc[1]);
+    if(r!==null && r!==undefined && isFinite(r)) v[m.id]=Math.round(r*100)/100;
   });
   return v;
 }
@@ -1156,6 +1247,11 @@ function trend(m,s){
     else if(dCur>dPrev)       bewertung="weiter vom Idealbereich weg";
     else                      bewertung="der Abstand zum Idealbereich bleibt gleich";
     txt=`Um ${fmt(Math.abs(d))}${e} ${d>0?"gestiegen":"gesunken"} (${per}) — ${bewertung}.`;
+  }
+  if(m.rcv && prev.v>0){
+    const r=cur.v/prev.v;
+    if(r>=1+m.rcv) txt+=` ${m.rcv>=1?"Mindestens verdoppelt":"Um mindestens "+Math.round(m.rcv*100)+" % gestiegen"} — bei ${m.n} gilt erst das als bedeutsame Veränderung, auch innerhalb des Referenzbereichs.`;
+    else if(!flat) txt+=` Bei ${m.n} liegt das im Rahmen der natürlichen Schwankung — bedeutsam wäre erst ${m.rcv>=1?"etwa eine Verdopplung":"eine Veränderung um "+Math.round(m.rcv*100)+" %"}.`;
   }
   if(s.length>=3){
     const rel=first.v?Math.abs(cur.v-first.v)/Math.abs(first.v)*100:0;
@@ -1278,7 +1374,7 @@ const RULES=[
 {id:"vitd_sub",c:["vitd"],sev:"mid",when:c=>!c.lo("vitd")&&c.sLo("vitd"),
  f:c=>["Vitamin D im unteren Bereich",`${c.t("vitd")} ng/ml liegt im Referenzbereich, aber unter dem angestrebten Ideal von 40–60 ng/ml.`],
  a:["Im Winterhalbjahr gezielt auffüllen","Zwischen Oktober und März reicht die Sonne hierzulande nicht aus. Fetter Seefisch und eine abgestimmte Supplementierung schließen die Lücke."]},
-{id:"b12_grau",c:["b12"],sev:"mid",when:c=>c.lt("b12",400),
+{id:"b12_grau",c:["b12"],sev:"mid",when:c=>c.lt("b12",400)&&!c.nah("b12","holotc"),
  f:c=>["Vitamin B12 im Graubereich",`${c.t("b12")} pg/ml gilt formal als normal, ist aber der Bereich, in dem der Gesamt-B12-Wert unzuverlässig wird.`],
  a:["Holo-Transcobalamin nachfordern","Dieser Wert zeigt das tatsächlich verfügbare B12. Alternativ Methylmalonsäure bestimmen lassen."]},
 {id:"insulinresistenz",c:["trigl","hdl","hba1c","glukose","insulin"],sev:"mid",when:c=>{const g=c.gruppe(["trigl","hdl","hba1c","glukose","insulin"]); const in_=id=>g.includes(id);
@@ -1326,7 +1422,7 @@ const RULES=[
  f:c=>["Estradiol unter dem Referenzbereich",`${c.t("estradiol")} pg/ml. Auch Männer brauchen Estradiol — für Knochendichte, Libido, Gelenke und Stimmung.`],
  z:["Geringere Estrogenwirkung","Ein dauerhaft niedriger Wert kann langfristig die Knochenstabilität und das Wohlbefinden beeinträchtigen."],
  a:["Estradiol und SHBG gemeinsam kontrollieren","Bei anhaltend niedrigem Wert endokrinologische Beratung und eine Knochendichtemessung besprechen."]},
-{id:"testo_tief",c:["testo","testofrei"],sev:"bad",when:c=>c.lo("testo")||c.lo("testofrei"),
+{id:"testo_tief",c:["testo","testofrei","testofrei_calc"],sev:"bad",when:c=>c.lo("testo")||c.lo("testofrei"),
  f:c=>["Testosteron unter dem Referenzbereich","Schlafmangel, Übertraining, ein starkes Kaloriendefizit und chronischer Stress senken den Wert deutlich — häufiger als eine echte Hormonstörung."],
  z:["Verminderte androgene Wirkung","Kann sich als Antriebslosigkeit, schlechterer Muskelaufbau, geringere Libido und schlechtere Regeneration zeigen."],
  a:["Zwischen 7 und 10 Uhr nachmessen","Der Wert schwankt über den Tag stark. LH, FSH, Prolaktin und SHBG gehören zur Abklärung dazu."]},
@@ -1368,9 +1464,75 @@ const RULES=[
  a:["Ferritin und Transferrinsättigung prüfen","Auch bei noch normalem Hämoglobin lohnt der Blick auf die Speicher."]},
 {id:"mcv_hoch",c:["mcv"],sev:"mid",when:c=>c.hi("mcv"),
  f:c=>["Rote Blutkörperchen zu groß","Ein hohes MCV weist Richtung B12- oder Folsäuremangel. Auch Alkohol hebt den Wert unabhängig davon."],
- a:["B12 und Folsäure bestimmen lassen","Beide gehören zusammen geprüft, weil sie sich gegenseitig maskieren können."]}
+ a:["B12 und Folsäure bestimmen lassen","Beide gehören zusammen geprüft, weil sie sich gegenseitig maskieren können."]},
+{id:"holotc_tief",c:["holotc","b12"],sev:"bad",when:c=>c.lo("holotc"),
+ f:c=>["Aktives B12 zu niedrig",`Holo-TC liegt bei ${c.t("holotc")} pmol/l und damit unter 35. Das spricht für einen echten B12-Mangel — auch wenn der Gesamt-B12-Wert noch normal aussieht.`],
+ z:["Vitamin-B12-Mangel","Entwickelt sich schleichend und kann Nerven, Blutbildung und Konzentration beeinträchtigen, lange bevor das Blutbild auffällt."],
+ a:["Ursache und Auffüllen ärztlich besprechen","Ernährung, Magensäureblocker, Metformin und die Aufnahme im Darm gehören geprüft. Nach drei Monaten Behandlung nachmessen."]},
+{id:"holotc_grau",c:["holotc","b12"],sev:"mid",when:c=>!c.lo("holotc")&&c.lt("holotc",50),
+ f:c=>["Aktives B12 im Graubereich",`Holo-TC ${c.t("holotc")} pmol/l — zwischen 35 und 50 lässt sich ein Mangel weder sicher feststellen noch ausschließen.`],
+ a:["Methylmalonsäure bestimmen lassen","Sie steigt, wenn den Zellen tatsächlich B12 fehlt, und klärt den Graubereich."]},
+{id:"b12_holo_ok",c:["b12"],sev:"ok",when:c=>c.lt("b12",400)&&c.nah("b12","holotc")&&!c.lt("holotc",50),
+ f:c=>["B12 knapp, aktives B12 ausreichend",`Der Gesamtwert liegt mit ${c.t("b12")} pg/ml im Graubereich, das aktive B12 mit ${c.t("holotc")} pmol/l aber im sicheren Bereich. Ein Mangel ist damit unwahrscheinlich.`]},
+{id:"tpoak_hoch",c:["tpoak"],sev:"mid",when:c=>c.hi("tpoak"),
+ f:c=>["TPO-Antikörper erhöht",`${c.t("tpoak")} IU/ml. Das ist das typische Zeichen einer Hashimoto-Thyreoiditis, einer Autoimmunentzündung der Schilddrüse.${c.nah("tsh","tpoak")&&!c.off("tsh")?" Der TSH liegt im Normbereich — die Schilddrüse arbeitet bisher ausreichend.":""}`],
+ z:["Hashimoto-Thyreoiditis möglich","Verläuft oft über Jahre ohne Beschwerden. Bei einem Teil der Betroffenen entwickelt sich mit der Zeit eine Unterfunktion."],
+ a:["Ärztlich einordnen lassen","Meist gehören ein Ultraschall der Schilddrüse und eine regelmäßige TSH-Kontrolle dazu. Die Grenze hängt vom Testverfahren ab — maßgeblich ist die auf deinem Befund."]},
+{id:"tgak_hoch",c:["tgak"],sev:"mid",when:c=>c.hi("tgak"),
+ f:c=>["Thyreoglobulin-Antikörper erhöht",`${c.t("tgak")} IU/ml. Kann auf eine Autoimmunerkrankung der Schilddrüse hinweisen, ist allein aber weniger aussagekräftig als die TPO-Antikörper.`],
+ a:["TPO-Antikörper und TSH ergänzen","Erst zusammen ergeben sie ein Bild."]},
+{id:"trak_hoch",c:["trak"],sev:"bad",when:c=>c.hi("trak"),
+ f:c=>["TSH-Rezeptor-Antikörper erhöht",`${c.t("trak")} IU/l. Diese Antikörper treiben die Schilddrüse an und sind typisch für Morbus Basedow.`],
+ z:["Morbus Basedow möglich","Eine Autoimmunerkrankung mit Überfunktion: Herzrasen, Unruhe, Gewichtsverlust, Schwitzen, manchmal Beschwerden an den Augen."],
+ a:["Zeitnah endokrinologisch abklären lassen","TSH, fT3 und fT4 gehören dazu. Eine Überfunktion sollte nicht unbehandelt bleiben."]},
+{id:"rt3_hoch",c:["rt3"],sev:"mid",when:c=>c.hi("rt3"),
+ f:c=>["Reverse T3 erhöht",`${c.t("rt3")} ng/l. Der Körper wandelt mehr fT4 in die inaktive Form um — typisch bei Kaloriendefizit, Fasten, Übertraining, akuter Krankheit und starkem Stress.`],
+ a:["Energieversorgung und Belastung prüfen","Ausreichend essen, genug Kohlenhydrate, Regeneration. TSH, fT4 und fT3 zur Einordnung mitbestimmen."]},
+{id:"cft_tief",c:["testofrei_calc","shbg"],sev:"mid",when:c=>c.lo("testofrei_calc")&&c.has("testo")&&!c.lo("testo")&&c.nah("testo","testofrei_calc"),
+ f:c=>["Freies Testosteron rechnerisch niedrig",`Das Gesamttestosteron liegt im Referenzbereich, berechnet sind aber nur ${c.t("testofrei_calc")} pg/ml frei verfügbar. Meist steckt ein hohes SHBG dahinter.`],
+ a:["Abnahmezeit und SHBG-Ursachen prüfen","Testosteron morgens zwischen 7 und 10 Uhr wiederholen. Schilddrüse, sehr viel Ausdauertraining und sehr wenig Körperfett heben SHBG."]},
+{id:"homa_hoch",c:["homa"],sev:"mid",when:c=>c.hi("homa"),
+ f:c=>["HOMA-Index erhöht",`${c.t("homa")} — über 2,5 spricht für eine Insulinresistenz: Die Bauchspeicheldrüse muss mehr Insulin ausschütten, um den Zucker im Normalbereich zu halten.`],
+ z:["Insulinresistenz","Entwickelt sich über Jahre, ist früh aber durch Bewegung, Ernährung und Gewichtsabnahme gut umkehrbar."],
+ a:["Nüchtern bestätigen und gegensteuern","War die Abnahme nicht sicher nüchtern, zuerst nüchtern wiederholen. Krafttraining, weniger Zucker und mehr Ballaststoffe wirken direkt."]},
+{id:"homa_grenz",c:["homa"],sev:"mid",when:c=>!c.hi("homa")&&c.sHi("homa"),
+ f:c=>["HOMA-Index im Grenzbereich",`${c.t("homa")} — noch keine Insulinresistenz, aber über den etwa 1,5, die als günstig gelten.`],
+ a:["Bewegung und Ernährung im Blick behalten","Nach drei bis sechs Monaten nüchtern nachmessen."]},
+{id:"gilbert",c:["bili_ind","bilirubin"],sev:"mid",when:c=>c.hi("bili_ind")&&!c.hi("bili_dir"),
+ f:c=>["Indirektes Bilirubin erhöht",`${c.t("bili_ind")} mg/dl, das direkte Bilirubin ist normal. Dieses Muster passt meist zum harmlosen Gilbert-Syndrom (Morbus Meulengracht). Fasten, Infekte und harte Belastung vor der Abnahme verstärken es.`],
+ z:["Möglicherweise Gilbert-Syndrom","Eine angeborene, harmlose Variante, bei der die Leber Bilirubin langsamer verarbeitet. Sie braucht keine Behandlung."],
+ a:["Einmal ärztlich bestätigen lassen","Dazu gehören normale Leberwerte und ein Blutbild ohne Hinweis auf verstärkten Abbau roter Blutkörperchen (LDH, Hämoglobin)."]},
+{id:"ntprobnp_hoch",c:["ntprobnp"],sev:"bad",when:c=>c.hi("ntprobnp"),
+ f:c=>["NT-proBNP erhöht",`${c.t("ntprobnp")} pg/ml und damit über 125. Das kann auf eine stärkere Belastung des Herzens hinweisen.${c.lo("egfr")||c.hi("kreatinin")?" Die Nierenwerte sind auffällig — das allein kann den Wert schon anheben.":""} Auch Alter, Vorhofflimmern und intensiver Ausdauersport in den Tagen davor heben ihn.`],
+ a:["Kardiologisch einordnen lassen","Mit Herzultraschall, nicht über den Laborwert allein. Bei Atemnot, geschwollenen Beinen oder Leistungsknick nicht abwarten."]},
+{id:"ntprobnp_anstieg",c:["ntprobnp"],sev:"mid",when:c=>{const p=ntPaar(c); return !!p&&!c.hi("ntprobnp")},
+ f:c=>{const p=ntPaar(c); return ["NT-proBNP deutlich gestiegen",`Von ${fmt(p.a.v)} auf ${fmt(p.b.v)} pg/ml (${dmed(p.a.d)} → ${dmed(p.b.d)}) — mindestens verdoppelt, auch wenn der Wert noch im Referenzbereich liegt. Bei diesem Wert gilt erst eine Verdopplung als bedeutsame Veränderung.`]},
+ a:["In einigen Wochen unter gleichen Bedingungen wiederholen","Ausgeruht und ohne intensives Training in den 48 Stunden davor. Bestätigt sich der Anstieg, mit der Kardiologie besprechen."]},
+{id:"hstnt_hoch",c:["hstnt"],sev:"bad",when:c=>c.hi("hstnt"),
+ f:c=>["hs-Troponin T erhöht",`${c.t("hstnt")} ng/l und damit über 14. Troponin tritt ins Blut über, wenn Herzmuskelzellen geschädigt werden.`],
+ a:["Bei Beschwerden sofort 112, sonst zeitnah ärztlich abklären","Brustschmerz, Druck in der Brust oder Atemnot sind ein Notfall. Ohne Beschwerden kann der Wert nach Marathon, sehr hartem Ausdauertraining oder bei eingeschränkter Nierenfunktion erhöht sein — einordnen muss das trotzdem eine Ärztin oder ein Arzt."]},
+{id:"mg_vb_tief",c:["mg_vb"],sev:"mid",when:c=>c.lo("mg_vb")||c.sLo("mg_vb"),
+ f:c=>["Magnesium in den Zellen knapp",`${c.t("mg_vb")} mmol/l im Vollblut. Dieser Wert zeigt die Speicher besser als der Serumwert${c.nah("magnesium","mg_vb")&&!c.lo("magnesium")?" — dass das Serum-Magnesium dabei normal aussieht, ist bei beginnendem Mangel typisch":""}.`],
+ a:["Magnesiumzufuhr erhöhen","Nüsse, Kerne, Vollkorn und Hülsenfrüchte, bei viel Schwitzen gezielt ergänzen. Nach drei Monaten nachmessen."]},
+{id:"zink_vb_tief",c:["zink_vb"],sev:"mid",when:c=>c.lo("zink_vb")||c.sLo("zink_vb"),
+ f:c=>["Zink im Vollblut knapp",`${c.t("zink_vb")} mg/l. Der Vollblutwert zeigt die Versorgung über längere Zeit besser als der Serumwert.`],
+ a:["Zinkreicher essen, zeitlich begrenzt ergänzen","Fleisch, Meeresfrüchte, Käse, Haferflocken und Kürbiskerne. Präparate in normaler Dosis und nach drei Monaten nachmessen."]},
+{id:"jod_u_tief",c:["jod_u"],sev:"mid",when:c=>c.lo("jod_u"),
+ f:c=>["Wenig Jod im Urin",`${c.t("jod_u")} µg/l. Spricht für eine knappe Jodzufuhr in den letzten Tagen — ein einzelner Spontanurin schwankt aber stark.`],
+ a:["Jodzufuhr über die Ernährung verbessern","Jodiertes Speisesalz und ein- bis zweimal pro Woche Seefisch. Bei einer Schilddrüsenerkrankung Präparate nur nach Rücksprache."]},
+{id:"vita_hoch",c:["vita"],sev:"bad",when:c=>c.hi("vita"),
+ f:c=>["Vitamin A erhöht",`${c.t("vita")} µg/l. Meist durch hochdosierte Präparate oder häufig gegessene Leber. Vitamin A wird gespeichert und kann in hoher Dosis Leber und Knochen schaden.`],
+ a:["Präparate prüfen und pausieren","Multivitamin- und Hautpräparate enthalten oft Vitamin A. Bei Kinderwunsch oder Schwangerschaft besonders wichtig — ärztlich besprechen."]}
 ];
 
+function ntPaar(c){
+  if(!c.exakt("ntprobnp")) return null;
+  const bis=c.S.d&&c.S.d.ntprobnp; if(!bis) return null;
+  const s=series("ntprobnp").filter(x=>x.d<=bis);
+  if(s.length<2) return null;
+  const a=s[s.length-2], b=s[s.length-1];
+  return (!a.q&&!b.q&&a.v>0&&b.v/a.v>=2&&b.v>=50) ? {a,b} : null;
+}
 function assess(S, meta){
   meta=meta||{};
   const c=ctxOf(S,meta), out={f:[],z:[],a:[]}, seen=new Set();
@@ -1483,7 +1645,7 @@ const RECS = {
 
 /* Erkrankungen und Lebensumstände aus dem Profil, die zusätzliche Kontrollen nahelegen */
 const CONDS = [
- {n:"Diabetes", lab:"Diabetes oder Prädiabetes", art:"krank", pat:/diabet|prädiabet|praediabet|blutzucker|metformin/i,
+ {n:"Diabetes", lab:"Diabetes oder Prädiabetes", art:"krank", pat:/diabet|prädiabet|praediabet|zuckerkrank|metformin|insulinpflicht/i,
   add:{hba1c:3, glukose:6, ldl:12, kreatinin:12},
   note:"Leitlinien empfehlen den HbA1c alle drei Monate, dazu jährlich Nieren- und Fettwerte, weil beide Systeme früh mitleiden."},
  {n:"Schilddrüse", lab:"Schilddrüsenerkrankung (z. B. Hashimoto)", art:"krank", pat:/hashimoto|schilddrüs|schilddrues|unterfunktion|überfunktion|ueberfunktion|thyreo|l-thyrox|euthyrox/i,
@@ -1492,9 +1654,12 @@ const CONDS = [
  {n:"Bluthochdruck", lab:"Bluthochdruck", art:"krank", pat:/bluthochdruck|hypertoni|hoher blutdruck/i,
   add:{kreatinin:12, kalium:12, natrium:12, ldl:12, hba1c:12},
   note:"Bluthochdruck schädigt die Nieren schleichend. Kalium und Natrium sind zusätzlich für die Medikation wichtig."},
- {n:"Herz und Gefäße", lab:"Herz-Kreislauf (z. B. Herzinfarkt, Stent)", art:"krank", pat:/herzinfarkt|khk|koronar|stent|bypass|arterioskleros|angina/i,
+ {n:"Herz und Gefäße", lab:"Herz-Kreislauf (z. B. Herzinfarkt, Stent)", art:"krank", pat:/herzinfarkt|\bkhk|koronar|\bstent|bypass|arterioskleros|angina pectoris/i,
   add:{ldl:6, apob:12, lpa:0, hba1c:12, crp:12},
   note:"Nach einem Herzereignis gelten deutlich strengere LDL-Zielwerte. Lipoprotein(a) sollte einmal bestimmt sein."},
+ {n:"Herzklappe", lab:"Herzklappe oder Herzschwäche (z. B. Mitralinsuffizienz)", art:"krank", pat:/herzklapp|klappeninsuff|klappenfehler|mitral|aortenstenos|aorteninsuff|aortenklapp|trikuspidal|herzinsuff|herzschwäch|herzschwaech|kardiomyopath|cardiomyopath/i,
+  add:{ntprobnp:12},
+  note:"NT-proBNP zeigt, wie stark der Herzmuskel belastet ist. Einmal im Jahr gemessen, macht er eine Veränderung sichtbar — am besten zusammen mit Kreatinin, weil die Nierenfunktion den Wert verschiebt. Bei einer leichten Klappenveränderung ist das keine Pflicht, und den Herzultraschall beim Kardiologen ersetzt es nicht."},
  {n:"Nierenerkrankung", lab:"Nierenerkrankung", art:"krank", pat:/nieren|niereninsuffiz|dialyse|nephro/i,
   add:{kreatinin:6, cystatin:12, kalium:6, harnstoff:6, calcium:12},
   note:"Cystatin C ist unabhängig von der Muskelmasse und genauer als Kreatinin allein."},
@@ -1519,7 +1684,7 @@ const CONDS = [
  {n:"Regelmäßiger Sport", lab:"Viel Sport (ab 4× pro Woche)", art:"leben", pat:/kraftsport|krafttraining|ausdauer|marathon|triathlon|leistungssport|viel sport|bodybuild/i,
   add:{ferritin:12, ck:24, cystatin:24, magnesium:24, testo:24, vitd:12},
   note:"Sportler verlieren Eisen und Zink über den Schweiß. Kreatinin täuscht bei Muskelmasse — Cystatin C ist ehrlicher."},
- {n:"Rauchen", lab:"Rauchen", art:"leben", pat:/rauch|nikotin|zigarett/i,
+ {n:"Rauchen", lab:"Rauchen", art:"leben", pat:/\brauch|nikotin|zigarett/i,
   add:{crp:12, ldl:12, hdl:12, hb:24},
   note:"Rauchen senkt HDL und hebt Entzündungswerte. Beides bessert sich innerhalb von Wochen nach dem Aufhören."}
 ];
@@ -1534,7 +1699,7 @@ function condTextHits(cond,ctx){
   return CONDS.filter(c=>{
     const m=txt.toLowerCase().match(c.pat); if(!m) return false;
     const vor=txt.toLowerCase().slice(Math.max(0,m.index-22), m.index);
-    return !/(kein|keine|ohne|nicht|negativ|ausgeschlossen)\s*\S*\s*$/.test(vor);
+    return !/(kein|keine|ohne|nicht|negativ|ausgeschlossen|ehemalig\w*|früher|ex-)\s*\S*\s*$/.test(vor);
   });
 }
 /* Wer im Profil angekreuzt hat, bekommt genau das. Ältere Profile ohne Auswahl
@@ -1544,8 +1709,23 @@ function condHits(){
   const hits=Array.isArray(sel) ? CONDS.filter(c=>sel.includes(c.n)) : condTextHits();
   return hits.filter(c=>!c.nurF||isF());
 }
+/* Trennt Stichworte an Komma oder Semikolon — aber nicht in Klammern
+   und nicht in Dezimalzahlen wie „EF 64,5 %“. */
+function teileTags(t){
+  t=String(t||""); const out=[]; let tief=0, cur="";
+  for(let i=0;i<t.length;i++){
+    const ch=t[i];
+    if("([{".includes(ch)) tief++;
+    else if(")]}".includes(ch)) tief=Math.max(0,tief-1);
+    const zahl=ch===","&&/\d/.test(t[i-1]||"")&&/\d/.test(t[i+1]||"");
+    if((ch===","||ch===";")&&!tief&&!zahl){ out.push(cur); cur=""; continue }
+    cur+=ch;
+  }
+  out.push(cur);
+  return out.map(x=>x.trim()).filter(Boolean);
+}
 function profilTags(){
-  const frei=(DB.profile.cond||"").split(",").map(x=>x.trim()).filter(Boolean);
+  const frei=teileTags(DB.profile.cond);
   return condHits().map(c=>c.lab||c.n).concat(frei);
 }
 /* Profilangaben, wie sie in jede Frage an Claude eingehen */
@@ -1824,6 +2004,7 @@ function markerCard(m){
       <div class="readout"><div class="val">${fq(cur.v,cur.q)}</div><div class="unit">${m.u}</div><span class="pill ${st.k}">${st.t}</span></div></div>
     ${chart(m,s)}
     <div class="trend"><span class="arrow">${tr.arrow}</span><span>${tr.txt}</span></div>
+    ${m.warn?`<div class="warnbox" style="margin:10px 18px 0">${m.warn}</div>`:""}
     <details class="acc"><summary>Was wird gemessen und warum zählt es?</summary><div class="body"><p>${m.what}</p><p>${m.why}</p></div></details>
     <details class="acc"><summary>Was den Wert beeinflusst</summary><div class="body"><ul>${m.imp.map(i=>`<li>${i}</li>`).join("")}</ul></div></details>
     <div class="card-foot"><button class="btn primary" onclick="openAsk('${m.id}')">Frag Claude${na?` <span class="badge">${na}</span>`:""}</button>
@@ -1853,10 +2034,12 @@ function viewMarks(){
   if(suche.trim()){
     const list=sortByDeviation(have.filter(m=>trifft(m,suche)));
     const nie=M.filter(m=>!m.calc&&!series(m.id).length&&trifft(m,suche)).slice(0,10);
+    const rechen=M.filter(m=>m.calc&&!series(m.id).length&&trifft(m,suche)).slice(0,5);
     return `<div class="grp-h"><h3>${list.length} Treffer für „${esc(suche.trim())}“</h3></div>`+
       (list.length?`<div class="grid">${list.map(markerCard).join("")}</div>`
         :`<div class="empty" style="padding:28px 24px"><p style="margin:0 auto">Kein gemessener Wert passt zu dieser Suche.</p></div>`)+
-      (nie.length?`<p class="hint" style="margin-top:18px">Kennt Serum, wurde bei dir aber noch nicht gemessen: ${nie.map(m=>esc(m.n)).join(", ")}.</p>`:"");
+      (nie.length?`<p class="hint" style="margin-top:18px">Kennt Serum, wurde bei dir aber noch nicht gemessen: ${nie.map(m=>esc(m.n)).join(", ")}.</p>`:"")+
+      (rechen.length?`<p class="hint" style="margin-top:12px">Berechnet Serum automatisch, sobald die Ausgangswerte im selben Befund stehen: ${rechen.map(m=>`${esc(m.n)} aus ${m.calc.map(r=>byId[r].n).join(" und ")}${m.bed?" — "+m.bed:""}`).join("; ")}.</p>`:"");
   }
   if(filter!=="Alle"){
     const list=sortByDeviation(have.filter(m=>m.g===filter));
@@ -1877,7 +2060,7 @@ const TIER={basis:"Grundcheck", einmal:"Einmal im Leben", anlass:"Wegen deiner A
 function careRow(p, showState){
   const m=byId[p.id];
   const rhythm = p.t==="einmal"||p.every===0 ? "einmalig"
-    : p.every%12===0 ? "alle "+(p.every/12)+" Jahre" : "alle "+p.every+" Monate";
+    : p.every===12 ? "jährlich" : p.every%12===0 ? "alle "+(p.every/12)+" Jahre" : "alle "+p.every+" Monate";
   let rechts="";
   if(p.state==="fehlt") rechts=`<span class="pill bad">fehlt</span>`;
   else if(p.state==="faellig") rechts=`<span class="pill mid">fällig</span>`;
@@ -1968,10 +2151,14 @@ function viewTest(date){
   if(!e) return viewTests();
   const S=standAus(e), ev=S.v, eph=phaseOf(e);
   const c=counts(S), a=assess(S), p=DB.profile;
-  const prev=sortedEntries().filter(x=>x.date<date)[0]||null;
+  /* Verglichen wird je Wert mit seiner letzten Messung davor — nicht mit dem
+     vorherigen Befund, denn dort fehlt er vielleicht. */
+  const frueher=sortedEntries().filter(x=>x.date<date).map(x=>({e:x, v:valuesOf(x)}));
+  const vorher=id=>{ const f=frueher.find(x=>x.v[id]!==undefined); return f?{v:+f.v[id], q:(f.e.q&&f.e.q[id])||"", d:f.e.date}:null };
   const ids=Object.keys(ev).filter(id=>byId[id]);
+  const prev=ids.some(id=>vorher(id));
   const groups=GROUPS.filter(g=>ids.some(id=>byId[id].g===g));
-  const lead=`In diesem Befund wurden ${c.total} Werte bestimmt. ${c.bad?`${c.bad} liegen außerhalb des Referenzbereichs`:"Alle liegen im Referenzbereich"}${c.mid?`, ${c.mid} im Grenzbereich zwischen Norm und Ideal`:""}.${prev?` Verglichen wird jeweils mit dem Befund vom ${dmed(prev.date)}.`:""}`;
+  const lead=`In diesem Befund wurden ${c.total} Werte bestimmt. ${c.bad?`${c.bad} liegen außerhalb des Referenzbereichs`:"Alle liegen im Referenzbereich"}${c.mid?`, ${c.mid} im Grenzbereich zwischen Norm und Ideal`:""}.${prev?` Verglichen wird jeweils mit der letzten Messung davor.`:""}`;
 
   return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <button class="back" style="margin:0" onclick="setView('tests')">‹ Alle Befunde</button>
@@ -1996,9 +2183,9 @@ function viewTest(date){
     ${groups.map(g=>{const gi=ids.filter(id=>byId[id].g===g);const gb=gi.filter(id=>statOf(S,id).k==="bad").length;
       return `<details class="panel card" ${gb?"open":""}><summary>${g}<span class="cnt" style="color:${gb?"var(--alert)":"var(--opt)"}">${gb?gb+" auffällig":"alle normal"} · ${gi.length}</span></summary>
       ${gi.map(id=>{const m=byId[id],v=+ev[id],q=S.q[id]||"",st=status(m,v,eph,q);
-        const pvals=prev?valuesOf(prev):null;
-        const pv=pvals&&pvals[id]!==undefined?+pvals[id]:null, pq=(prev&&prev.q&&prev.q[id])||"";
-        const d=(pv!==null&&!pq&&!q)?v-pv:null;
+        const vo=vorher(id), pv=vo?vo.v:null, pq=vo?vo.q:"";
+        const d=(pv!==null&&!pq&&!q)?Math.round((v-pv)*1000)/1000:null;
+        const pdat=vo?` (${dmed(vo.d)})`:"", gerechnet=m.calc&&e.v[id]===undefined;
         return `<div class="bm"><div>
             <h4>${m.n} <span class="pill ${st.k}">${st.s}</span></h4>
             <div class="sub" style="font-size:11.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace">${m.u}</div>
@@ -2009,7 +2196,8 @@ function viewTest(date){
               const h=parseInt(e.time.split(":")[0],10);
               if(!isFinite(h)||(h>=m.tag.von&&h<m.tag.bis)) return "";
               return `<div class="d" style="color:var(--serum)">Abnahme um ${esc(e.time)} Uhr, günstig wäre ${m.tag.von}–${m.tag.bis} Uhr</div>`})()}
-            <div class="d">${d!==null?`Vorher ${fmt(pv)} · ${d>0?"+":""}${fmt(d)} ${m.u}`:pv!==null?`Vorher ${fq(pv,pq)} ${m.u}`:(m.calc?"Wird automatisch berechnet":"Erste Messung dieses Werts")}
+            ${m.warn?`<div class="warnbox">${m.warn}</div>`:""}
+            <div class="d">${d!==null?`Vorher ${fmt(pv)}${pdat} · ${d>0?"+":""}${fmt(d)} ${m.u}`:pv!==null?`Vorher ${fq(pv,pq)} ${m.u}${pdat}`:"Erste Messung dieses Werts"}${gerechnet?" · automatisch berechnet":""}
               ${q?`&nbsp;·&nbsp; Labor meldet ${q==="<"?"unter":"über"} der Messgrenze`:""}
               &nbsp;·&nbsp; ideal ${fmt(optOf(m,eph)[0])}–${fmt(optOf(m,eph)[1])}</div>
             <div style="margin-top:10px"><button class="btn sm" onclick="openAsk('${id}')">Frag Claude</button>
@@ -2038,7 +2226,7 @@ function render(){
 let staged={}, stagedNotes={}, stagedQ={}, editing=null;
 /* Alphabetisch und durchsuchbar — bei über hundert Messwerten findet man sonst nichts. */
 function fillMarkerSelect(q){
-  const list=M.filter(m=>!m.calc&&trifft(m,q||"")).sort((a,b)=>a.n.localeCompare(b.n,"de"));
+  const list=M.filter(m=>(!m.calc||m.parsbar)&&trifft(m,q||"")).sort((a,b)=>a.n.localeCompare(b.n,"de"));
   $("#mSel").innerHTML=list.length
     ? list.map(m=>`<option value="${m.id}">${m.n}${m.u?" ("+m.u+")":""}</option>`).join("")
     : `<option value="">kein Treffer</option>`;
@@ -2146,7 +2334,7 @@ const passtEinheit=(m,u)=>{
 function zerlege(line){
   const roh=[];
   for(const m of M){
-    if(m.calc) continue;
+    if(m.calc && !m.parsbar) continue;   /* Rechenwerte nur lesen, wenn das Labor sie selbst meldet */
     let best=null;
     for(const a of m._al.concat(m._al2)){ const i=line.indexOf(a); if(i>=0 && (!best||a.length>best.a.length)) best={a,i} }
     if(best) roh.push({m, a:best.a, i:best.i, end:best.i+best.a.length});
@@ -2345,7 +2533,7 @@ function buildGesamtPrompt(q){
       const m=byId[id], v=+S.v[id], qq=S.q[id]||"", ph=S.ph[id]||null, st=statOf(S,id), s=series(id);
       let verlauf="";
       if(s.length>1){ const vor=s[s.length-2]; verlauf=` | vorher ${fq(vor.v,vor.q)} am ${dmed(vor.d)}`; }
-      return `  ${m.n}: ${fq(v,qq)}${m.u?" "+m.u:""} | Referenz ${fmt(refOf(m,ph)[0])}–${fmt(refOf(m,ph)[1])} | ideal ${fmt(optOf(m,ph)[0])}–${fmt(optOf(m,ph)[1])} | ${st.t} | gemessen ${dmed(S.d[id])}${verlauf}`;
+      return `  ${m.n}: ${fq(v,qq)}${m.u?" "+m.u:""} | Referenz ${fmt(refOf(m,ph)[0])}–${fmt(refOf(m,ph)[1])} | ideal ${fmt(optOf(m,ph)[0])}–${fmt(optOf(m,ph)[1])} | ${st.t} | gemessen ${dmed(S.d[id])}${m.calc&&S.e[id]&&S.e[id].v[id]===undefined?" | von Serum berechnet":""}${verlauf}`;
     });
     return g+"\n"+rows.join("\n");
   }).join("\n\n");
@@ -2418,7 +2606,9 @@ MESSWERT: ${m.n} (${m.u})
   Referenzbereich: ${fmt(refOf(m,letzt.ph)[0])}–${fmt(refOf(m,letzt.ph)[1])}
   Angestrebter Idealbereich: ${fmt(optOf(m,letzt.ph)[0])}–${fmt(optOf(m,letzt.ph)[1])}${m.zeit?`
   Tageszeitabhängig — aussagekräftig zwischen ${m.zeit.von} und ${m.zeit.bis} Uhr`:""}${m.zyk?`
-  Zyklusabhängig — der genannte Bereich gilt für die angegebene Zyklusphase`:""}
+  Zyklusabhängig — der genannte Bereich gilt für die angegebene Zyklusphase`:""}${m.calc?`
+  Von Serum berechnet aus ${m.calc.map(r=>byId[r].n).join(" und ")}${id==="testofrei_calc"?" sowie Albumin (Formel nach Vermeulen, ohne Albumin mit 4,3 g/dl)":""}, sofern das Labor den Wert nicht selbst meldet`:""}${m.warn?`
+  Wichtig: ${m.warn}`:""}
 
 MEIN VERLAUF${mitGrenze?"\n  („<“ heißt unter der Messgrenze des Labors, „>“ über dem Messbereich — kein genauer Wert.)":""}
 ${hist}
@@ -2651,9 +2841,16 @@ $("#btnProfile").onclick=()=>{const p=DB.profile;
   $("#pName").value=p.name;$("#pSex").value=p.sex;$("#pYear").value=p.year;$("#pKg").value=p.kg;$("#pCm").value=p.cm;
   $("#pCond").value=p.cond;$("#pCtx").value=p.ctx;$("#pKey").value=p.key;
   renderConds(Array.isArray(p.condSel)?p.condSel:condTextHits().map(c=>c.n));
-  show("#mProfile")};
+  condWarn(); show("#mProfile")};
 $("#pSex").onchange=()=>renderConds(gewaehlt());
-$("#pCond").oninput=condAutoCheck;
+/* Lange Einträge sind meist Beschreibungen — die zerfallen sonst in Bruchstücke. */
+function condWarn(){
+  const lang=teileTags($("#pCond").value).find(x=>x.length>40);
+  const w=$("#pCondWarn");
+  if(lang){ w.textContent=`„${lang.slice(0,38)}…“ sieht nach einer Beschreibung aus. Als Stichwort lieber kurz halten und Details unter „Kontext für Claude“ eintragen — dort gehen sie vollständig an Claude.`; w.hidden=false }
+  else w.hidden=true;
+}
+$("#pCond").oninput=()=>{ condAutoCheck(); condWarn() };
 $("#pCtx").oninput=condAutoCheck;
 $("#saveProfile").onclick=async()=>{
   DB.profile={name:$("#pName").value.trim(),sex:$("#pSex").value,year:$("#pYear").value,kg:$("#pKg").value,cm:$("#pCm").value,
