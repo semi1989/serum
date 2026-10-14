@@ -72,6 +72,18 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 90px}
 .sect-h:first-child{margin-top:0}
 
 /* Profilkopf */
+.pbtn{display:flex;align-items:center;gap:8px;padding-left:7px}
+.pav{width:24px;height:24px;border-radius:50%;background:var(--opt-soft);color:var(--opt);display:grid;place-items:center;font-size:12.5px;font-weight:700;flex:none}
+.pnm{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plist{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit}
+.prow.akt{border-color:var(--opt);box-shadow:0 0 0 3px var(--opt-soft)}
+.prow .pav{width:38px;height:38px;font-size:16px}
+.prow .pt{flex:1;min-width:0}
+.prow .pt b{display:block;font-size:15px}
+.prow .pt span{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.prow .pa{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--opt)}
+#fPersonRow{margin-bottom:14px}
 .who{display:flex;gap:16px;align-items:flex-start;padding:20px 22px;margin-bottom:16px}
 .avatar{width:52px;height:52px;border-radius:50%;background:var(--opt-soft);color:var(--opt);display:grid;place-items:center;font-family:"Bricolage Grotesque",sans-serif;font-size:22px;font-weight:700;flex:none}
 .who h2{font-size:21px}
@@ -205,6 +217,7 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 90px}
 /* Dialoge */
 .veil{position:fixed;inset:0;background:rgba(17,24,32,.42);backdrop-filter:blur(3px);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow:auto}
 .veil[hidden]{display:none}
+[hidden]{display:none!important}
 .modal{background:var(--card);border-radius:var(--r);border:1px solid var(--line);width:100%;max-width:660px;box-shadow:0 30px 70px -20px rgba(17,24,32,.5);margin:auto}
 .modal-h{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--hair)}
 .modal-h h2{font-size:18px;margin-right:auto}
@@ -286,6 +299,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
   main{padding:18px 12px 80px}
   .veil{padding:0}
   .search-in{padding:10px 12px 0}
+  .who{flex-wrap:wrap}
   .stats{grid-template-columns:1fr 1fr;gap:10px}
   .stat.wide{grid-column:1/-1}
   .stat.ringbox{flex-direction:column;align-items:flex-start;gap:10px;padding:16px}
@@ -312,7 +326,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
       <button data-view="care">Vorsorge</button>
     </nav>
     <button class="btn" id="btnData">Daten</button>
-    <button class="btn" id="btnProfile">Profil</button>
+    <button class="btn pbtn" id="btnPerson" aria-label="Person wechseln oder Profil bearbeiten"><span class="pav" id="pAv">?</span><span class="pnm" id="pNm">Profil</span></button>
     <button class="btn primary" id="btnAdd">Befund&nbsp;+</button>
   </div>
   <div class="filters" id="filterBar" hidden>
@@ -337,6 +351,8 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
         <button data-tab="paste" aria-pressed="false">Text einfügen</button>
         <button data-tab="manual" aria-pressed="false">Manuell</button>
       </div>
+      <div id="fPersonRow" hidden><label for="fPerson">Befund von</label><select id="fPerson"></select>
+        <p class="hint" id="fPersonHint" style="margin:6px 0 0;color:var(--serum);font-weight:600" hidden></p></div>
       <div class="row">
         <div><label for="fDate">Datum der Blutabnahme</label><input type="date" id="fDate"></div>
         <div style="flex:0 0 120px"><label for="fTime">Uhrzeit</label><input type="time" id="fTime"></div>
@@ -450,7 +466,18 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
         Der Key bleibt auf diesem Gerät. Kosten liegen bei etwa 1–3 Cent pro Frage und laufen über API-Guthaben —
         ein Claude-Abo deckt das nicht ab.</p>
     </div>
-    <div class="modal-f"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="saveProfile">Profil speichern</button></div>
+    <div class="modal-f"><button class="btn ghost" id="delPerson" style="margin-right:auto;color:var(--alert)" hidden>Person löschen</button><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="saveProfile">Profil speichern</button></div>
+  </div>
+</div>
+
+<div class="veil" id="mPersonen" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="perTitle">
+    <div class="modal-h"><h2 id="perTitle">Personen</h2><button class="btn ghost" data-close>Schließen</button></div>
+    <div class="modal-b">
+      <div class="plist" id="personList"></div>
+      <p class="hint" style="margin-top:14px">Jede Person hat eigene Befunde, ein eigenes Profil, eigene Vorsorge und eigene Antworten von Claude. Alles bleibt auf diesem Gerät. Serum ist für Erwachsene ab 18 Jahren gedacht.</p>
+    </div>
+    <div class="modal-f"><button class="btn ghost" id="perEdit">Profil bearbeiten</button><button class="btn primary" id="perAdd">Person hinzufügen</button></div>
   </div>
 </div>
 
@@ -461,6 +488,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
       <p style="margin-top:0;color:var(--ink2);font-size:14px">Alles liegt lokal auf diesem Gerät. Zum Übertragen exportierst du die Datei — auf dem Handy am besten über „In Dateien sichern“ nach iCloud Drive — und importierst sie auf dem anderen Gerät. Der Import <strong>führt zusammen</strong>: Vorhandenes bleibt erhalten, Fehlendes kommt dazu. Der API-Key wird nie mitexportiert.</p>
       <div style="display:flex;gap:9px;flex-wrap:wrap;margin:18px 0">
         <button class="btn" id="expJson">Exportieren</button>
+        <button class="btn" id="expEine" hidden>Nur diese Person</button>
         <button class="btn" id="impJson">Importieren</button>
         <input type="file" id="impFile" accept="application/json" hidden>
         <button class="btn" id="loadDemo">Beispieldaten laden</button>
@@ -488,7 +516,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 /* --- Aktualisierung ------------------------------------------------
    Ohne das hier merkt eine installierte App nicht, dass es eine neue
    Fassung gibt — sie startet aus ihrem Zwischenspeicher weiter. */
-window.SERUM_VERSION = "12";
+window.SERUM_VERSION = "13";
 window.serumApplyUpdate = function(){ location.reload() };
 window.serumCheckUpdate = function(){ alert("Aktualisierung ist nur möglich, wenn Serum über eine Adresse läuft."); };
 
@@ -1099,9 +1127,62 @@ async function sset(k,v){
   try{ localStorage.setItem(k,v) }catch(e){ MEM[k]=v }
 }
 /* condSel: null heißt „noch nie ausgewählt“ — dann gilt der Freitext wie bisher. */
+/* DB ist immer die gerade aktive Person — so arbeitet der Rest der App unverändert.
+   ALLE hält sämtliche Personen auf diesem Gerät; der API-Key gilt für das ganze Gerät. */
 let DB={entries:[],answers:[],profile:{name:"",sex:"m",year:"",kg:"",cm:"",cond:"",condSel:null,ctx:"",key:""}};
-async function loadDB(){ const r=await sget("serum.db"); if(r){ try{ const d=JSON.parse(r); DB.entries=d.entries||[]; DB.answers=d.answers||[]; DB.profile=Object.assign(DB.profile,d.profile||{}) }catch(e){} } }
-async function saveDB(){ await sset("serum.db",JSON.stringify(DB)) }
+let ALLE={aktiv:null,key:"",personen:[]};
+const neueId=()=>"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const LEERPROFIL=()=>({name:"",sex:"m",year:"",kg:"",cm:"",cond:"",condSel:null,ctx:""});
+function normPerson(p){
+  p=p||{};
+  const pr=Object.assign(LEERPROFIL(),p.profile||{}); delete pr.key;
+  const n={id:p.id||neueId(), profile:pr, entries:Array.isArray(p.entries)?p.entries:[], answers:Array.isArray(p.answers)?p.answers:[]};
+  if(p.beispiel) n.beispiel=true;
+  return n;
+}
+const person=id=>ALLE.personen.find(p=>p.id===id)||null;
+const aktivePerson=()=>person(ALLE.aktiv);
+/* Änderungen an DB in die aktive Person zurückschreiben */
+function zurueck(){
+  const p=aktivePerson(); if(!p) return;
+  p.entries=DB.entries; p.answers=DB.answers||[];
+  const pr=Object.assign({},DB.profile);
+  if(pr.key!==undefined) ALLE.key=pr.key||"";
+  delete pr.key; p.profile=pr;
+}
+function binde(id){
+  const p=person(id)||ALLE.personen[0]; if(!p) return;
+  ALLE.aktiv=p.id;
+  DB.entries=p.entries; DB.answers=p.answers;
+  DB.profile=Object.assign(LEERPROFIL(),p.profile,{key:ALLE.key});
+}
+async function loadDB(){
+  const r=await sget("serum.db"); let d=null;
+  if(r){ try{ d=JSON.parse(r) }catch(e){} }
+  if(d&&Array.isArray(d.personen)){
+    ALLE={aktiv:d.aktiv||null, key:d.key||"", personen:d.personen.map(normPerson)};
+  }else{
+    /* Daten bis Version 12: eine Person. Einmal unverändert zur Seite legen, dann übernehmen. */
+    if(r){ try{ if(!(await sget("serum.db.vor13"))) await sset("serum.db.vor13",r) }catch(e){} }
+    const p=normPerson({profile:d&&d.profile, entries:d&&d.entries, answers:d&&d.answers});
+    ALLE={aktiv:p.id, key:(d&&d.profile&&d.profile.key)||"", personen:[p]};
+  }
+  if(!ALLE.personen.length) ALLE.personen.push(normPerson({}));
+  binde(person(ALLE.aktiv)?ALLE.aktiv:ALLE.personen[0].id);
+}
+async function saveDB(){
+  zurueck();
+  await sset("serum.db",JSON.stringify({format:13, aktiv:ALLE.aktiv, key:ALLE.key, personen:ALLE.personen}));
+}
+async function wechsle(id){
+  if(!person(id)||id===ALLE.aktiv) return;
+  zurueck(); binde(id); await saveDB();
+  suche=""; filter="Alle"; if($("#mSearch")) $("#mSearch").value="";
+  setView(view.name==="test"?"tests":view.name);
+}
+window.wechsle=wechsle;
+const pname=p=>(p&&p.profile.name)||"Ohne Namen";
+const alterVon=pr=>pr&&pr.year?new Date().getFullYear()-(+pr.year):null;
 
 /* ===== 3 — Bewertung ================================================== */
 const isF=()=>DB.profile.sex==="f";
@@ -1910,7 +1991,7 @@ function viewDash(){
         <div class="meta">${esc(meta)||"Profil noch nicht ausgefüllt"}</div>
         ${tags.length?`<div class="cond">${tags.map(c=>`<span class="tag">${esc(c)}</span>`).join("")}</div>`:""}
       </div>
-      <button class="btn sm" onclick="document.getElementById('btnProfile').click()">Bearbeiten</button>
+      <button class="btn sm" onclick="openProfile(false)">Bearbeiten</button>
     </div>`;
 
   if(!DB.entries.length){
@@ -2080,7 +2161,7 @@ function viewCare(){
     return `<div class="empty"><h2>Erst das Profil</h2>
       <p>Sobald Geburtsjahr, Geschlecht und eventuelle Erkrankungen eingetragen sind, zeigt Serum hier,
          welche Werte du kennen solltest und welche fehlen.</p>
-      <button class="btn primary" onclick="document.getElementById('btnProfile').click()">Profil ausfüllen</button></div>`;
+      <button class="btn primary" onclick="openProfile(false)">Profil ausfüllen</button></div>`;
   }
   const c=carePlan();
   const kopf = `<p class="lead" style="margin-bottom:18px">
@@ -2216,7 +2297,13 @@ function renderFilters(){
   const gs=["Alle",...GROUPS.filter(g=>known.includes(g))];
   $("#filters").innerHTML=gs.map(g=>`<button class="chip" data-g="${g}" aria-pressed="${g===filter}">${g}</button>`).join("");
 }
+function kopfPerson(){
+  const n=DB.profile.name||"";
+  $("#pAv").textContent=(n.trim().charAt(0)||"?").toUpperCase();
+  $("#pNm").textContent=n||"Profil";
+}
 function render(){
+  kopfPerson();
   $("#filterBar").hidden = view.name!=="marks";
   if(view.name==="marks") renderFilters();
   app.innerHTML = view.name==="dash"?viewDash() : view.name==="marks"?viewMarks() : view.name==="care"?viewCare() : view.name==="test"?viewTest(view.entry) : viewTests();
@@ -2233,15 +2320,39 @@ function fillMarkerSelect(q){
   fillUnits();
 }
 function zyklusFeld(){
-  const zeig = DB.profile.sex==="f";
+  /* Zyklusfelder nach der Person, der der Befund gehören soll */
+  const wahl=$("#fPersonRow")&&!$("#fPersonRow").hidden?person($("#fPerson").value):null;
+  const zeig = ((wahl&&wahl.profile.sex)||DB.profile.sex)==="f";
   $("#cycleRow").hidden=!zeig;
 }
 function tagZuPhase(){
   const d=parseInt($("#fCycleDay").value,10); if(!isFinite(d)) return;
   $("#fCycle").value = d<=12 ? "follikel" : d<=15 ? "ovulation" : "luteal";
 }
+/* Wem gehört der Befund? Bei mehreren Personen wählbar, Vorschlag aus dem Namen im Befund. */
+function personAuswahl(){
+  zurueck();
+  const mehr=ALLE.personen.length>1;
+  $("#fPersonRow").hidden=!mehr; $("#fPersonHint").hidden=true;
+  $("#fPerson").innerHTML=ALLE.personen.map(p=>`<option value="${p.id}"${p.id===ALLE.aktiv?" selected":""}>${esc(pname(p))}</option>`).join("");
+}
+function namenTreffer(txt){
+  const t=" "+flach(txt).replace(/[^a-z0-9]+/g," ")+" ";
+  return ALLE.personen.filter(p=>{
+    const w=flach(p.profile.name||"").split(/[^a-z0-9]+/).filter(x=>x.length>=3);
+    return w.length&&w.every(x=>t.includes(" "+x+" "));
+  });
+}
+function personVorschlag(txt){
+  if(ALLE.personen.length<2||editing) return;
+  const tr=namenTreffer(txt||"");
+  if(tr.some(p=>p.id===ALLE.aktiv)||tr.length!==1){ $("#fPersonHint").hidden=true; return }
+  $("#fPerson").value=tr[0].id; zyklusFeld();
+  $("#fPersonHint").textContent=`Im Befund steht „${pname(tr[0])}“ — deshalb ist ${pname(tr[0])} ausgewählt. Falls das nicht stimmt, hier ändern.`;
+  $("#fPersonHint").hidden=false;
+}
 function openAdd(){
-  staged={}; stagedNotes={}; stagedQ={}; editing=null;
+  staged={}; stagedNotes={}; stagedQ={}; editing=null; personAuswahl();
   $("#fFast").value=""; $("#fNote").value=""; $("#mFind").value=""; $("#mQ").value="";
   $("#addTitle").textContent="Befund hinzufügen"; $("#saveEntry").textContent="Werte speichern";
   $("#fDate").value=new Date().toISOString().slice(0,10); $("#fLab").value=""; $("#fTime").value="";
@@ -2254,7 +2365,7 @@ window.openAdd=openAdd;
 /* Vorhandenen Befund zum Bearbeiten oeffnen — dieselbe Maske, vorbefuellt. */
 function openEdit(date){
   const e=DB.entries.find(x=>x.date===date); if(!e) return;
-  staged=Object.assign({},e.v); stagedNotes={}; stagedQ=Object.assign({},e.q||{}); editing=date;
+  staged=Object.assign({},e.v); stagedNotes={}; stagedQ=Object.assign({},e.q||{}); editing=date; personAuswahl();
   $("#fFast").value=e.fasting||""; $("#fNote").value=e.note||""; $("#mFind").value=""; $("#mQ").value="";
   $("#addTitle").textContent="Befund bearbeiten"; $("#saveEntry").textContent="Änderungen speichern";
   $("#fDate").value=e.date; $("#fLab").value=e.lab||""; $("#fTime").value=e.zeit||"";
@@ -2503,7 +2614,7 @@ async function handleFile(f){
   if(!f) return;
   try{
     const txt=f.type==="application/pdf"?await readPDF(f):await readImage(f);
-    const r=parseText(txt);
+    const r=parseText(txt); personVorschlag(txt);
     if(!Object.keys(r.values).length&&f.type==="application/pdf"){ $("#pasteBox").value=txt; tab("paste"); toast("Kein Treffer — Text steht jetzt im Feld"); return }
     Object.assign(staged,r.values); Object.assign(stagedNotes,r.notes);
     Object.keys(r.values).forEach(id=>{ if(r.q[id]) stagedQ[id]=r.q[id]; else delete stagedQ[id] });
@@ -2714,12 +2825,23 @@ function md(t){
 const show=s=>$(s).hidden=false, hide=s=>$(s).hidden=true;
 function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),2200)}
 function tab(n){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===n));document.querySelectorAll("[data-pane]").forEach(p=>p.hidden=p.dataset.pane!==n)}
-function openData(){ dataList(); $("#verNum").textContent=window.SERUM_VERSION||"–"; show("#mData") }
+function openData(){
+  zurueck();
+  const mehr=ALLE.personen.filter(p=>!p.beispiel).length>1;
+  $("#expJson").textContent=mehr?"Alle Personen exportieren":"Exportieren";
+  $("#expEine").hidden=!(ALLE.personen.length>1);
+  $("#expEine").textContent="Nur "+pname(aktivePerson())+" exportieren";
+  dataList(); $("#verNum").textContent=window.SERUM_VERSION||"–"; show("#mData");
+}
 window.openData=openData;
 
 async function demo(){
   const y=new Date().getFullYear();
-  DB.profile=Object.assign(DB.profile,{name:DB.profile.name||"Michael",year:DB.profile.year||"1989",kg:DB.profile.kg||"72",cm:DB.profile.cm||"174",cond:DB.profile.cond||"Heuschnupfen"});
+  /* Nie die eigenen Befunde überschreiben: Beispieldaten bekommen eine eigene Person. */
+  zurueck();
+  let bp=ALLE.personen.find(p=>p.beispiel);
+  if(!bp){ bp=normPerson({profile:{name:"Beispiel",sex:"m",year:"1989",kg:"72",cm:"174",cond:"Heuschnupfen"}}); bp.beispiel=true; ALLE.personen.push(bp) }
+  binde(bp.id);
   DB.entries=[
     {date:`${y-4}-03-14`,lab:"Labor an der Salzbrücke MVZ",v:{hb:14.6,hkt:44,mcv:86,leuko:6.1,thrombo:242,ferritin:38,eisen:74,vitd:19,b12:340,tsh:2.8,crp:2.1,ldl:142,hdl:48,trigl:158,chol:212,hba1c:5.4,harnsaeure:6.6,omega3:4.2,gpt:41,ggt:38,kreatinin:1.05,magnesium:0.81}},
     {date:`${y-3}-04-02`,lab:"Labor an der Salzbrücke MVZ",v:{hb:14.9,hkt:45,mcv:88,leuko:5.8,thrombo:236,ferritin:52,eisen:86,vitd:26,b12:420,tsh:2.4,crp:1.6,ldl:131,hdl:52,trigl:132,chol:203,hba1c:5.3,harnsaeure:6.2,omega3:5.1,gpt:34,ggt:31,kreatinin:1.03,magnesium:0.84}},
@@ -2727,13 +2849,14 @@ async function demo(){
     {date:`${y-1}-04-11`,lab:"MVZ Labor Saarbrücken",v:{hb:15.4,hkt:46,mcv:90,leuko:5.4,thrombo:221,ferritin:94,eisen:112,vitd:43,b12:610,tsh:1.9,crp:0.8,ldl:106,hdl:61,trigl:94,chol:186,hba1c:5.1,harnsaeure:5.5,omega3:7.6,gpt:26,ggt:20,kreatinin:1.04,magnesium:0.9,testo:610,shbg:62,estradiol:11,testofrei:12.4,zink:13.2}},
     {date:`${y}-04-09`,lab:"MVZ Labor Saarbrücken",v:{hb:15.6,hkt:47,mcv:90,leuko:5.2,thrombo:218,ferritin:118,eisen:121,vitd:51,b12:690,folsaeure:9.4,tsh:1.7,ft3:3.2,ft4:1.3,crp:0.6,ldl:98,hdl:64,trigl:82,chol:180,hba1c:5.0,glukose:86,harnsaeure:5.2,omega3:8.9,gpt:24,got:34,ggt:18,ck:210,kreatinin:1.06,egfr:96,magnesium:0.92,zink:14.8,selen:98,testo:640,testofrei:13.1,shbg:67.9,estradiol:6,fsh:3.4,lh:4.1,prolaktin:9.2}}
   ];
-  await saveDB(); setView("dash"); hide("#mData"); toast("Beispieldaten geladen");
+  await saveDB(); setView("dash"); hide("#mData"); toast("Beispieldaten als Person „Beispiel“ geladen");
 }
 window.demo=demo;
 
 function dataList(){
-  if(!DB.entries.length){ $("#dataList").innerHTML=`<p class="hint">Noch keine Befunde gespeichert.</p>`; return }
-  $("#dataList").innerHTML=`<div class="detected"><table><thead><tr><th>Datum</th><th>Labor</th><th>Werte</th><th></th></tr></thead><tbody>
+  const wer=ALLE.personen.length>1?`<p class="hint" style="margin:0 0 8px">Befunde von <strong>${esc(pname(aktivePerson()))}</strong> — andere Personen über den Namen oben rechts.</p>`:"";
+  if(!DB.entries.length){ $("#dataList").innerHTML=wer+`<p class="hint">Noch keine Befunde gespeichert.</p>`; return }
+  $("#dataList").innerHTML=wer+`<div class="detected"><table><thead><tr><th>Datum</th><th>Labor</th><th>Werte</th><th></th></tr></thead><tbody>
     ${sortedEntries().map(e=>`<tr><td class="mono">${dmed(e.date)}</td><td>${esc(e.lab||"—")}</td><td>${Object.keys(valuesOf(e)).length}</td>
       <td><button class="btn ghost sm" onclick="openEdit('${e.date}')">Bearbeiten</button>
         <button class="btn ghost sm" data-rm="${e.date}">Löschen</button></td></tr>`).join("")}</tbody></table></div>`;
@@ -2773,7 +2896,7 @@ const dz=$("#drop");
 ["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("hot")}));
 ["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("hot")}));
 dz.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
-$("#parsePaste").onclick=()=>{const r=parseText($("#pasteBox").value);Object.assign(staged,r.values);Object.assign(stagedNotes,r.notes);
+$("#parsePaste").onclick=()=>{const r=parseText($("#pasteBox").value); personVorschlag($("#pasteBox").value);Object.assign(staged,r.values);Object.assign(stagedNotes,r.notes);
   Object.keys(r.values).forEach(id=>{ if(r.q[id]) stagedQ[id]=r.q[id]; else delete stagedQ[id] });
   showDetected();toast(Object.keys(r.values).length+" Werte erkannt")};
 function fillUnits(){
@@ -2800,6 +2923,13 @@ $("#saveEntry").onclick=async()=>{
   const zusatz={time:$("#fTime").value||"", cycle:$("#fCycle").value||"", cycleDay:$("#fCycleDay").value||"",
     fasting:$("#fFast").value||"", note:$("#fNote").value.trim()};
   const grenzen={}; Object.keys(staged).forEach(id=>{ if(stagedQ[id]) grenzen[id]=stagedQ[id] });
+  /* Gehört der Befund einer anderen Person, dorthin wechseln — beim Bearbeiten wird er verschoben. */
+  const ziel=($("#fPerson")&&$("#fPerson").value)||ALLE.aktiv;
+  let verschoben=false, bei="";
+  if(ziel!==ALLE.aktiv&&person(ziel)){
+    if(editing){ DB.entries=DB.entries.filter(e=>e.date!==editing); editing=null; verschoben=true }
+    zurueck(); binde(ziel); bei=pname(aktivePerson());
+  }
   /* Werte übernehmen; das Grenzzeichen gehört zum Wert und wird mit ihm ersetzt. */
   const uebernimm=ex=>{
     Object.assign(ex.v,staged); ex.q=ex.q||{};
@@ -2818,7 +2948,8 @@ $("#saveEntry").onclick=async()=>{
     if(ex) uebernimm(ex);
     else DB.entries.push(Object.assign({date,lab,v:Object.assign({},staged),q:grenzen},zusatz));
   }
-  await saveDB(); hide("#mAdd"); setView("test",date); toast(editing?"Befund geändert":"Befund gespeichert");
+  await saveDB(); hide("#mAdd"); setView("test",date);
+  toast(verschoben?"Befund zu "+bei+" verschoben":bei?"Befund bei "+bei+" gespeichert":editing?"Befund geändert":"Befund gespeichert");
 };
 /* Erkrankungen zum Anhaken; ältere Profile werden aus dem Freitext vorbelegt. */
 function renderConds(sel){
@@ -2837,11 +2968,50 @@ function condAutoCheck(){
     if(b&&!b.checked&&!b.dataset.touched) b.checked=true;
   });
 }
-$("#btnProfile").onclick=()=>{const p=DB.profile;
+/* --- Personen -------------------------------------------------------- */
+function openPersonen(){
+  zurueck();
+  $("#personList").innerHTML=ALLE.personen.map(p=>{
+    const n=p.entries.length, a=alterVon(p.profile);
+    const zuletzt=n?[...p.entries].sort((x,y)=>y.date.localeCompare(x.date))[0].date:null;
+    const sub=[a!==null?a+" J.":null, n?n+" Befund"+(n>1?"e":""):"noch keine Befunde", zuletzt?"zuletzt "+dmed(zuletzt):null].filter(Boolean).join(" · ");
+    return `<button class="prow${p.id===ALLE.aktiv?" akt":""}" data-pid="${p.id}">
+      <span class="pav">${esc((pname(p).trim().charAt(0)||"?").toUpperCase())}</span>
+      <span class="pt"><b>${esc(pname(p))}</b><span>${esc(sub)}</span></span>
+      ${p.id===ALLE.aktiv?`<span class="pa">aktiv</span>`:""}</button>`}).join("");
+  $("#personList").querySelectorAll("[data-pid]").forEach(b=>b.onclick=async()=>{
+    const id=b.dataset.pid; hide("#mPersonen");
+    if(id!==ALLE.aktiv){ await wechsle(id); toast("Jetzt: "+pname(aktivePerson())) }
+  });
+  show("#mPersonen");
+}
+window.openPersonen=openPersonen;
+$("#btnPerson").onclick=openPersonen;
+$("#fPerson").onchange=()=>{ $("#fPersonHint").hidden=true; zyklusFeld() };
+$("#perEdit").onclick=()=>{ hide("#mPersonen"); openProfile(false) };
+$("#perAdd").onclick=()=>{ hide("#mPersonen"); openProfile(true) };
+
+let profilNeu=false;
+function openProfile(neu){
+  profilNeu=!!neu;
+  const p=neu?Object.assign(LEERPROFIL(),{key:ALLE.key}):DB.profile;
+  $("#pTitle").textContent=neu?"Neue Person":"Profil"+(ALLE.personen.length>1&&p.name?" von "+p.name:"");
+  $("#saveProfile").textContent=neu?"Person anlegen":"Profil speichern";
+  $("#delPerson").hidden=neu||ALLE.personen.length<2;
   $("#pName").value=p.name;$("#pSex").value=p.sex;$("#pYear").value=p.year;$("#pKg").value=p.kg;$("#pCm").value=p.cm;
-  $("#pCond").value=p.cond;$("#pCtx").value=p.ctx;$("#pKey").value=p.key;
-  renderConds(Array.isArray(p.condSel)?p.condSel:condTextHits().map(c=>c.n));
-  condWarn(); show("#mProfile")};
+  $("#pCond").value=p.cond;$("#pCtx").value=p.ctx;$("#pKey").value=p.key||"";
+  renderConds(neu?[]:(Array.isArray(p.condSel)?p.condSel:condTextHits().map(c=>c.n)));
+  condWarn(); show("#mProfile");
+  if(neu) setTimeout(()=>{ try{ $("#pName").focus() }catch(e){} },50);
+}
+window.openProfile=openProfile;
+$("#delPerson").onclick=async()=>{
+  if(ALLE.personen.length<2) return;
+  const p=aktivePerson(), n=DB.entries.length;
+  if(!confirm(`${pname(p)} mit ${n} Befund${n===1?"":"en"} und allen gespeicherten Antworten von diesem Gerät löschen?\n\nDas lässt sich nicht rückgängig machen. Wer die Daten behalten will, exportiert sie vorher unter „Daten“.`)) return;
+  ALLE.personen=ALLE.personen.filter(x=>x.id!==p.id);
+  binde(ALLE.personen[0].id); await saveDB(); hide("#mProfile"); setView("dash"); toast(pname(p)+" gelöscht");
+};
 $("#pSex").onchange=()=>renderConds(gewaehlt());
 /* Lange Einträge sind meist Beschreibungen — die zerfallen sonst in Bruchstücke. */
 function condWarn(){
@@ -2853,9 +3023,23 @@ function condWarn(){
 $("#pCond").oninput=()=>{ condAutoCheck(); condWarn() };
 $("#pCtx").oninput=condAutoCheck;
 $("#saveProfile").onclick=async()=>{
-  DB.profile={name:$("#pName").value.trim(),sex:$("#pSex").value,year:$("#pYear").value,kg:$("#pKg").value,cm:$("#pCm").value,
+  const neu={name:$("#pName").value.trim(),sex:$("#pSex").value,year:$("#pYear").value,kg:$("#pKg").value,cm:$("#pCm").value,
     cond:$("#pCond").value.trim(),condSel:gewaehlt(),ctx:$("#pCtx").value,key:$("#pKey").value.trim()};
-  await saveDB(); hide("#mProfile"); zyklusFeld(); render(); toast("Profil gespeichert")};
+  const a=alterVon(neu);
+  if(a!==null&&a<18) return alert("Serum ist für Erwachsene ab 18 Jahren gedacht. Bei Kindern und Jugendlichen weichen viele Referenzbereiche stark ab — die Bewertungen wären falsch.");
+  const mehrere=profilNeu||ALLE.personen.length>1;
+  if(mehrere&&!neu.name) return alert("Bitte einen Namen eintragen, damit sich die Personen unterscheiden lassen.");
+  const doppelt=ALLE.personen.find(p=>(profilNeu||p.id!==ALLE.aktiv)&&flach(p.profile.name)===flach(neu.name)&&neu.name);
+  if(doppelt) return alert(`„${neu.name}“ gibt es auf diesem Gerät schon. Bitte einen unterscheidbaren Namen wählen, etwa mit Nachnamen.`);
+  if(profilNeu){
+    zurueck();
+    const p=normPerson({profile:neu}); ALLE.personen.push(p); binde(p.id);
+  }
+  DB.profile=neu;
+  await saveDB(); hide("#mProfile"); zyklusFeld();
+  if(profilNeu){ setView("dash"); toast(neu.name+" angelegt") } else { render(); toast("Profil gespeichert") }
+  profilNeu=false;
+};
 $("#copyPrompt").onclick=async()=>{const q=$("#askQ").value.trim(); if(!q) return alert("Bitte formuliere zuerst deine Frage.");
   $("#askPaste").open=true;
   try{ await navigator.clipboard.writeText(promptFor(q)); toast("Prompt kopiert — jetzt in Claude einfügen") }
@@ -2869,10 +3053,23 @@ $("#askPasteSave").onclick=()=>{
   $("#askPasteTxt").value=""; $("#askPaste").open=false; toast("Antwort gespeichert");
 };
 $("#askDirect").onclick=askDirect;
-async function exportData(){
-  /* Der API-Key bleibt draußen — eine Sicherungsdatei landet in der Cloud oder bei Freunden. */
-  const json=JSON.stringify({entries:DB.entries, answers:DB.answers||[], profile:Object.assign({},DB.profile,{key:""})},null,2);
-  const name="serum-"+new Date().toISOString().slice(0,10)+".json";
+/* Eine Person: dasselbe Format wie bis Version 12 — lesbar auch für ältere Fassungen.
+   Mehrere Personen: alle in einer Datei. Der API-Key bleibt immer draußen. */
+function exportInhalt(nurAktiv){
+  zurueck();
+  const einzeln=p=>({entries:p.entries, answers:p.answers||[], profile:Object.assign({},p.profile,{key:""})});
+  const echte=ALLE.personen.filter(p=>!p.beispiel);
+  const tag=new Date().toISOString().slice(0,10);
+  const slug=p=>flach(p.profile.name||"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  if(nurAktiv||echte.length<=1){
+    const p=nurAktiv?aktivePerson():(echte[0]||aktivePerson());
+    return {daten:einzeln(p), name:"serum-"+(slug(p)?slug(p)+"-":"")+tag+".json"};
+  }
+  return {daten:{format:13, personen:echte.map(p=>Object.assign({id:p.id},einzeln(p)))}, name:"serum-alle-"+tag+".json"};
+}
+async function exportData(nurAktiv){
+  const ex=exportInhalt(nurAktiv===true);
+  const json=JSON.stringify(ex.daten,null,2), name=ex.name;
   const file=new File([json],name,{type:"application/json"});
   if(navigator.canShare && navigator.canShare({files:[file]})){
     try{ await navigator.share({files:[file],title:"Serum-Sicherung"}); return }
@@ -2884,7 +3081,8 @@ async function exportData(){
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   toast("Datei exportiert");
 }
-$("#expJson").onclick=exportData;
+$("#expJson").onclick=()=>exportData(false);
+$("#expEine").onclick=()=>exportData(true);
 $("#impJson").onclick=()=>$("#impFile").click();
 
 /* Führt einen Import mit dem vorhandenen Bestand zusammen, statt ihn zu ersetzen.
@@ -2911,29 +3109,51 @@ function mergeEntries(incoming){
 $("#impFile").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
   e.target.value="";
-  try{
-    const d=JSON.parse(await f.text());
-    if(!Array.isArray(d.entries)) throw new Error("Format");
-    const r=mergeEntries(d.entries);
-    /* Gespeicherte Antworten zusammenführen, doppelte erkennt die Kennung */
+  let d;
+  try{ d=JSON.parse(await f.text()) }catch(err){ return alert("Die Datei lässt sich nicht lesen. Erwartet wird ein Export aus Serum.") }
+  const pakete=Array.isArray(d.personen) ? d.personen
+    : Array.isArray(d.entries) ? [{id:null, profile:d.profile||{}, entries:d.entries, answers:d.answers||[]}] : null;
+  if(!pakete) return alert("Die Datei lässt sich nicht lesen. Erwartet wird ein Export aus Serum.");
+  zurueck();
+  const vorher=ALLE.aktiv, zeilen=[];
+  let konflikte=0;
+  /* Auf einem frischen Gerät füllt die erste fremde Person das leere Startprofil, statt daneben zu liegen. */
+  let leerFrei=(p=>p&&!p.entries.length&&!flach(p.profile.name))(person(vorher));
+  pakete.forEach(pk=>{
+    if(!pk||!Array.isArray(pk.entries)) return;
+    const pr=pk.profile||{}, nm=flach(pr.name||"");
+    /* Zuordnung: gleiche Kennung, sonst gleicher Name. Eine einzelne Datei ohne Namen —
+       oder eine Person hier ohne Namen — geht wie bisher an die aktive Person. */
+    let ziel=(pk.id&&person(pk.id))
+      || (nm&&ALLE.personen.find(p=>flach(p.profile.name)===nm))
+      || (pakete.length===1&&(!nm||!flach(person(vorher).profile.name))?person(vorher):null)
+      || (leerFrei?person(vorher):null);
+    if(ziel&&ziel.id===vorher) leerFrei=false;
+    let angelegt=false;
+    if(!ziel){
+      ziel=normPerson({id:(pk.id&&!person(pk.id))?pk.id:undefined, profile:pr}); ziel.entries=[]; ziel.answers=[];
+      ALLE.personen.push(ziel); angelegt=true;
+    }
+    binde(ziel.id);
+    const r=mergeEntries(pk.entries); konflikte+=r.konflikte;
     let na=0;
-    if(Array.isArray(d.answers)){ DB.answers=DB.answers||[];
-      d.answers.forEach(a=>{ if(a&&a.id&&a.a&&!DB.answers.some(x=>x.id===a.id)){ DB.answers.push(a); na++ } }); }
-    if(!Array.isArray(DB.profile.condSel)&&d.profile&&Array.isArray(d.profile.condSel)) DB.profile.condSel=d.profile.condSel;
+    if(Array.isArray(pk.answers)){ DB.answers=DB.answers||[];
+      pk.answers.forEach(a=>{ if(a&&a.id&&a.a&&!DB.answers.some(x=>x.id===a.id)){ DB.answers.push(a); na++ } }); }
+    if(!Array.isArray(DB.profile.condSel)&&Array.isArray(pr.condSel)) DB.profile.condSel=pr.condSel;
     /* Profilfelder nur füllen, wenn hier noch nichts steht. Der API-Key wird nie übernommen. */
-    if(d.profile) ["name","sex","year","kg","cm","cond","ctx"].forEach(k=>{
-      if(!DB.profile[k] && d.profile[k]) DB.profile[k]=d.profile[k];
-    });
-    await saveDB(); dataList(); render();
+    ["name","sex","year","kg","cm","cond","ctx"].forEach(k=>{ if(!DB.profile[k] && pr[k]) DB.profile[k]=pr[k] });
+    zurueck();
     const teile=[];
     if(r.neueBefunde) teile.push(r.neueBefunde+" neue"+(r.neueBefunde===1?"r Befund":" Befunde"));
     if(r.werte) teile.push(r.werte+" ergänzte Werte");
     if(na) teile.push(na+" gespeicherte Antwort"+(na>1?"en":""));
-    if(!teile.length) teile.push("nichts Neues — war schon alles vorhanden");
-    let msg="Zusammengeführt: "+teile.join(", ")+".";
-    if(r.konflikte) msg+="\n\n"+r.konflikte+" Wert"+(r.konflikte===1?" wich":"e wichen")+" vom Bestand ab. Dieses Gerät behält seine Zahlen — bitte im Zweifel gegen den Befund prüfen.";
-    alert(msg);
-  }catch(err){ alert("Die Datei lässt sich nicht lesen. Erwartet wird ein Export aus Serum.") }
+    zeilen.push((ALLE.personen.length>1||angelegt?pname(ziel)+(angelegt?" (neu angelegt)":"")+": ":"")+(teile.join(", ")||"nichts Neues — war schon alles vorhanden"));
+  });
+  binde(person(vorher)?vorher:ALLE.personen[0].id);
+  await saveDB(); dataList(); render();
+  let msg="Zusammengeführt:\n"+zeilen.join("\n");
+  if(konflikte) msg+="\n\n"+konflikte+" Wert"+(konflikte===1?" wich":"e wichen")+" vom Bestand ab. Dieses Gerät behält seine Zahlen — bitte im Zweifel gegen den Befund prüfen.";
+  alert(msg);
 };
 
 $("#loadDemo").onclick=demo;
