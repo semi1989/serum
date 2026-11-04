@@ -264,6 +264,13 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 .hist-i .answer{margin:0 10px 10px}
 .badge{display:inline-block;min-width:18px;padding:0 6px;margin-left:4px;border-radius:99px;background:rgba(255,255,255,.22);font-size:11.5px;line-height:18px;text-align:center}
 .notecard{padding:14px 20px;margin:0 0 8px}
+#pKey{min-height:0;resize:none;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.5;word-break:break-all}
+.keyzeile{display:flex;align-items:center;gap:10px;margin:8px 0 4px;flex-wrap:wrap}
+.keyinfo{font-size:12.5px;color:var(--muted);flex:1 1 100%;line-height:1.5}
+.keyinfo:empty{display:none}
+.keyinfo.ok{color:var(--opt)}
+.keyinfo.bad{color:var(--alert)}
+.claudebox.aus{display:none}
 .claudebox{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0;background:#fff}
 .claudebox .cb-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .claudebox .cb-st{font-size:12.5px;color:var(--muted)}
@@ -415,9 +422,9 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
         <div class="cb-h"><strong>Claude liest den Befund</strong><span class="cb-st" id="cbStatus"></span></div>
         <p class="hint" id="cbInfo" style="margin:6px 0 10px"></p>
         <div class="cb-a"><button class="btn" id="cbRun">Claude lesen lassen</button><button class="btn ghost" id="cbCopy">Prompt kopieren</button></div>
-        <div id="cbPaste" hidden style="margin-top:12px">
+        <div id="cbPaste" style="margin-top:12px">
           <label for="cbAnswer">Antwort von Claude</label>
-          <textarea id="cbAnswer" style="min-height:110px" placeholder="Die komplette Antwort von Claude hier einfügen"></textarea>
+          <textarea id="cbAnswer" style="min-height:70px" rows="3" placeholder="Die komplette Antwort von Claude hier einfügen"></textarea>
           <button class="btn" id="cbApply" style="margin-top:10px">Übernehmen</button>
         </div>
       </div>
@@ -481,10 +488,11 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
       <p class="hint">Hier darf es ausführlich sein: Vorbefunde, Medikamente, Training, Ernährung. Geht vollständig in jede Frage an Claude ein, damit Antworten zu dir passen.</p>
       <hr style="border:none;border-top:1px solid var(--hair);margin:22px 0">
       <label for="pKey">Anthropic API-Key <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
-      <input type="password" id="pKey" placeholder="sk-ant-…" autocomplete="off">
-      <p class="hint">Nur nötig, wenn Antworten direkt in der App erscheinen sollen und Fotos automatisch ausgelesen werden.
-        Der Key bleibt auf diesem Gerät. Kosten liegen bei etwa 1–3 Cent pro Frage und laufen über API-Guthaben —
-        ein Claude-Abo deckt das nicht ab.</p>
+      <textarea id="pKey" rows="3" placeholder="sk-ant-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+      <div class="keyzeile"><button class="btn" id="pKeyTest" type="button">Key prüfen</button><span id="pKeyInfo" class="keyinfo"></span></div>
+      <p class="hint">Nur nötig, wenn Claude Befunde automatisch lesen und Fragen direkt in der App beantworten soll.
+        Der Key bleibt auf diesem Gerät und wird nie exportiert — teile aber keinen Screenshot von diesem Feld.
+        Die Kosten laufen über das API-Guthaben in der Anthropic-Console: etwa 1–3 Cent pro Frage, 5–50 Cent pro Befund.</p>
     </div>
     <div class="modal-f"><button class="btn ghost" id="delPerson" style="margin-right:auto;color:var(--alert)" hidden>Person löschen</button><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="saveProfile">Profil speichern</button></div>
   </div>
@@ -540,7 +548,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 /* --- Aktualisierung ------------------------------------------------
    Ohne das hier merkt eine installierte App nicht, dass es eine neue
    Fassung gibt — sie startet aus ihrem Zwischenspeicher weiter. */
-window.SERUM_VERSION = "14";
+window.SERUM_VERSION = "15";
 window.serumApplyUpdate = function(){ location.reload() };
 window.serumCheckUpdate = function(){ alert("Aktualisierung ist nur möglich, wenn Serum über eine Adresse läuft."); };
 
@@ -644,11 +652,11 @@ const M = [
 {id:"homocystein",n:"Homocystein",u:"µmol/l",g:"Vitamine",al:["homocistein","homocistein","homocystein","homocysteine"],ref:[5,12],opt:[5,8],cv:{"mg/l":7.397},
  what:"Ein Zwischenprodukt des Eiweißstoffwechsels, das mit B-Vitaminen abgebaut wird.",why:"Steigt an, wenn B12, B6 oder Folsäure knapp sind, und gilt als eigenständiger Risikofaktor für Gefäße. Ein guter Funktionstest für die B-Vitamin-Versorgung.",
  imp:["B12, B6 und Folsäure prüfen und gezielt auffüllen","Kaffee und Alkohol in Maßen","Bewegung senkt den Wert leicht"],rel:["b12","folsaeure"]},
-{id:"vita",n:"Vitamin A (Retinol)",u:"µg/l",g:"Vitamine",al:["vitamin a ","vitamin a (","vitamin-a","retinol"],ref:[300,800],opt:[400,750],cv:{"mg/l":1000,"µg/dl":10,"µmol/l":286.5},
+{id:"vita",n:"Vitamin A (Retinol)",u:"µg/l",g:"Vitamine",al:["vitamin a ","vitamin a (","vitamin-a","retinol"],ref:[300,800],opt:[400,750],cv:{"mg/l":1000,"µg/dl":10,"µmol/l":286.5,"ng/ml":1},
  what:"Fettlösliches Vitamin für Sehen, Haut, Schleimhäute und Immunsystem.",
  why:"Ein Mangel ist hierzulande selten und betrifft vor allem Menschen mit gestörter Fettaufnahme. Häufiger ist ein zu hoher Wert durch hochdosierte Präparate — Vitamin A wird gespeichert, schadet in hoher Dosis der Leber und in der Schwangerschaft dem Kind.",
  imp:["Leber, Eier und Milchprodukte liefern Retinol, Karotten und grünes Gemüse die Vorstufe Beta-Carotin","Keine hochdosierten Präparate ohne gemessenen Mangel","Bei Entzündungen sinkt der Wert vorübergehend, ohne dass ein Mangel besteht"],rel:["vite","vitd","crp"]},
-{id:"vite",n:"Vitamin E (Tocopherol)",u:"mg/l",g:"Vitamine",al:["vitamin e ","vitamin e (","vitamin-e","alpha-tocopherol","tocopherol"],ref:[5.5,17],opt:[8,15],cv:{"µmol/l":0.4307,"µg/ml":1,"mg/dl":10},
+{id:"vite",n:"Vitamin E (Tocopherol)",u:"mg/l",g:"Vitamine",al:["vitamin e ","vitamin e (","vitamin-e","alpha-tocopherol","tocopherol"],ref:[5.5,17],opt:[8,15],cv:{"µmol/l":0.4307,"µg/ml":1,"mg/dl":10,"ng/ml":0.001},
  what:"Fettlösliches Vitamin, das Zellmembranen vor Oxidation schützt.",
  why:"Wird zusammen mit den Blutfetten transportiert — bei hohem Cholesterin steigt auch Vitamin E, ohne dass mehr im Gewebe ankommt. Ein echter Mangel ist selten und betrifft vor allem Menschen mit gestörter Fettverdauung.",
  imp:["Pflanzenöle, Nüsse und Samen sind die besten Quellen","Hochdosierte Präparate haben in Studien keinen Nutzen gezeigt","Immer zusammen mit den Blutfetten lesen"],rel:["chol","ldl","vita"]},
@@ -667,15 +675,15 @@ const M = [
 {id:"ft4",n:"fT4",u:"ng/dl",g:"Schilddrüse",al:["t4 prosti","prosti t4","t4 prosti","ft4","freies t4","ft-4","free t4","free thyroxine","t4, free","t4 free"],ref:[0.7,1.9],opt:[0.95,1.6],cv:{"pmol/l":0.0777,"ng/l":0.1,"pg/ml":0.1},
  what:"Das freie Thyroxin, Speicher- und Vorstufe von fT3.",why:"Zeigt die Produktionsleistung der Schilddrüse selbst. Der Körper wandelt es bei Bedarf in aktives fT3 um.",
  imp:["Ausreichend Jod als Baustein","Bei niedrigem fT4 und hohem TSH ärztlich abklären","Im Paket mit TSH und fT3 lesen"],rel:["tsh","ft3"]},
-{id:"tpoak",n:"TPO-Antikörper",u:"IU/ml",g:"Schilddrüse",al:["tpo-ak","tpo ak","tpo-antikorper","tpo antikorper","anti-tpo","anti tpo","thyreoperoxidase-ak","thyreoperoxidase-antikorper","thyreoperoxidase antikorper","thyroid peroxidase"],ref:[0,34],opt:[0,34],cv:{"U/ml":1,"kIU/l":1,"kU/l":1},
+{id:"tpoak",lab:true,n:"TPO-Antikörper",u:"IU/ml",g:"Schilddrüse",al:["tpo-ak","tpo ak","tpo-antikorper","tpo antikorper","anti-tpo","anti tpo","thyreoperoxidase-ak","thyreoperoxidase-antikorper","thyreoperoxidase antikorper","thyroid peroxidase","anti microsomal","anti-microsomal","microsomal antibod","antimikrosomale"],ref:[0,34],opt:[0,34],cv:{"U/ml":1,"kIU/l":1,"kU/l":1},
  what:"Antikörper gegen die Thyreoperoxidase, ein Enzym, das die Schilddrüse für die Hormonbildung braucht.",
  why:"Erhöhte Werte sind das Kennzeichen der Hashimoto-Thyreoiditis, der häufigsten Ursache einer Unterfunktion. Die Schilddrüsenwerte sind anfangs oft noch normal — die Antikörper zeigen das Risiko häufig Jahre vorher. Die Grenze hängt vom Testverfahren ab, je nach Labor etwa 34 bis 60 IU/ml; maßgeblich ist die Grenze auf deinem Befund.",
  imp:["Ein positiver Befund muss nicht ständig wiederholt werden — wichtiger ist der TSH im Verlauf","Bei erhöhten Antikörpern TSH etwa einmal im Jahr kontrollieren","Selen senkt die Antikörper in Studien teilweise; ob das Beschwerden bessert, ist offen","Jod nicht hochdosiert nehmen, normale Jodzufuhr ist in Ordnung"],rel:["tsh","ft4","ft3","tgak","selen"]},
-{id:"tgak",n:"Thyreoglobulin-Antikörper",u:"IU/ml",g:"Schilddrüse",al:["tg-ak","tg ak","anti-tg","anti tg","thyreoglobulin-ak","thyreoglobulin ak","thyreoglobulin-antikorper","thyreoglobulin antikorper","anti-thyreoglobulin","thyroglobulin antibod"],ref:[0,115],opt:[0,115],cv:{"U/ml":1,"kIU/l":1,"kU/l":1},
+{id:"tgak",lab:true,n:"Thyreoglobulin-Antikörper",u:"IU/ml",g:"Schilddrüse",al:["tg-ak","tg ak","anti-tg","anti tg","thyreoglobulin-ak","thyreoglobulin ak","thyreoglobulin-antikorper","thyreoglobulin antikorper","anti-thyreoglobulin","thyroglobulin antibod","thyroglobulin ab","anti-thyroglobulin","anti thyroglobulin"],ref:[0,115],opt:[0,115],cv:{"U/ml":1,"kIU/l":1,"kU/l":1},
  what:"Antikörper gegen Thyreoglobulin, das Speichereiweiß der Schilddrüsenhormone.",
  why:"Ergänzt die TPO-Antikörper bei der Suche nach einer Autoimmunerkrankung der Schilddrüse; allein erhöht ist er seltener und weniger aussagekräftig. Die Grenzwerte unterscheiden sich zwischen den Testverfahren sehr stark, je nach Labor etwa 4 bis 115 IU/ml. Serum rechnet mit 115 — steht auf deinem Befund eine niedrigere Grenze, gilt die.",
  imp:["Immer zusammen mit TPO-Antikörpern und TSH lesen","Wie bei TPO-Antikörpern entscheidet der TSH-Verlauf"],rel:["tpoak","tsh","ft4"]},
-{id:"trak",n:"TRAK (TSH-Rezeptor-AK)",u:"IU/l",g:"Schilddrüse",al:["trak ","trak (","trak:","trab ","tsh-rezeptor-ak","tsh-rezeptor-antikorper","tsh-rezeptor antikorper","tsh rezeptor ak","tsh-r-ak","tsh-receptor","anti-tshr"],ref:[0,1.75],opt:[0,1],cv:{"U/l":1},
+{id:"trak",lab:true,n:"TRAK (TSH-Rezeptor-AK)",u:"IU/l",g:"Schilddrüse",al:["trak ","trak (","trak:","trab ","tsh-rezeptor-ak","tsh-rezeptor-antikorper","tsh-rezeptor antikorper","tsh rezeptor ak","tsh-r-ak","tsh-receptor","anti-tshr"],ref:[0,1.75],opt:[0,1],cv:{"U/l":1},
  what:"Antikörper gegen den TSH-Rezeptor der Schilddrüse.",
  why:"Erhöhte Werte sind typisch für Morbus Basedow: Die Antikörper reizen die Schilddrüse wie TSH und treiben sie in eine Überfunktion. Sinnvoll bei niedrigem TSH oder Verdacht auf Überfunktion — kein Wert für die Routine.",
  imp:["Bei erhöhtem Wert und niedrigem TSH zeitnah ärztlich abklären lassen","Während einer Basedow-Behandlung zeigt der Verlauf, ob die Erkrankung zur Ruhe kommt","Zwischen etwa 1 und 1,75 IU/l liegt je nach Test ein Graubereich"],rel:["tsh","ft3","ft4"]},
@@ -714,10 +722,10 @@ const M = [
  what:"Steuerhormon aus der Hirnanhangdrüse für die Keimzellreifung.",why:"Zusammen mit LH zeigt es, ob eine Hormonstörung von den Hoden bzw. Eierstöcken selbst kommt oder von der übergeordneten Steuerung im Gehirn.",
  imp:["Nur zusammen mit LH und Testosteron interpretieren","Bei Auffälligkeiten endokrinologisch abklären lassen"],rel:["lh","testo"]},
 {id:"lh",n:"LH",u:"mIU/ml",g:"Sexualhormone",al:["luteinisierendes hormon","luteinizing","lh ","luteinizing hormone","luteinising hormone"],zyk:{follikel:[2,12],ovulation:[15,95],luteal:[0.5,17],postmeno:[8,60]},ref:[1.7,8.6],opt:[2,7],cv:{"IU/l":1,"U/l":1,"mIU/l":0.001},zyk:{follikel:[2,12],ovulation:[15,95],luteal:[1,12],postmeno:[10,55]},
- what:"Steuerhormon, das beim Mann die Testosteronproduktion in den Hoden anstößt.",why:"Niedriges LH bei niedrigem Testosteron deutet auf die Steuerung im Gehirn hin, hohes LH bei niedrigem Testosteron auf die Hoden selbst.",
+ what:"Steuerhormon, das beim Mann die Testosteronproduktion in den Hoden anstößt.",why:"Steuert bei Frauen den Eisprung, bei Männern die Testosteronbildung. Zusammen mit FSH zeigt es, ob eine Störung von Eierstöcken bzw. Hoden selbst kommt oder von der Steuerung im Gehirn. Bei Frauen schwankt es im Zyklus um ein Vielfaches.",
  imp:["Immer gemeinsam mit FSH und Testosteron bewerten","Schlafmangel und Übertraining senken LH","Bei Auffälligkeiten endokrinologisch abklären lassen"],rel:["fsh","testo"]},
 {id:"prolaktin",n:"Prolaktin",u:"ng/ml",g:"Sexualhormone",al:["prolaktin","prolactin"],tag:{von:8,bis:11,txt:"Prolaktin ist nachts und früh am Morgen erhöht; Stress vor der Abnahme hebt den Wert zusätzlich."},ref:[4,15],opt:[4,12],refF:[4,23],optF:[4,18],cv:{"µg/l":1,"mIU/l":0.0472,"µIU/ml":0.0472},zeit:{von:8,bis:11,txt:"Steigt durch Stress, Schlaf und körperliche Anstrengung."},
- what:"Ein Hypophysenhormon, das in erhöhter Menge die Sexualhormone unterdrückt.",why:"Erhöhtes Prolaktin ist eine häufige und gut behandelbare Ursache für niedriges Testosteron und Libidoverlust. Stress, Schlafmangel und manche Medikamente heben den Wert.",
+ what:"Ein Hypophysenhormon, das in erhöhter Menge die Sexualhormone unterdrückt.",why:"Erhöhtes Prolaktin kann bei Frauen Zyklus und Eisprung stören und ist bei Männern eine häufige, gut behandelbare Ursache für niedriges Testosteron. Stress, Schlafmangel und manche Medikamente heben den Wert.",
  imp:["Morgens und ausgeruht messen, Stress vor der Abnahme verfälscht","Deutlich erhöhte Werte immer ärztlich abklären lassen","Medikamentenliste prüfen"],rel:["testo","lh"]},
 {id:"cortisol",n:"Cortisol (morgens)",u:"µg/dl",g:"Sexualhormone",al:["kortizol","kortizol","cortisol","kortisol"],tag:{von:7,bis:9,txt:"Cortisol folgt einem starken Tagesrhythmus — mittags liegt es bei einem Bruchteil des Morgenwerts."},ref:[6,23],opt:[10,18],cv:{"nmol/l":0.03625,"µg/l":0.1,"ng/ml":0.1},zeit:{von:7,bis:9,txt:"Cortisol folgt einem steilen Tagesrhythmus — nachmittags gemessen ist der Wert nicht mit einem Morgenwert vergleichbar."},
  what:"Das Stresshormon der Nebennierenrinde, morgens am höchsten.",why:"Dauerhaft hohe Werte bremsen Regeneration, Muskelaufbau und Schlafqualität. Sehr niedrige Werte gehören ärztlich abgeklärt.",
@@ -733,7 +741,7 @@ const M = [
 {id:"insulin",n:"Insulin (nüchtern)",u:"µU/ml",g:"Stoffwechsel",al:["s-inzulin","inzulin","insulin","fasting insulin","insulin fasting","insulin, fasting"],ref:[2,25],opt:[2,8],cv:{"pmol/l":0.1739,"mU/l":1,"µIU/ml":1},
  what:"Das Hormon, das Zucker in die Zellen schleust.",why:"Steigt oft jahrelang an, bevor der Blutzucker selbst auffällig wird — deshalb der früheste Marker für Insulinresistenz. Hohes Insulin bei normalem Zucker heißt: Die Bauchspeicheldrüse arbeitet gegen einen Widerstand an.",
  imp:["Krafttraining und mehr Muskelmasse senken den Bedarf","Ballaststoffe und Eiweiß zu jeder Mahlzeit","Zwischenmahlzeiten reduzieren, dem Insulin Pausen geben","Bauchfett abbauen wirkt hier am stärksten"],rel:["glukose","hba1c","trigl"]},
-{id:"homa",n:"HOMA-Index",u:"",g:"Stoffwechsel",al:["homa-index","homa-ir","homa index","homa ir","homa (","homa:"],ref:[0,2.5],opt:[0,1.5],
+{id:"homa",n:"HOMA-Index",u:"",g:"Stoffwechsel",al:["homa-index","homa-ir","homa index","homa ir","homa (","homa:","homa insulin resistance","insulin resistance index"],ref:[0,2.5],opt:[0,1.5],
  calc:["glukose","insulin"],parsbar:true,bed:"nur bei nüchterner Abnahme",
  f:(g,e)=> e.fasting==="nein" ? null : g("glukose")*g("insulin")/405,
  what:"Ein Maß für die Insulinresistenz: Nüchternglukose (mg/dl) mal Nüchterninsulin (µU/ml) geteilt durch 405. Serum berechnet ihn automatisch, wenn beide Werte im selben Befund stehen — außer der Befund ist als „nicht nüchtern“ markiert.",
@@ -882,7 +890,7 @@ const M = [
  what:"Ein genetisch festgelegtes Lipoprotein mit eigenem Gefäßrisiko.",why:"Praktisch nicht durch Lebensstil beeinflussbar, deshalb genügt eine einzige Messung im Leben. Ein hoher Wert bedeutet, dass die anderen Risikofaktoren umso konsequenter angegangen werden sollten.",
  imp:["Einmal messen reicht, der Wert bleibt lebenslang weitgehend stabil","Bei erhöhtem Wert LDL besonders konsequent senken","Familienanamnese für frühe Herzinfarkte besprechen"],rel:["ldl","apob"]},
 
-{id:"crp",n:"CRP",u:"mg/l",g:"Entzündung",al:["c-reaktives protein","hs-crp","crp","c-reactive protein","c reactive protein","hs crp","hscrp","high sensitivity crp","crp, high sensitivity"],ref:[0,5],opt:[0,1],cv:{"mg/dl":10,"µg/ml":1,"mg/100ml":10},
+{id:"crp",n:"CRP",u:"mg/l",g:"Entzündung",al:["c-reaktives protein","crp","c-reactive protein","c reactive protein"],ref:[0,5],opt:[0,1],cv:{"mg/dl":10,"µg/ml":1,"mg/100ml":10},
  what:"Ein Eiweiß, das die Leber bei Entzündungen bildet.",
  why:"Steigt bei jedem Infekt stark an, aber auch nach hartem Training. Der hochsensitive hs-CRP-Wert misst stille Dauerentzündung im niedrigen Bereich — dort gilt unter 1 mg/l als günstig.",
  imp:["Nicht direkt nach einem Infekt oder Wettkampf messen","Regelmäßiger Schlaf und Stressabbau senken den Basiswert","Omega-3 und viel Gemüse wirken entzündungshemmend","Erhöhtes CRP hebt gleichzeitig das Ferritin — beide zusammen lesen"],rel:["ferritin","omega3","leuko"]},
@@ -900,7 +908,7 @@ const M = [
  what:"Ein Abbauprodukt aus dem Muskelstoffwechsel, das über die Nieren ausgeschieden wird.",
  why:"Maß für die Nierenfunktion. Wichtig für Sportler: Viel Muskelmasse, ein hoher Fleischanteil und Kreatin-Supplemente heben den Wert, ohne dass die Niere schlechter arbeitet. Die eGFR ist deshalb aussagekräftiger.",
  imp:["48 Stunden vor der Abnahme kein intensives Training und kein Kreatin","Ausreichend trinken, mindestens 2 Liter am Tag","Bei viel Muskelmasse zusätzlich Cystatin C bestimmen lassen","Sehr hohe Proteinzufuhr über lange Zeit ärztlich begleiten"],rel:["egfr","cystatin","harnstoff"]},
-{id:"egfr",n:"eGFR",u:"ml/min",g:"Niere",al:["ckd-epi","ogf","ogf","ckd-epi","egfr","gfr","glomeruläre filtrationsrate","estimated gfr","egfr (ckd-epi"],ref:[90,140],opt:[95,140],
+{id:"egfr",n:"eGFR",u:"ml/min",g:"Niere",al:["ckd-epi","ogf","ogf","ckd-epi","egfr","gfr","glomeruläre filtrationsrate","estimated gfr","egfr (ckd-epi","glomerular filtration rate","glomerular filtration"],ref:[90,140],opt:[95,140],
  what:"Die geschätzte Filterleistung der Nieren, berechnet aus Kreatinin, Alter und Geschlecht.",why:"Der praktisch wichtigste Nierenwert. Nimmt mit dem Alter natürlich ab; ein rascher Abfall über wenige Jahre ist ein Warnsignal — hier lohnt der Verlauf besonders.",
  imp:["Gut hydriert bleiben","Blutdruck und Blutzucker im Griff behalten, beides schädigt die Nieren schleichend","Ibuprofen und ähnliche Schmerzmittel nicht dauerhaft ohne Rücksprache","Trend über Jahre beobachten, nicht den Einzelwert"],rel:["kreatinin","cystatin"]},
 {id:"cystatin",n:"Cystatin C",u:"mg/l",g:"Niere",al:["cystatin c","cystatin"],ref:[0.5,0.96],opt:[0.5,0.9],cv:{"mg/dl":10},
@@ -978,7 +986,7 @@ const M = [
  what:"Der prozentuale Anteil der Neutrophilen an allen weißen Blutkörperchen.",
  why:"Das Verhältnis der Untergruppen zueinander verrät oft mehr als die Einzelzahlen — ein hoher Neutrophilenanteil bei niedrigen Lymphozyten ist ein Stressmuster.",
  imp:["Immer zusammen mit den absoluten Zahlen lesen","Prozentwerte allein können täuschen, wenn die Gesamtzahl verschoben ist"],rel:["neutro_abs","lympho_pct"]},
-{id:"lympho_pct",n:"Lymphozyten (Anteil)",u:"%",g:"Blutbild",al:["k-limfociti","limfociti","lymphozyten prozent","limfociti %","lymphocytes","lymphocytes %","lymphocytes (%","lymphocyte %"],ref:[20,40],opt:[24,38],
+{id:"lympho_pct",n:"Lymphozyten (Anteil)",u:"%",g:"Blutbild",al:["k-limfociti","limfociti","lymphozyten prozent","limfociti %","lymphocytes","lymphocytes %","lymphocytes (%","lymphocyte %","lymphocyte"],ref:[20,40],opt:[24,38],
  what:"Der prozentuale Anteil der Lymphozyten.",
  why:"Sinkt bei bakteriellen Infekten und unter Dauerstress, steigt bei Virusinfekten.",
  imp:["Zusammen mit dem Neutrophilenanteil betrachten","Erholung hebt den Wert"],rel:["lympho_abs","neutro_pct"]},
@@ -1004,11 +1012,11 @@ const M = [
  what:"Das fettspaltende Enzym der Bauchspeicheldrüse.",
  why:"Spezifischer für die Bauchspeicheldrüse als die Amylase. Ein deutlich erhöhter Wert mit Oberbauchschmerzen gehört umgehend ärztlich abgeklärt.",
  imp:["Alkohol reduzieren","Bei Erhöhung mit Beschwerden nicht abwarten"],rel:["amylase"]},
-{id:"bili_dir",n:"Bilirubin (direkt)",u:"mg/dl",g:"Leber",al:["s-bili-dir","bili-dir","direktes bilirubin","bilirubin direkt","direct bilirubin","bilirubin direct","bilirubin - direct","bilirubin, direct","conjugated bilirubin"],ref:[0,0.5],opt:[0,0.3],cv:{"µmol/l":0.05848},
+{id:"bili_dir",n:"Bilirubin (direkt)",u:"mg/dl",g:"Leber",al:["s-bili-dir","bili-dir","direktes bilirubin","bilirubin direkt","direct bilirubin","bilirubin direct","bilirubin - direct","bilirubin, direct","conjugated bilirubin","bilirubin -direct","bilirubin (direct","bilirubin-direct"],ref:[0,0.5],opt:[0,0.3],cv:{"µmol/l":0.05848},
  what:"Der bereits in der Leber verarbeitete Anteil des Bilirubins.",
  why:"Die Aufteilung entscheidet: Ist überwiegend das indirekte Bilirubin erhöht, spricht das für das harmlose Gilbert-Syndrom. Ist das direkte erhöht, deutet es eher auf einen Abflussstau in den Gallenwegen.",
  imp:["Immer zusammen mit dem Gesamtbilirubin betrachten","Bei erhöhtem direktem Anteil ärztlich abklären lassen"],rel:["bilirubin","ggt","ap"]},
-{id:"bili_ind",n:"Bilirubin (indirekt)",u:"mg/dl",g:"Leber",al:["indirektes bilirubin","bilirubin indirekt","bilirubin (indirekt","bilirubin, indirekt","bili-indir","bili-ind","indirektni bilirubin","nekonjugirani bilirubin","unkonjugiertes bilirubin","indirect bilirubin","bilirubin indirect","bilirubin - indirect","bilirubin, indirect","unconjugated bilirubin"],ref:[0,1.0],opt:[0,0.8],cv:{"µmol/l":0.05848},
+{id:"bili_ind",n:"Bilirubin (indirekt)",u:"mg/dl",g:"Leber",al:["indirektes bilirubin","bilirubin indirekt","bilirubin (indirekt","bilirubin, indirekt","bili-indir","bili-ind","indirektni bilirubin","nekonjugirani bilirubin","unkonjugiertes bilirubin","indirect bilirubin","bilirubin indirect","bilirubin - indirect","bilirubin, indirect","unconjugated bilirubin","bilirubin (indirect","bilirubin -indirect","bilirubin-indirect"],ref:[0,1.0],opt:[0,0.8],cv:{"µmol/l":0.05848},
  calc:["bilirubin","bili_dir"],parsbar:true,
  f:g=>{ const r=g("bilirubin")-g("bili_dir"); return r>=0?r:null },
  what:"Der Anteil des Bilirubins, den die Leber noch nicht verarbeitet hat: Gesamtbilirubin minus direktes Bilirubin. Serum berechnet ihn automatisch, wenn beide im selben Befund stehen.",
@@ -1023,7 +1031,7 @@ const M = [
  what:"Der wichtigste negativ geladene Elektrolyt im Blut.",
  why:"Läuft meist parallel zum Natrium und hilft, den Säure-Basen-Haushalt einzuordnen. Isolierte kleine Abweichungen haben selten eine Bedeutung.",
  imp:["Ausreichend trinken","Zusammen mit Natrium und Kalium bewerten"],rel:["natrium","kalium"]},
-{id:"phosphat",n:"Phosphat",u:"mmol/l",g:"Mineralien",al:["s-fosfat","fosfat","phosphat","phosphorus","inorganic phosphorus","phosphate"],ref:[0.74,1.52],opt:[0.85,1.4],cv:{"mg/dl":0.3229},
+{id:"phosphat",n:"Phosphat",u:"mmol/l",g:"Mineralien",al:["s-fosfat","fosfat","phosphat","phosphorus","inorganic phosphorus","phosphate","phosphorous"],ref:[0.74,1.52],opt:[0.85,1.4],cv:{"mg/dl":0.3229},
  what:"Mineralstoff für Knochen, Energiestoffwechsel und Zellmembranen.",
  why:"Wird gemeinsam mit Calcium und Vitamin D über die Nebenschilddrüse geregelt. Bei Nierenschwäche steigt Phosphat an, deshalb gehört es zur Nierenabklärung.",
  imp:["Cola und stark verarbeitete Lebensmittel enthalten viel Phosphat","Zusammen mit Calcium, Vitamin D und den Nierenwerten bewerten"],rel:["calcium","vitd","egfr"]},
@@ -1064,7 +1072,7 @@ const M = [
  what:"Kreatinin im Urin, im Wesentlichen ein Maß für die Konzentration der Probe.",
  why:"Für sich genommen wenig aussagekräftig. Es dient dazu, andere Urinwerte auf die Verdünnung umzurechnen — ein niedriger Wert bedeutet meist einfach, dass du viel getrunken hast.",
  imp:["Nur im Verhältnis zu Albumin oder Protein deuten","Niedrige Werte bei stark verdünntem Urin sind normal"],rel:["u_albumin","kreatinin"]},
-{id:"u_ph",n:"Urin pH-Wert",u:"",g:"Urin",al:["u-ph","urin ph","urine ph"],ref:[4.5,8],opt:[5.5,7],
+{id:"u_ph",n:"Urin pH-Wert",u:"",g:"Urin",al:["u-ph","urin ph","urine ph","ph-wert (urin","ph"],ref:[4.5,8],opt:[5.5,7],
  what:"Wie sauer oder basisch der Urin ist.",
  why:"Schwankt stark mit der Ernährung: viel Fleisch macht sauren Urin, viel Gemüse basischen. Dauerhaft sehr saurer Urin begünstigt Harnsäuresteine, dauerhaft basischer kann auf einen Harnwegsinfekt hinweisen.",
  imp:["Morgenurin ist naturgemäß saurer","Bei Neigung zu Harnsäuresteinen gemüsereicher essen","Einzelwerte sagen wenig, der Verlauf mehr"],rel:["harnsaeure","u_nitrit"]},
@@ -1072,35 +1080,35 @@ const M = [
  what:"Wie stark der Urin konzentriert ist.",
  why:"Im Wesentlichen ein Trinkmengenmesser. Niedrige Werte heißen viel getrunken, hohe Werte wenig. Dauerhaft niedrige Werte trotz normaler Trinkmenge können auf eine nachlassende Konzentrationsfähigkeit der Niere hindeuten.",
  imp:["Am Abnahmetag normal trinken, weder dursten noch überwässern","Zusammen mit den Nierenwerten bewerten"],rel:["egfr","kreatinin"]},
-{id:"u_protein",n:"Urin Eiweiß",u:"",g:"Urin",al:["u-proteini","urin eiweiß","urin protein","urine protein"],ref:[0,1],opt:[0,0.4],
+{id:"u_protein",stufe:true,n:"Urin Eiweiß",u:"",g:"Urin",al:["u-proteini","urin eiweiß","urin protein","urine protein"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf Eiweiß im Urin. 0 bedeutet unauffällig.",
  why:"Eiweiß im Urin ist einer der frühesten Hinweise auf eine Nierenschädigung, oft Jahre bevor Kreatinin oder eGFR sich verändern. Nach starker körperlicher Belastung kann es vorübergehend auftreten.",
  imp:["Vor der Abnahme kein intensives Training","Ein positiver Befund gehört immer mit einer zweiten Probe bestätigt","Bei wiederholtem Nachweis ärztlich abklären lassen"],rel:["egfr","kreatinin"]},
-{id:"u_leuko",n:"Urin Leukozyten",u:"",g:"Urin",al:["u-levkociti","urin leukozyten","urine leukocytes","leukocyte esterase"],ref:[0,1],opt:[0,0.4],
+{id:"u_leuko",stufe:true,n:"Urin Leukozyten",u:"",g:"Urin",al:["u-levkociti","urin leukozyten","urine leukocytes","leukocyte esterase"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf weiße Blutkörperchen im Urin. 0 bedeutet unauffällig.",
  why:"Ein positiver Befund spricht für eine Entzündung der Harnwege, meist gemeinsam mit Nitrit und Beschwerden beim Wasserlassen.",
  imp:["Bei positivem Befund mit Beschwerden ärztlich abklären lassen","Zusammen mit Nitrit bewerten"],rel:["u_nitrit","u_blut"]},
-{id:"u_blut",n:"Urin Blut",u:"",g:"Urin",al:["u-kri","urin blut","urin erythrozyten","urine blood"],ref:[0,1],opt:[0,0.4],
+{id:"u_blut",stufe:true,n:"Urin Blut",u:"",g:"Urin",al:["u-kri","urin blut","urin erythrozyten","urine blood"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf Blut im Urin. 0 bedeutet unauffällig.",
  why:"Kann harmlose Ursachen haben — Menstruation, intensiver Sport, Nierensteine im Abgang — gehört bei wiederholtem Nachweis aber immer abgeklärt.",
  imp:["Bei Frauen nicht während der Periode messen","Vor der Abnahme kein intensives Ausdauertraining","Wiederholt positiv heißt: ärztlich abklären"],rel:["u_protein","u_leuko"]},
-{id:"u_glukose",n:"Urin Glukose",u:"",g:"Urin",al:["u-glukoza","urin glukose","urin zucker","urine glucose"],ref:[0,1],opt:[0,0.4],
+{id:"u_glukose",stufe:true,n:"Urin Glukose",u:"",g:"Urin",al:["u-glukoza","urin glukose","urin zucker","urine glucose"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf Zucker im Urin. 0 bedeutet unauffällig.",
  why:"Normalerweise hält die Niere allen Zucker zurück. Zucker im Urin erscheint erst, wenn der Blutzucker deutlich erhöht ist — oder unter bestimmten Diabetesmedikamenten, wo es erwünscht ist.",
  imp:["Bei positivem Befund HbA1c und Nüchternglukose prüfen","Unter SGLT2-Hemmern ist ein positiver Befund normal"],rel:["glukose","hba1c"]},
-{id:"u_nitrit",n:"Urin Nitrit",u:"",g:"Urin",al:["u-nitriti","urin nitrit","nitrite"],ref:[0,1],opt:[0,0.4],
+{id:"u_nitrit",stufe:true,n:"Urin Nitrit",u:"",g:"Urin",al:["u-nitriti","urin nitrit","nitrite"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf Nitrit im Urin. 0 bedeutet unauffällig.",
  why:"Nitrit entsteht, wenn Bakterien im Urin Nitrat umwandeln. Ein positiver Befund spricht ziemlich sicher für einen bakteriellen Harnwegsinfekt.",
  imp:["Bei positivem Befund und Beschwerden ärztlich abklären lassen","Zusammen mit den Urin-Leukozyten bewerten"],rel:["u_leuko"]},
-{id:"u_keton",n:"Urin Ketone",u:"",g:"Urin",al:["u-ketoni","urin ketone","urine ketones"],ref:[0,1],opt:[0,0.4],
+{id:"u_keton",stufe:true,n:"Urin Ketone",u:"",g:"Urin",al:["u-ketoni","urin ketone","urine ketones"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf Ketonkörper im Urin. 0 bedeutet unauffällig.",
  why:"Ketone erscheinen, wenn der Körper Fett statt Zucker verbrennt — beim Fasten, bei ketogener Ernährung oder nach langem Ausdauertraining. Dann sind sie erwartbar und harmlos.",
  imp:["Nach Fasten oder unter ketogener Ernährung erwartbar","Bei Diabetes zusammen mit hohem Blutzucker ein Warnzeichen"],rel:["glukose","u_glukose"]},
-{id:"u_urobi",n:"Urin Urobilinogen",u:"",g:"Urin",al:["u-urobilinogen","urin urobilinogen","urobilinogen"],ref:[0,1],opt:[0,0.4],
+{id:"u_urobi",stufe:true,n:"Urin Urobilinogen",u:"",g:"Urin",al:["u-urobilinogen","urin urobilinogen","urobilinogen"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf ein Abbauprodukt des Blutfarbstoffs. 0 bedeutet unauffällig.",
  why:"Erhöhte Werte können auf Lebererkrankungen oder verstärkten Abbau roter Blutkörperchen hinweisen. Isoliert selten aussagekräftig.",
  imp:["Zusammen mit Bilirubin und den Leberwerten bewerten"],rel:["bilirubin","gpt"]},
-{id:"u_bili",n:"Urin Bilirubin",u:"",g:"Urin",al:["u-bilirubin","urin bilirubin","urine bilirubin"],ref:[0,1],opt:[0,0.4],
+{id:"u_bili",stufe:true,n:"Urin Bilirubin",u:"",g:"Urin",al:["u-bilirubin","urin bilirubin","urine bilirubin"],ref:[0,1],opt:[0,0.4],
  what:"Teststreifen auf Bilirubin im Urin. 0 bedeutet unauffällig.",
  why:"Bilirubin gehört normalerweise nicht in den Urin. Ein positiver Befund weist auf einen Rückstau in Leber oder Gallenwegen hin und gehört abgeklärt.",
  imp:["Bei positivem Befund Leberwerte und direktes Bilirubin prüfen lassen"],rel:["bili_dir","ggt"]},
@@ -1143,9 +1151,505 @@ const M = [
  imp:["Bei langen Belastungen Elektrolyte statt reinem Wasser","Abweichungen ärztlich abklären, der Bereich ist eng"],rel:["kalium"]},
 {id:"kalium",n:"Kalium",u:"mmol/l",g:"Mineralien",al:["kalij","s-kalij","kalij","kalium","potassium"],ref:[3.5,5.1],opt:[4.0,4.8],cv:{"mval/l":1,"mEq/l":1},
  what:"Elektrolyt für Nerven- und Herzmuskelfunktion.",why:"Abweichungen wirken direkt auf den Herzrhythmus. Achtung bei der Abnahme: Zu langes Stauen oder Fäusteballen lässt den Wert künstlich hoch erscheinen.",
- imp:["Kartoffeln, Bananen, Hülsenfrüchte, Gemüse","Auffällige Werte immer mit einer zweiten Abnahme bestätigen","Bei Nierenerkrankungen nur nach ärztlicher Vorgabe erhöhen"],rel:["natrium","magnesium","egfr"]}
+ imp:["Kartoffeln, Bananen, Hülsenfrüchte, Gemüse","Auffällige Werte immer mit einer zweiten Abnahme bestätigen","Bei Nierenerkrankungen nur nach ärztlicher Vorgabe erhöhen"],rel:["natrium","magnesium","egfr"]},
+/* ===== Katalog 2.0 (V15) — Laborbereich hat bei lab:true Vorrang ===== */
+{id:"rdw_sd",n:"RDW-SD",u:"fl",g:"Blutbild",al:["rdw-sd","rdw sd","red cell distribution width - sd","red cell distribution width-sd","red cell distribution width sd","erythrozytenverteilungsbreite sd"],ref:[37,54],opt:[37,54],nurRef:true,
+ what:"Die Größenschwankung der roten Blutkörperchen, als absolute Breite in Femtolitern.",why:"Ergänzt RDW-CV. Eine große Spannbreite zeigt, dass gleichzeitig kleine und große Zellen unterwegs sind — etwa bei beginnendem Eisen- oder B12-Mangel.",rel:["rdw","mcv"]},
+{id:"retis",n:"Retikulozyten",u:"%",g:"Blutbild",al:["retikulozyten","reticulocytes","reticulocyte count","reticulocyte %","retikulozyten %","retics"],ref:[0.5,2.5],opt:[0.5,2.5],cv:{"‰":0.1,"promille":0.1},nurRef:true,
+ what:"Junge rote Blutkörperchen, gerade aus dem Knochenmark entlassen.",why:"Zeigt, wie aktiv die Blutbildung gerade ist. Steigt nach Blutverlust oder bei Behandlung eines Eisenmangels, bleibt bei gestörter Bildung niedrig.",rel:["hb","ferritin"]},
+{id:"ret_he",n:"Retikulozyten-Hämoglobin (Ret-He)",u:"pg",g:"Blutbild",al:["ret-he","reticulocyte hemoglobin","reticulocyte haemoglobin","retikulozytenhämoglobin","retikulozyten-hämoglobin","chr "],ref:[28,36],opt:[28,36],nurRef:true,
+ what:"Der Hämoglobingehalt der jüngsten roten Blutkörperchen.",why:"Spiegelt die Eisenversorgung der letzten Tage wider — schneller als Hb oder MCH. Ein niedriger Wert spricht für Eisen, das gerade nicht ankommt.",rel:["ferritin","mch"]},
+{id:"pdw",n:"PDW",u:"fl",g:"Blutbild",al:["pdw","platelet distribution width","thrombozytenverteilungsbreite"],ref:[9,17],opt:[9,17],nurRef:true,
+ what:"Die Größenschwankung der Blutplättchen.",why:"Nur zusammen mit Thrombozytenzahl und MPV aussagekräftig.",rel:["thrombo","mpv"]},
+{id:"thrombokrit",n:"Thrombokrit",u:"%",g:"Blutbild",al:["plateletcrit","thrombokrit","thrombozytokrit","pct"],ref:[0.17,0.35],opt:[0.17,0.35],nurRef:true,
+ what:"Der Anteil der Blutplättchen am Blutvolumen.",why:"Ein Rechenwert aus Zahl und Größe der Plättchen, isoliert wenig aussagekräftig.",rel:["thrombo","mpv"]},
+{id:"plcr",n:"P-LCR",u:"%",g:"Blutbild",al:["p-lcr","platelet large cell ratio","large platelet ratio"],ref:[13,43],opt:[13,43],nurRef:true,
+ what:"Der Anteil großer Blutplättchen.",why:"Große Plättchen sind meist jung. Ein hoher Anteil zeigt eine lebhafte Nachbildung.",rel:["thrombo","mpv"]},
+{id:"ig",n:"Unreife Granulozyten",u:"%",g:"Blutbild",al:["immature granulocytes","unreife granulozyten","ig %","ig%","ig-anteil"],ref:[0,0.6],opt:[0,0.6],nurRef:true,
+ what:"Vorstufen der Neutrophilen, die eigentlich noch ins Knochenmark gehören.",why:"Tauchen bei Infekten, Entzündungen und Stress vermehrt im Blut auf.",rel:["leuko","neutro_pct","crp"]},
+{id:"nrbc",n:"Normoblasten (NRBC)",u:"/100 Leuko",g:"Blutbild",al:["nrbc","nucleated rbc","nucleated red blood cells","normoblasten","kernhaltige erythrozyten"],ref:[0,0.5],opt:[0,0.5],nurRef:true,
+ what:"Kernhaltige Vorstufen roter Blutkörperchen.",why:"Bei Erwachsenen normalerweise nicht im Blut. Ein Nachweis gehört ärztlich eingeordnet.",rel:["hb","retis"]},
+{id:"hba2",n:"HbA2",u:"%",g:"Blutbild",al:["hba2","hb a2","hemoglobin a2","haemoglobin a2","hämoglobin a2"],ref:[2,3.5],opt:[2,3.5],nurRef:true,
+ what:"Eine Nebenform des Hämoglobins.",why:"Leicht erhöht ist sie ein Hinweis auf eine Beta-Thalassämie-Anlage — wichtig bei kleinen Blutkörperchen ohne Eisenmangel.",rel:["mcv","ferritin"]},
+{id:"hbf",n:"HbF (fetales Hämoglobin)",u:"%",g:"Blutbild",al:["hbf","hb f","fetal hemoglobin","foetal haemoglobin","hemoglobin f","haemoglobin f","fetales hämoglobin"],ref:[0,1],opt:[0,1],nurRef:true,
+ what:"Das Hämoglobin vor der Geburt, bei Erwachsenen nur noch in Spuren.",why:"Erhöht bei manchen erblichen Hämoglobinvarianten.",rel:["hba2","mcv"]},
+{id:"methb",n:"Methämoglobin",u:"%",g:"Blutbild",al:["methemoglobin","methaemoglobin","methämoglobin","methb","met-hb"],ref:[0,1.5],opt:[0,1.5],nurRef:true,
+ what:"Hämoglobin, das keinen Sauerstoff mehr binden kann.",why:"Erhöht durch bestimmte Medikamente oder Chemikalien."},
+{id:"cohb",n:"Carboxyhämoglobin",u:"%",g:"Blutbild",al:["carboxyhemoglobin","carboxyhaemoglobin","carboxyhämoglobin","cohb","co-hb"],ref:[0,2],opt:[0,2],nurRef:true,
+ what:"Hämoglobin, das Kohlenmonoxid gebunden hat.",why:"Bei Rauchern regelmäßig erhöht (bis etwa 10 %), sonst ein Hinweis auf Kohlenmonoxid aus Heizung oder Abgasen."},
+{id:"stab",n:"Stabkernige Neutrophile",u:"%",g:"Blutbild",al:["stabkernige","band neutrophils","band forms","stabkernige granulozyten"],ref:[0,5],opt:[0,5],nurRef:true,
+ what:"Junge Neutrophile mit noch ungeteiltem Kern.",why:"Steigen bei bakteriellen Infekten früh an.",rel:["neutro_pct","crp"]},
+{id:"quick",n:"Quick-Wert",u:"%",g:"Gerinnung",al:["quick","quick-wert","thromboplastinzeit (quick","tpz (quick","tpz %"],ref:[70,130],opt:[70,130],nurRef:true,
+ what:"Wie schnell das Blut über den äußeren Weg gerinnt, in Prozent der Norm.",why:"Sinkt bei Vitamin-K-Mangel, Leberschwäche und unter Blutverdünnern vom Cumarin-Typ.",rel:["inr","vitk1"]},
+{id:"inr",n:"INR",u:"",g:"Gerinnung",al:["inr","pt-inr","pt inr","international normalized ratio","inr-wert"],ref:[0.85,1.15],opt:[0.85,1.15],nurRef:true,
+ what:"Die Gerinnungszeit, international vergleichbar gemacht.",why:"Ohne Blutverdünner liegt sie um 1. Unter Marcumar oder Warfarin wird ein ärztlich festgelegter Zielbereich angestrebt — dann gilt dieser, nicht der Normbereich.",rel:["quick"]},
+{id:"pt_sek",n:"Prothrombinzeit",u:"s",g:"Gerinnung",al:["prothrombin time","prothrombinzeit","pt (sec","pt sec","pt, seconds","prothrombin time (pt"],ref:[10,13.5],opt:[10,13.5],lab:true,nurRef:true,
+ what:"Die Gerinnungszeit des äußeren Wegs in Sekunden.",why:"Hängt stark vom Reagenz ab — der Laborbereich ist maßgeblich.",rel:["inr","quick"]},
+{id:"aptt",n:"aPTT",u:"s",g:"Gerinnung",al:["aptt","a-ptt","ptt","partial thromboplastin time","partielle thromboplastinzeit","activated partial thromboplastin"],ref:[25,37],opt:[25,37],lab:true,nurRef:true,
+ what:"Die Gerinnungszeit des inneren Wegs.",why:"Verlängert bei Mangel einzelner Gerinnungsfaktoren oder unter Heparin.",rel:["quick","fibrinogen"]},
+{id:"fibrinogen",n:"Fibrinogen",u:"mg/dl",g:"Gerinnung",al:["fibrinogen"],ref:[200,400],opt:[200,400],cv:{"g/l":100},nurRef:true,
+ what:"Das Eiweiß, aus dem bei der Gerinnung das Fasernetz entsteht.",why:"Steigt bei Entzündungen, Rauchen und mit dem Alter — dauerhaft hohe Werte erhöhen das Gefäßrisiko.",rel:["crp"]},
+{id:"ddimer",n:"D-Dimere",u:"mg/l FEU",g:"Gerinnung",al:["d-dimer","d-dimere","d dimer","d-dimers"],ref:[0,0.5],opt:[0,0.5],cv:{"µg/ml":1,"mg/l":1,"ng/ml":0.001,"µg/l":0.001},lab:true,nurRef:true,warn:"Bei einseitig geschwollenem, schmerzendem Bein oder plötzlicher Atemnot: sofort ärztliche Hilfe holen — nicht auf einen Laborwert warten.",
+ what:"Abbauprodukte von Blutgerinnseln.",why:"Ein normaler Wert macht eine frische Thrombose unwahrscheinlich. Erhöht ist er nach Operationen, in der Schwangerschaft und mit dem Alter oft auch ohne Gerinnsel."},
+{id:"tz",n:"Thrombinzeit",u:"s",g:"Gerinnung",al:["thrombinzeit","thrombin time","thrombin clotting time"],ref:[14,21],opt:[14,21],lab:true,nurRef:true,
+ what:"Die Zeit für den letzten Schritt der Gerinnung.",why:"Verlängert unter Heparin und bei Fibrinogenmangel.",rel:["fibrinogen"]},
+{id:"at3",n:"Antithrombin",u:"%",g:"Gerinnung",al:["antithrombin","at iii","at-iii","antithrombin iii","antithrombin-aktivität"],ref:[80,120],opt:[80,120],nurRef:true,
+ what:"Der wichtigste natürliche Gerinnungshemmer.",why:"Ein Mangel erhöht die Thromboseneigung."},
+{id:"protc",n:"Protein C",u:"%",g:"Gerinnung",al:["protein c activity","protein c aktivität","protein-c","protein c (aktivität"],ref:[70,140],opt:[70,140],nurRef:true,
+ what:"Ein natürlicher Gerinnungshemmer, Vitamin-K-abhängig.",why:"Ein angeborener Mangel erhöht die Thromboseneigung.",rel:["prots","at3"]},
+{id:"prots",n:"Protein S",u:"%",g:"Gerinnung",al:["protein s activity","protein s aktivität","protein-s","freies protein s","free protein s"],ref:[65,140],opt:[65,140],nurRef:true,
+ what:"Ein Helfer von Protein C bei der Gerinnungshemmung.",why:"Sinkt in der Schwangerschaft und unter der Pille, ein angeborener Mangel erhöht die Thromboseneigung.",rel:["protc"]},
+{id:"ckmb",n:"CK-MB",u:"U/l",g:"Herz",al:["ck-mb","ckmb","ck mb","creatine kinase mb","kreatinkinase mb"],ref:[0,24],opt:[0,24],lab:true,nurRef:true,
+ what:"Der Anteil der Kreatinkinase, der vor allem im Herzmuskel vorkommt.",why:"Heute weitgehend durch Troponin ersetzt. Nach hartem Training steigt auch CK-MB aus der Skelettmuskulatur.",rel:["ck","hstnt"]},
+{id:"hstni",n:"hs-Troponin I",u:"ng/l",g:"Herz",al:["troponin i","troponin-i","hs-tni","hstni","hs-ctni","hs ctni","hochsensitives troponin i","high sensitivity troponin i"],ref:[0,26],opt:[0,26],refF:[0,16],cv:{"pg/ml":1,"µg/l":1000,"ng/ml":1000},lab:true,nurRef:true,warn:"Bei Brustschmerz, Druck- oder Engegefühl in der Brust, Atemnot oder Schmerzen, die in Arm, Kiefer oder Rücken ausstrahlen: sofort 112 rufen — nicht auf einen Laborwert warten.",
+ what:"Ein Eiweiß aus dem Herzmuskel, das bei Schädigung ins Blut gelangt.",why:"Der empfindlichste Marker für Herzmuskelschäden. Nach Marathon oder sehr harten Einheiten kann er auch bei Gesunden kurz steigen. Die Grenzwerte hängen vom Test ab.",rel:["hstnt","ntprobnp"]},
+{id:"bnp",n:"BNP",u:"pg/ml",g:"Herz",al:["bnp","brain natriuretic peptide","b-type natriuretic peptide"],ref:[0,100],opt:[0,100],cv:{"ng/l":1,"pmol/l":3.47},nurRef:true,
+ what:"Ein Hormon, das die Herzkammern bei Überdehnung ausschütten.",why:"Wie NT-proBNP ein Marker für Herzbelastung, nur kurzlebiger.",rel:["ntprobnp"]},
+{id:"myoglobin",n:"Myoglobin",u:"µg/l",g:"Muskel",al:["myoglobin"],ref:[0,72],opt:[0,72],refF:[0,58],cv:{"ng/ml":1},nurRef:true,
+ what:"Der Sauerstoffspeicher der Muskelzellen.",why:"Steigt nach Training und Muskelverletzungen schnell an und fällt ebenso schnell wieder.",rel:["ck"]},
+{id:"apoa1",n:"Apolipoprotein A1",u:"mg/dl",g:"Fette",al:["apolipoprotein a1","apolipoprotein - a1","apolipoprotein a-1","apolipoprotein a 1","apo a1","apoa1","apo a-1","apo-a1","apo a 1","apo-a1 "],ref:[110,205],opt:[140,205],refF:[125,215],optF:[150,215],cv:{"g/l":100},
+ what:"Das Haupteiweiß des HDL-Cholesterins.",why:"Spiegelt die Zahl der schützenden HDL-Partikel. Ausdauersport und Normalgewicht heben den Wert.",rel:["hdl","apob","apoba1"]},
+{id:"apoba1",n:"ApoB/ApoA1-Quotient",u:"",g:"Fette",al:["apo b/apo a1","apob/apoa1","apo b / apo a1","apo-b/apo-a1","apo b/a1","apob/a1","apo b/apo a1 ratio","apob/apoa1 ratio","apo b / apo a1 ratio"],ref:[0.3,0.9],opt:[0.3,0.7],parsbar:true,
+ what:"Das Verhältnis gefäßschädigender zu schützenden Lipoproteinen.",why:"Gilt als einer der besten Einzelwerte für das Herz-Kreislauf-Risiko. Bei Männern bis 1,0, bei Frauen bis 0,9 gilt als unauffällig, darunter ist besser.",rel:["apob","apoa1","ldl"]},
+{id:"sdldl",n:"Small dense LDL",u:"mg/dl",g:"Fette",al:["small dense ldl","sd-ldl","sdldl","sd ldl","kleine dichte ldl"],ref:[0,35],opt:[0,35],cv:{"mmol/l":38.67},lab:true,nurRef:true,
+ what:"Der Anteil kleiner, dichter LDL-Partikel.",why:"Diese dringen leichter in die Gefäßwand ein. Hohe Triglyceride und Insulinresistenz gehen meist mit viel sdLDL einher.",rel:["ldl","trigl"]},
+{id:"vldl",n:"VLDL-Cholesterin",u:"mg/dl",g:"Fette",al:["vldl","vldl cholesterol","vldl-cholesterin","vldl-c","vldl cholesterin"],ref:[2,30],opt:[2,30],cv:{"mmol/l":38.67},nurRef:true,
+ what:"Cholesterin in den triglyceridreichen Transportpartikeln aus der Leber.",why:"Meist aus den Triglyceriden berechnet und läuft mit ihnen parallel.",rel:["trigl"]},
+{id:"nonhdl",n:"Non-HDL-Cholesterin",u:"mg/dl",g:"Fette",al:["non-hdl cholesterol","non hdl cholesterol","non-hdl-cholesterin","non-hdl cholesterin","non-hdl","non hdl","nonhdl","non-hdl-c"],ref:[0,160],opt:[0,130],cv:{"mmol/l":38.67},parsbar:true,
+ what:"Gesamtcholesterin minus HDL — alles, was gefäßschädigend sein kann.",why:"Erfasst neben LDL auch die triglyceridreichen Partikel und ist deshalb bei hohen Triglyceriden aussagekräftiger als LDL allein.",rel:["chol","hdl","ldl","apob"]},
+{id:"lpa_nmol",n:"Lipoprotein(a)",u:"nmol/l",g:"Fette",al:["lipoprotein(a)","lipoprotein a","lp(a)","lpa","lipoprotein (a)","lp (a)"],ref:[0,75],opt:[0,75],einh:true,
+ what:"Ein genetisch festgelegtes Lipoprotein mit eigenem Gefäßrisiko, als Partikelzahl.",why:"Praktisch nicht durch Lebensstil beeinflussbar, eine Messung im Leben genügt. Die Angabe in nmol/l lässt sich nicht exakt in mg/dl umrechnen — deshalb ein eigener Eintrag.",rel:["lpa","apob"]},
+{id:"globulin",n:"Globulin",u:"g/dl",g:"Eiweiße",al:["globulin","serum globulin","globuline","globulins"],ref:[2,3.5],opt:[2,3.5],cv:{"g/l":0.1},nurRef:true,
+ what:"Alle Bluteiweiße außer Albumin — vor allem Antikörper und Transportproteine.",why:"Meist berechnet aus Gesamteiweiß minus Albumin. Erhöht bei chronischen Entzündungen, erniedrigt bei Antikörpermangel.",rel:["protein","albumin"]},
+{id:"agq",n:"Albumin/Globulin-Quotient",u:"",g:"Eiweiße",al:["albumin/globulin","a/g ratio","a/g-quotient","alb/globulin","albumin globulin ratio","alb/glob","albumin/globulin ratio","a/g quotient"],ref:[1,2.2],opt:[1,2.2],nurRef:true,
+ what:"Das Verhältnis von Albumin zu den übrigen Bluteiweißen.",why:"Sinkt bei Entzündungen und Leberschwäche.",rel:["albumin","globulin"]},
+{id:"che",n:"Cholinesterase",u:"U/l",g:"Leber",al:["cholinesterase","pseudocholinesterase","che","cholinesterase (che"],ref:[5320,12920],opt:[5320,12920],cv:{"ku/l":1000},lab:true,nurRef:true,
+ what:"Ein Enzym, das die Leber bildet.",why:"Zeigt die Syntheseleistung der Leber. Niedrig bei Leberschwäche und Mangelernährung, hoch bei Fettleber.",rel:["albumin","gpt"]},
+{id:"gldh",n:"GLDH",u:"U/l",g:"Leber",al:["gldh","glutamatdehydrogenase","glutamat-dehydrogenase","glutamate dehydrogenase"],ref:[0,7],opt:[0,7],refF:[0,5],nurRef:true,
+ what:"Ein Enzym aus dem Inneren der Leberzellen.",why:"Steigt erst bei tieferen Zellschäden — ein Hinweis darauf, wie ernst eine Leberwerterhöhung ist.",rel:["gpt","got","ggt"]},
+{id:"ammoniak",n:"Ammoniak",u:"µmol/l",g:"Leber",al:["ammoniak","ammonia","nh3","ammonium im plasma"],ref:[11,51],opt:[11,51],cv:{"µg/dl":0.587},lab:true,nurRef:true,
+ what:"Ein Abbauprodukt aus Eiweiß, das die Leber entgiftet.",why:"Erhöht bei schwerer Leberschwäche — oder nach intensivem Training kurz vor der Abnahme.",rel:["gpt","harnstoff"]},
+{id:"pamylase",n:"Pankreas-Amylase",u:"U/l",g:"Leber",al:["pankreas-amylase","pankreasamylase","pancreatic amylase","p-amylase","amylase, pancreatic"],ref:[13,53],opt:[13,53],nurRef:true,
+ what:"Der Anteil der Amylase, der aus der Bauchspeicheldrüse stammt.",why:"Spezifischer für die Bauchspeicheldrüse als die Gesamt-Amylase.",rel:["amylase","lipase"]},
+{id:"gallens",n:"Gallensäuren",u:"µmol/l",g:"Leber",al:["gallensäuren","gallensauren","bile acids","total bile acids","gesamtgallensäuren"],ref:[0,10],opt:[0,10],nurRef:true,
+ what:"Verdauungshelfer aus der Leber, die zum großen Teil wieder aufgenommen werden.",why:"Erhöht, wenn Leber oder Gallenwege sie nicht richtig zurückholen.",rel:["ggt","ap"]},
+{id:"coerulo",n:"Coeruloplasmin",u:"mg/dl",g:"Leber",al:["coeruloplasmin","caeruloplasmin","ceruloplasmin","zöruloplasmin"],ref:[20,60],opt:[20,60],cv:{"g/l":100},nurRef:true,
+ what:"Das Transporteiweiß für Kupfer.",why:"Niedrig bei der seltenen Kupferspeicherkrankheit Morbus Wilson, erhöht bei Entzündungen, in der Schwangerschaft und unter der Pille.",rel:["kupfer"]},
+{id:"haptoglobin",n:"Haptoglobin",u:"g/l",g:"Eiweiße",al:["haptoglobin"],ref:[0.3,2],opt:[0.3,2],cv:{"mg/dl":0.01},nurRef:true,
+ what:"Ein Eiweiß, das freies Hämoglobin einfängt.",why:"Sinkt, wenn rote Blutkörperchen im Blut zerfallen — bei Läufern durch den Fußaufprall auch leicht.",rel:["ldh","bilirubin","hb"]},
+{id:"a1at",n:"Alpha-1-Antitrypsin",u:"g/l",g:"Eiweiße",al:["alpha-1-antitrypsin","alpha 1 antitrypsin","alpha1-antitrypsin","α1-antitrypsin","a1-antitrypsin","a1at","aat "],ref:[0.9,2],opt:[0.9,2],cv:{"mg/dl":0.01},nurRef:true,
+ what:"Ein Schutzeiweiß, vor allem für die Lunge.",why:"Ein angeborener Mangel schädigt auf Dauer Lunge und Leber. Bei Entzündungen steigt der Wert.",rel:["crp"]},
+{id:"ep_a1",n:"Alpha-1-Globuline",u:"%",g:"Eiweiße",al:["alpha-1-globulin","alpha 1 globulin","alpha1-globulin","α1-globulin","alpha-1-globuline"],ref:[1.4,4.6],opt:[1.4,4.6],lab:true,einh:true,nurRef:true,
+ what:"Ein Anteil der Eiweißelektrophorese, in Prozent der Bluteiweiße.",why:"Das Muster aller Fraktionen zusammen zeigt Entzündungen, Antikörpermangel oder -überschuss. Einzelwerte sind wenig aussagekräftig.",rel:["protein","albumin"]},
+{id:"ep_a2",n:"Alpha-2-Globuline",u:"%",g:"Eiweiße",al:["alpha-2-globulin","alpha 2 globulin","alpha2-globulin","α2-globulin","alpha-2-globuline"],ref:[7.3,13.9],opt:[7.3,13.9],lab:true,einh:true,nurRef:true,
+ what:"Ein Anteil der Eiweißelektrophorese, in Prozent der Bluteiweiße.",why:"Das Muster aller Fraktionen zusammen zeigt Entzündungen, Antikörpermangel oder -überschuss. Einzelwerte sind wenig aussagekräftig.",rel:["protein","albumin"]},
+{id:"ep_b",n:"Beta-Globuline",u:"%",g:"Eiweiße",al:["beta-globulin","beta globulin","β-globulin","beta-globuline","beta 1 + 2 globulin"],ref:[9.4,16.5],opt:[9.4,16.5],lab:true,einh:true,nurRef:true,
+ what:"Ein Anteil der Eiweißelektrophorese, in Prozent der Bluteiweiße.",why:"Das Muster aller Fraktionen zusammen zeigt Entzündungen, Antikörpermangel oder -überschuss. Einzelwerte sind wenig aussagekräftig.",rel:["protein","albumin"]},
+{id:"ep_g",n:"Gamma-Globuline",u:"%",g:"Eiweiße",al:["gamma-globulin","gamma globulin","γ-globulin","gamma-globuline"],ref:[10.3,19.6],opt:[10.3,19.6],lab:true,einh:true,nurRef:true,
+ what:"Ein Anteil der Eiweißelektrophorese, in Prozent der Bluteiweiße.",why:"Das Muster aller Fraktionen zusammen zeigt Entzündungen, Antikörpermangel oder -überschuss. Einzelwerte sind wenig aussagekräftig.",rel:["protein","albumin"]},
+{id:"u_acr",n:"Albumin/Kreatinin-Quotient (Urin)",u:"mg/g",g:"Urin",al:["albumin/kreatinin","albumin/creatinine","albumin-kreatinin-quotient","uacr","acr","microalbumin/creatinine","urine microalbumin/creatinine","albumin/creatinine ratio","albumin/kreatinin-quotient","mikroalbumin/kreatinin"],ref:[0,30],opt:[0,10],cv:{"mg/mmol":8.84,"mg/g krea":1,"µg/mg":1},
+ what:"Eiweißverlust über die Niere, bezogen auf die Urinkonzentration.",why:"Der früheste Hinweis auf eine Schädigung der kleinen Nierengefäße — etwa durch hohen Blutdruck oder Diabetes. Nach hartem Training vorübergehend erhöht.",rel:["u_albumin","kreatinin","egfr"]},
+{id:"u_pcr",n:"Protein/Kreatinin-Quotient (Urin)",u:"mg/g",g:"Urin",al:["protein/kreatinin","protein/creatinine","upcr","protein-kreatinin-quotient","protein creatinine ratio","protein/kreatinin-quotient"],ref:[0,150],opt:[0,150],cv:{"mg/mmol":8.84},nurRef:true,
+ what:"Der gesamte Eiweißverlust über die Niere, bezogen auf die Urinkonzentration.",why:"Erfasst neben Albumin auch andere Eiweiße.",rel:["u_acr","kreatinin"]},
+{id:"b2m",n:"Beta-2-Mikroglobulin",u:"mg/l",g:"Niere",al:["beta-2-mikroglobulin","beta 2 microglobulin","beta-2-microglobulin","β2-mikroglobulin","b2-mikroglobulin","b2-microglobulin","beta2-mikroglobulin"],ref:[0.8,2.2],opt:[0.8,2.2],nurRef:true,
+ what:"Ein kleines Eiweiß von der Oberfläche fast aller Zellen.",why:"Steigt, wenn die Nierenfiltration nachlässt, und bei manchen Bluterkrankungen.",rel:["kreatinin","cystatin"]},
+{id:"osmo",n:"Osmolalität (Serum)",u:"mosm/kg",g:"Niere",al:["osmolalität","osmolalitat","osmolality","serum osmolality","osmolarität"],ref:[275,295],opt:[275,295],cv:{"mmol/kg":1},nurRef:true,
+ what:"Die Konzentration aller gelösten Teilchen im Blut.",why:"Zeigt vor allem den Wasserhaushalt — zu hoch bei Flüssigkeitsmangel.",rel:["natrium","glukose"]},
+{id:"tibc",n:"Totale Eisenbindungskapazität (TIBC)",u:"µg/dl",g:"Eisen",al:["tibc","total iron binding capacity","total iron binding","totale eisenbindungskapazität","totale eisenbindungskapazitat","eisenbindungskapazität","eisenbindungskapazitat","iron binding capacity"],ref:[250,450],opt:[250,450],cv:{"µmol/l":5.587},nurRef:true,
+ what:"Wie viel Eisen das Transporteiweiß Transferrin insgesamt aufnehmen könnte.",why:"Steigt bei Eisenmangel, weil der Körper mehr Transportkapazität bereitstellt. Zusammen mit dem Serumeisen ergibt sich die Transferrinsättigung.",rel:["eisen","transferrin","ferritin"]},
+{id:"kupfer",n:"Kupfer",u:"µg/dl",g:"Mineralien",al:["kupfer","copper","serum copper","kupfer im serum"],ref:[70,140],opt:[80,130],refF:[80,155],optF:[85,140],cv:{"µmol/l":6.355,"µg/l":0.1,"mg/l":100},
+ what:"Ein Spurenelement für Blutbildung, Bindegewebe und Immunsystem.",why:"Mangel tritt bei hoher Zinkzufuhr auf. Die Pille und Entzündungen heben den Wert.",imp:["Viel Zink über Monate senkt Kupfer","Nüsse, Kakao, Hülsenfrüchte und Innereien liefern Kupfer"],rel:["zink","coerulo"]},
+{id:"bikarbonat",n:"Bikarbonat",u:"mmol/l",g:"Mineralien",al:["bikarbonat","bicarbonate","hco3","total co2","co2 total","standardbikarbonat","bicarbonat"],ref:[22,29],opt:[22,29],nurRef:true,
+ what:"Der wichtigste Säurepuffer im Blut.",why:"Zeigt, ob der Säure-Basen-Haushalt ausgeglichen ist.",rel:["chlorid","natrium"]},
+{id:"mangan",n:"Mangan",u:"µg/l",g:"Spurenelemente & Metalle",al:["mangan","manganese"],ref:[7,20],opt:[7,20],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Ein Spurenelement für Knochen und Stoffwechselenzyme. Gemessen meist im Vollblut.",why:"Die Bereiche hängen stark von Probe und Methode ab — maßgeblich ist der Laborbereich. Auffällige Werte vor einer Ergänzung kontrollieren lassen."},
+{id:"chrom",n:"Chrom",u:"µg/l",g:"Spurenelemente & Metalle",al:["chromium","chrom ","chrom,","chrom (","chrom im"],ref:[0,30],opt:[0,30],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Ein Spurenelement, das am Zuckerstoffwechsel beteiligt ist. Gemessen meist im Vollblut.",why:"Die Bereiche hängen stark von Probe und Methode ab — maßgeblich ist der Laborbereich. Auffällige Werte vor einer Ergänzung kontrollieren lassen."},
+{id:"molybdaen",n:"Molybdän",u:"µg/l",g:"Spurenelemente & Metalle",al:["molybdän","molybdan","molybdenum"],ref:[0.7,4],opt:[0.7,4],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Ein Spurenelement für einige Entgiftungsenzyme. Gemessen meist im Vollblut.",why:"Die Bereiche hängen stark von Probe und Methode ab — maßgeblich ist der Laborbereich. Auffällige Werte vor einer Ergänzung kontrollieren lassen."},
+{id:"kobalt",n:"Kobalt",u:"µg/l",g:"Spurenelemente & Metalle",al:["kobalt","cobalt"],ref:[0.1,1.5],opt:[0.1,1.5],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Bestandteil von Vitamin B12. Gemessen meist im Vollblut.",why:"Die Bereiche hängen stark von Probe und Methode ab — maßgeblich ist der Laborbereich. Auffällige Werte vor einer Ergänzung kontrollieren lassen."},
+{id:"vanadium",n:"Vanadium",u:"µg/l",g:"Spurenelemente & Metalle",al:["vanadium"],ref:[0,0.8],opt:[0,0.8],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Ein Spurenelement mit unklarer Bedeutung für den Menschen. Gemessen meist im Vollblut.",why:"Die Bereiche hängen stark von Probe und Methode ab — maßgeblich ist der Laborbereich. Auffällige Werte vor einer Ergänzung kontrollieren lassen."},
+{id:"strontium",n:"Strontium",u:"µg/l",g:"Spurenelemente & Metalle",al:["strontium"],ref:[8,38],opt:[8,38],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Ein Element, das sich ähnlich wie Calcium im Knochen einlagert. Gemessen meist im Vollblut.",why:"Die Bereiche hängen stark von Probe und Methode ab — maßgeblich ist der Laborbereich. Auffällige Werte vor einer Ergänzung kontrollieren lassen."},
+{id:"blei",n:"Blei",u:"µg/l",g:"Spurenelemente & Metalle",al:["lead","blei","pb (blei"],ref:[0,50],opt:[0,50],cv:{"µg/dl":10,"µmol/l":207.2,"ng/ml":1},lab:true,einh:true,nurRef:true,
+ what:"Blei im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"quecksilber",n:"Quecksilber",u:"µg/l",g:"Spurenelemente & Metalle",al:["mercury","quecksilber"],ref:[0,5],opt:[0,5],cv:{"nmol/l":0.2006,"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Quecksilber im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"cadmium",n:"Cadmium",u:"µg/l",g:"Spurenelemente & Metalle",al:["cadmium","kadmium"],ref:[0,1.5],opt:[0,1.5],cv:{"nmol/l":0.1124,"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Cadmium im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"arsen",n:"Arsen",u:"µg/l",g:"Spurenelemente & Metalle",al:["arsenic","arsen"],ref:[0,10],opt:[0,10],cv:{"nmol/l":0.0749,"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Arsen im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"aluminium",n:"Aluminium",u:"µg/l",g:"Spurenelemente & Metalle",al:["aluminium","aluminum"],ref:[0,30],opt:[0,30],cv:{"µmol/l":26.98,"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Aluminium im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"nickel",n:"Nickel",u:"µg/l",g:"Spurenelemente & Metalle",al:["nickel"],ref:[0,15],opt:[0,15],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Nickel im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"thallium",n:"Thallium",u:"µg/l",g:"Spurenelemente & Metalle",al:["thallium"],ref:[0,1],opt:[0,1],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Thallium im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"uran",n:"Uran",u:"µg/l",g:"Spurenelemente & Metalle",al:["uranium","uran"],ref:[0,1],opt:[0,1],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Uran im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"barium",n:"Barium",u:"µg/l",g:"Spurenelemente & Metalle",al:["barium"],ref:[0,30],opt:[0,30],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Barium im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"caesium",n:"Cäsium",u:"µg/l",g:"Spurenelemente & Metalle",al:["caesium","cesium","cäsium","casium"],ref:[0,5],opt:[0,5],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Cäsium im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"antimon",n:"Antimon",u:"µg/l",g:"Spurenelemente & Metalle",al:["antimony","antimon"],ref:[0,18],opt:[0,18],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Antimon im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"zinn",n:"Zinn",u:"µg/l",g:"Spurenelemente & Metalle",al:["tin","zinn"],ref:[0,2],opt:[0,2],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Zinn im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"silber",n:"Silber",u:"µg/l",g:"Spurenelemente & Metalle",al:["silver","silber"],ref:[0,4],opt:[0,4],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Silber im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"beryllium",n:"Beryllium",u:"µg/l",g:"Spurenelemente & Metalle",al:["beryllium"],ref:[0,0.1],opt:[0,0.1],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Beryllium im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"bismut",n:"Bismut",u:"µg/l",g:"Spurenelemente & Metalle",al:["bismuth","bismut","wismut"],ref:[0,0.8],opt:[0,0.8],cv:{"ng/ml":1,"µg/dl":10},lab:true,einh:true,nurRef:true,
+ what:"Bismut im Blut — ein Metall ohne Nutzen für den Körper, das sich bei Belastung anreichern kann.",why:"Gemessen wird, ob eine Belastung vorliegt. Niedriger ist besser. Die Grenzen hängen von Probe und Methode ab — maßgeblich ist der Laborbereich. Ein erhöhter Wert gehört ärztlich abgeklärt, bevor man etwas unternimmt."},
+{id:"vitb1",n:"Vitamin B1 (Thiamin)",u:"µg/l",g:"Vitamine",al:["vitamin b1","vitamin b 1","vitamin b-1","thiamin","thiamine","thiaminpyrophosphat","thiamine pyrophosphate","tpp (vitamin b1"],ref:[28,85],opt:[28,85],cv:{"nmol/l":0.4244,"ng/ml":1},lab:true,nurRef:true,
+ what:"Ein Vitamin für den Energiestoffwechsel und die Nerven.",why:"Mangel droht bei viel Alkohol, sehr kohlenhydratlastiger Kost oder nach Magenoperationen. Vollblut- und Serummessungen haben sehr unterschiedliche Bereiche — maßgeblich ist der Laborbereich.",imp:["Vollkorn, Hülsenfrüchte, Schweinefleisch und Sonnenblumenkerne liefern B1","Alkohol bremst die Aufnahme"],rel:["vitb6","b12"]},
+{id:"vitb2",n:"Vitamin B2 (Riboflavin)",u:"µg/l",g:"Vitamine",al:["vitamin b2","vitamin b 2","vitamin b-2","riboflavin"],ref:[1.6,68],opt:[1.6,68],cv:{"ng/ml":1,"nmol/l":0.3764},lab:true,nurRef:true,
+ what:"Ein Vitamin für den Energiestoffwechsel und die Aktivierung von B6 und Folsäure.",why:"Mangel ist selten, am ehesten bei veganer Kost ohne Milchprodukte. Maßgeblich ist der Laborbereich.",rel:["vitb6","folsaeure"]},
+{id:"vitb3",n:"Vitamin B3 (Niacin)",u:"µg/l",g:"Vitamine",al:["vitamin b3","vitamin b 3","vitamin b-3","niacin","nicotinic acid","nicotinsäure","nikotinsäure","nicotinamide","nicotinamid"],ref:[0,5],opt:[0,5],cv:{"ng/ml":1},lab:true,nurRef:true,
+ what:"Ein Vitamin für den Energiestoffwechsel.",why:"Die Messmethoden unterscheiden sich stark — maßgeblich ist der Laborbereich.",rel:["vitb2","vitb6"]},
+{id:"vitb5",n:"Vitamin B5 (Pantothensäure)",u:"µg/l",g:"Vitamine",al:["vitamin b5","vitamin b 5","vitamin b-5","pantothensäure","pantothensaure","pantothenic","pantothenate"],ref:[11,150],opt:[11,150],cv:{"ng/ml":1},lab:true,nurRef:true,
+ what:"Ein Vitamin für den Fett- und Energiestoffwechsel.",why:"Ein Mangel ist sehr selten. Maßgeblich ist der Laborbereich."},
+{id:"vitb6",n:"Vitamin B6 (PLP)",u:"µg/l",g:"Vitamine",al:["vitamin b6","vitamin b 6","vitamin b-6","pyridoxal-5-phosphat","pyridoxal-5-phosphate","pyridoxal 5 phosphate","pyridoxal-5'-phosphat","pyridoxalphosphat","p5p","plp","b6/p5p"],ref:[5,50],opt:[10,40],cv:{"nmol/l":0.2471,"ng/ml":1},lab:true,
+ what:"Die aktive Form von Vitamin B6, wichtig für Eiweißstoffwechsel, Nerven und Homocysteinabbau.",why:"Mangel hebt das Homocystein. Zu viel über Präparate kann Nervenschäden verursachen — mehr ist hier nicht besser.",imp:["Fisch, Geflügel, Kartoffeln, Bananen und Kichererbsen liefern B6","Hochdosierte B6-Präparate nicht dauerhaft ohne Messung"],rel:["homocystein","b12","folsaeure"]},
+{id:"vitb7",n:"Biotin (Vitamin B7)",u:"µg/l",g:"Vitamine",al:["biotin","vitamin b7","vitamin b 7","vitamin b-7","vitamin h"],ref:[0.2,3],opt:[0.2,3],cv:{"ng/ml":1,"ng/l":0.001,"nmol/l":0.2443},lab:true,nurRef:true,
+ what:"Ein Vitamin für Haut, Haare und den Stoffwechsel.",why:"Mangel ist selten. Wichtig: Biotinpräparate verfälschen viele Laborwerte, etwa TSH und Schilddrüsenhormone — mindestens zwei Tage vor einer Abnahme absetzen.",rel:["tsh","ft4"]},
+{id:"vitc",n:"Vitamin C",u:"mg/l",g:"Vitamine",al:["vitamin c","ascorbic acid","ascorbinsäure","ascorbinsaure","ascorbate"],ref:[4,20],opt:[8,15],cv:{"mg/dl":10,"µmol/l":0.1761,"µg/ml":1},
+ what:"Ein Antioxidans, wichtig für Bindegewebe, Immunsystem und Eisenaufnahme.",why:"Raucher und Menschen mit wenig Obst und Gemüse liegen oft niedrig. Die Probe muss schnell und gekühlt ins Labor, sonst fällt der Wert falsch niedrig aus.",imp:["Paprika, Brokkoli, Zitrusfrüchte und Beeren liefern viel Vitamin C","Rauchen verbraucht Vitamin C"],rel:["eisen","ferritin"]},
+{id:"vitd2",n:"Vitamin D2 (25-OH)",u:"ng/ml",g:"Vitamine",al:["vitamin d2","25-oh-vitamin d2","25-oh vitamin d2","25(oh)d2","25(oh) d2","ergocalciferol","25-hydroxyvitamin d2"],ref:[0,10],opt:[0,10],cv:{"nmol/l":0.4006},lab:true,nurRef:true,
+ what:"Der Vitamin-D-Anteil aus pflanzlichen Quellen und manchen Präparaten.",why:"Ohne D2-Präparat meist kaum messbar. Zählt zum Gesamt-Vitamin-D.",rel:["vitd","vitd3"]},
+{id:"vitd3",n:"Vitamin D3 (25-OH, getrennt gemessen)",u:"ng/ml",g:"Vitamine",al:["vitamin d3 lc","25-oh vitamin d3 lc","25-oh-vitamin d3 lc","vitamin d3 (lc","25(oh)d3","25(oh) d3","25-hydroxyvitamin d3 (lc"],ref:[20,100],opt:[20,100],cv:{"nmol/l":0.4006},lab:true,nurRef:true,
+ what:"Der Vitamin-D-Anteil aus Sonne, tierischen Quellen und den meisten Präparaten, getrennt von D2 gemessen.",why:"Macht meist fast das ganze Vitamin D aus. Bewertet wird vor allem der Gesamtwert.",rel:["vitd","vitd2"]},
+{id:"coq10",n:"Coenzym Q10",u:"mg/l",g:"Vitamine",al:["coenzym q10","coenzyme q10","q10","ubichinon","ubiquinone","ubiquinol","coq10"],ref:[0.5,1.7],opt:[0.8,1.7],cv:{"µg/ml":1,"µmol/l":0.8633},
+ what:"Ein Helfer der Energiegewinnung in den Zellen, vom Körper selbst gebildet.",why:"Statine senken den Wert. Er läuft mit dem Cholesterin, weil beide in denselben Partikeln transportiert werden.",rel:["chol","ldl"]},
+{id:"folat_ery",n:"Folsäure (Erythrozyten)",u:"ng/ml",g:"Vitamine",al:["erythrozytenfolat","rbc folate","red cell folate","red blood cell folate","folsäure in erythrozyten","folat (ery","folsäure (ery","erythrocyte folate"],ref:[280,800],opt:[280,800],cv:{"nmol/l":0.4413},lab:true,nurRef:true,
+ what:"Die in den roten Blutkörperchen gespeicherte Folsäure.",why:"Zeigt die Versorgung der letzten Monate — weniger schwankend als der Serumwert.",rel:["folsaeure","homocystein"]},
+{id:"mma",n:"Methylmalonsäure",u:"nmol/l",g:"Vitamine",al:["methylmalonsäure","methylmalonsaure","methylmalonic acid","mma (methylmalon","methylmalonat"],ref:[0,400],opt:[0,400],cv:{"µmol/l":1000,"µg/l":8.47},lab:true,nurRef:true,
+ what:"Ein Stoffwechselprodukt, das sich ohne Vitamin B12 anstaut.",why:"Steigt schon bei beginnendem B12-Mangel — zusammen mit Holo-TC der beste Nachweis.",rel:["b12","holotc","homocystein"]},
+{id:"betacarotin",n:"Beta-Carotin",u:"µg/l",g:"Vitamine",al:["beta-carotin","beta carotin","beta-carotene","beta carotene","β-carotin","betacarotin"],ref:[100,1000],opt:[100,1000],cv:{"mg/l":1000,"µg/dl":10,"µmol/l":536.9},lab:true,nurRef:true,
+ what:"Die pflanzliche Vorstufe von Vitamin A.",why:"Spiegelt vor allem, wie viel Obst und Gemüse gegessen wird.",rel:["vita"]},
+{id:"igf1",n:"IGF-1",u:"ng/ml",g:"Hormone",al:["igf-1","igf 1","igf1","igf- 1","igf -1","insulin like growth factor","insulin-like growth factor","somatomedin c","somatomedin-c"],ref:[100,300],opt:[100,300],cv:{"nmol/l":7.649,"µg/l":1},lab:true,nurRef:true,
+ what:"Der Botenstoff, über den das Wachstumshormon wirkt.",why:"Sinkt mit dem Alter. Eiweißzufuhr, Schlaf und Training beeinflussen ihn. Die Bereiche sind stark altersabhängig — maßgeblich ist der Laborbereich.",rel:["gh","testo"]},
+{id:"gh",n:"Wachstumshormon (STH)",u:"ng/ml",g:"Hormone",al:["growth hormone","wachstumshormon","somatotropin","hgh","somatotropes hormon"],ref:[0,5],opt:[0,5],cv:{"µg/l":1,"mU/l":0.33},lab:true,nurRef:true,
+ what:"Ein Hormon der Hirnanhangdrüse für Wachstum, Muskelaufbau und Fettstoffwechsel.",why:"Wird in Schüben ausgeschüttet — ein Einzelwert sagt wenig, IGF-1 ist stabiler.",rel:["igf1"]},
+{id:"pth",n:"Parathormon",u:"pg/ml",g:"Hormone",al:["parathormon","parathyroid hormone","pth intakt","intact pth","ipth","pth","pth-intakt"],ref:[15,65],opt:[15,65],cv:{"pmol/l":9.43,"ng/l":1},nurRef:true,
+ what:"Das Hormon der Nebenschilddrüsen, das den Calciumspiegel steuert.",why:"Steigt bei Vitamin-D-Mangel, um das Calcium zu halten — auf Kosten der Knochen.",rel:["calcium","vitd","phosphat"]},
+{id:"acth",n:"ACTH",u:"pg/ml",g:"Hormone",al:["acth","adrenocorticotropes hormon","adrenocorticotropic hormone","corticotropin","kortikotropin"],ref:[7,63],opt:[7,63],cv:{"pmol/l":4.5,"ng/l":1},lab:true,nurRef:true,
+ what:"Das Hormon der Hirnanhangdrüse, das die Cortisolbildung anregt.",why:"Folgt einem Tagesrhythmus mit Höchstwert am Morgen. Zusammen mit Cortisol zeigt es, wo eine Störung sitzt.",rel:["cortisol"]},
+{id:"aldosteron",n:"Aldosteron",u:"pg/ml",g:"Hormone",al:["aldosteron","aldosterone"],ref:[20,300],opt:[20,300],cv:{"ng/dl":10,"pmol/l":0.3605,"ng/l":1},lab:true,nurRef:true,
+ what:"Das Hormon der Nebenniere, das Salz und Wasser im Körper hält.",why:"Wichtig bei Bluthochdruck mit niedrigem Kalium. Körperlage und Salzzufuhr beeinflussen den Wert.",rel:["renin","kalium","natrium"]},
+{id:"renin",n:"Renin",u:"µU/ml",g:"Hormone",al:["renin","renin-konzentration","direct renin","direktes renin"],ref:[4,46],opt:[4,46],cv:{"mU/l":1},lab:true,nurRef:true,
+ what:"Ein Enzym der Niere, das den Blutdruck mitsteuert.",why:"Wird zusammen mit Aldosteron bestimmt, um Ursachen von Bluthochdruck zu finden.",rel:["aldosteron"]},
+{id:"dhea",n:"DHEA",u:"ng/ml",g:"Hormone",al:["dhea","dehydroepiandrosteron","dehydroepiandrosterone","dhea (unconjugated","freies dhea"],ref:[1,10],opt:[1,10],cv:{"nmol/l":0.2884,"µg/l":1},lab:true,nurRef:true,
+ what:"Eine Hormonvorstufe der Nebenniere, nicht sulfatiert.",why:"Schwankt stärker als DHEA-S, das deshalb meist bevorzugt wird.",rel:["dheas","cortisol"]},
+{id:"androstendion",n:"Androstendion",u:"ng/ml",g:"Hormone",al:["androstendion","androstenedione","androstenedion","androstendione"],ref:[0.6,3.1],opt:[0.6,3.1],refF:[0.3,3.3],cv:{"nmol/l":0.2865,"µg/l":1},lab:true,nurRef:true,
+ what:"Eine Vorstufe von Testosteron und Östrogenen.",why:"Bei Frauen erhöht ein Hinweis auf vermehrte männliche Hormone, etwa beim PCO-Syndrom.",rel:["testo","dheas"]},
+{id:"ohp17",n:"17-OH-Progesteron",u:"ng/ml",g:"Hormone",al:["17-oh-progesteron","17-hydroxyprogesteron","17-ohp","17-oh progesterone","17-hydroxyprogesterone","17 oh progesteron","17-oh-progesterone"],ref:[0.1,2],opt:[0.1,2],cv:{"nmol/l":0.3305,"µg/l":1},lab:true,nurRef:true,
+ what:"Eine Zwischenstufe der Nebennierenhormone.",why:"Erhöht bei einer angeborenen Störung der Nebennieren. Bei Frauen zyklusabhängig.",rel:["cortisol","progesteron"]},
+{id:"amh",n:"AMH (Anti-Müller-Hormon)",u:"ng/ml",g:"Hormone",al:["amh","anti-müller-hormon","anti-muller-hormon","anti-mullerian hormone","anti-müllerian hormone","anti mullerian","anti müller"],ref:[1.3,14.8],opt:[1.3,14.8],refF:[0.7,7.5],cv:{"pmol/l":0.14,"µg/l":1},lab:true,nurRef:true,
+ what:"Ein Hormon der Eierstöcke beziehungsweise Hoden.",why:"Bei Frauen ein Maß für die Eizellreserve — es sinkt mit dem Alter. Allein sagt es nichts über die Chance auf eine Schwangerschaft im Einzelfall.",rel:["fsh","lh","estradiol"]},
+{id:"dht",n:"Dihydrotestosteron (DHT)",u:"pg/ml",g:"Hormone",al:["dihydrotestosteron","dihydrotestosterone","dht"],ref:[250,990],opt:[250,990],refF:[24,368],cv:{"ng/ml":1000,"nmol/l":290.4,"ng/dl":10,"ng/l":1},lab:true,nurRef:true,
+ what:"Die stärkste Form der männlichen Hormone, gebildet aus Testosteron.",why:"Wichtig für Prostata, Haut und Haarwurzeln. Hohe Werte begünstigen Haarausfall bei entsprechender Veranlagung.",rel:["testo","shbg"]},
+{id:"bhcg",n:"Beta-HCG",u:"mIU/ml",g:"Hormone",al:["beta hcg","beta-hcg","b-hcg","bhcg","β-hcg","beta-hcg (quant","hcg","choriongonadotropin","human chorionic gonadotropin"],ref:[0,5],opt:[0,5],cv:{"iu/l":1,"u/l":1},nurRef:true,
+ what:"Das Schwangerschaftshormon.",why:"Unter 5 gilt als nicht schwanger. In der Schwangerschaft steigt es in den ersten Wochen sehr schnell.",rel:["progesteron","estradiol"]},
+{id:"cpeptid",n:"C-Peptid",u:"ng/ml",g:"Hormone",al:["c-peptid","c-peptide","c peptid","c peptide"],ref:[0.8,4.2],opt:[0.8,4.2],cv:{"nmol/l":3.02,"pmol/l":0.00302,"µg/l":1},lab:true,nurRef:true,
+ what:"Ein Bruchstück, das bei der Insulinbildung entsteht.",why:"Zeigt, wie viel Insulin der Körper selbst bildet — auch wenn Insulin gespritzt wird.",rel:["insulin","glukose"]},
+{id:"thyreoglobulin",n:"Thyreoglobulin",u:"ng/ml",g:"Schilddrüse",al:["thyreoglobulin","thyroglobulin","tg (thyreoglobulin"],ref:[3.5,77],opt:[3.5,77],cv:{"µg/l":1},lab:true,nurRef:true,
+ what:"Das Speichereiweiß der Schilddrüsenhormone.",why:"Vor allem zur Nachsorge nach Schilddrüsenkrebs. Antikörper gegen Thyreoglobulin stören die Messung.",rel:["tgak","tsh"]},
+{id:"t3_ges",n:"Gesamt-T3",u:"ng/dl",g:"Schilddrüse",al:["t3 total","total t3","t3, total","total triiodothyronine","gesamt-t3","trijodthyronin gesamt","triiodothyronine total","tt3","total triiodothyronine (t3"],ref:[80,200],opt:[80,200],cv:{"nmol/l":65.1,"ng/ml":100},nurRef:true,
+ what:"Das gesamte aktive Schilddrüsenhormon, gebunden und frei.",why:"Hängt von den Transporteiweißen ab, etwa unter der Pille. Das freie T3 ist meist aussagekräftiger.",rel:["ft3","tsh"]},
+{id:"t4_ges",n:"Gesamt-T4",u:"µg/dl",g:"Schilddrüse",al:["t4 total","total t4","t4, total","total thyroxine","gesamt-t4","thyroxin gesamt","thyroxine total","tt4","total thyroxine (t4"],ref:[4.5,12],opt:[4.5,12],cv:{"nmol/l":0.0777},nurRef:true,
+ what:"Das gesamte Speicherhormon der Schilddrüse, gebunden und frei.",why:"Hängt von den Transporteiweißen ab, etwa unter der Pille. Das freie T4 ist meist aussagekräftiger.",rel:["ft4","tsh"]},
+{id:"calcitonin",n:"Calcitonin",u:"pg/ml",g:"Schilddrüse",al:["calcitonin","kalzitonin"],ref:[0,10],opt:[0,10],refF:[0,5],cv:{"ng/l":1},lab:true,nurRef:true,
+ what:"Ein Hormon der C-Zellen der Schilddrüse.",why:"Vor allem ein Marker bei Schilddrüsenknoten. Rauchen und Magensäureblocker heben den Wert leicht.",rel:["tsh"]},
+{id:"epo",n:"Erythropoetin",u:"mU/ml",g:"Hormone",al:["erythropoetin","erythropoietin","epo"],ref:[4,27],opt:[4,27],cv:{"iu/l":1,"u/l":1},lab:true,nurRef:true,
+ what:"Das Nierenhormon, das die Bildung roter Blutkörperchen anregt.",why:"Steigt bei Sauerstoffmangel und Blutarmut, sinkt bei Nierenschwäche.",rel:["hb","kreatinin"]},
+{id:"ctx",n:"Beta-CrossLaps (CTX)",u:"ng/ml",g:"Knochen",al:["beta-crosslaps","beta crosslaps","crosslaps","ctx","b-ctx","β-ctx","c-terminales telopeptid","c-telopeptide","ctx-1","ctx-i"],ref:[0,0.7],opt:[0,0.7],refF:[0,0.57],cv:{"pg/ml":0.001,"µg/l":1},lab:true,nurRef:true,
+ what:"Ein Abbauprodukt von Knochenkollagen.",why:"Zeigt, wie viel Knochen gerade abgebaut wird. Morgens und nüchtern abnehmen, sonst schwankt er stark.",rel:["p1np","vitd","calcium"]},
+{id:"p1np",n:"P1NP",u:"µg/l",g:"Knochen",al:["p1np","pinp","procollagen type 1 n","procollagen type i n","prokollagen-typ-1","total p1np"],ref:[15,75],opt:[15,75],cv:{"ng/ml":1},lab:true,nurRef:true,
+ what:"Ein Baustein, der beim Knochenaufbau frei wird.",why:"Zeigt die Knochenneubildung — zusammen mit CTX das Gleichgewicht von Auf- und Abbau.",rel:["ctx","bap"]},
+{id:"osteocalcin",n:"Osteocalcin",u:"ng/ml",g:"Knochen",al:["osteocalcin","osteokalzin"],ref:[11,46],opt:[11,46],cv:{"µg/l":1},lab:true,nurRef:true,
+ what:"Ein Eiweiß, das die knochenaufbauenden Zellen bilden.",why:"Ein Maß für den Knochenstoffwechsel, Vitamin-K-abhängig.",rel:["p1np","vitk1"]},
+{id:"bap",n:"Knochen-AP",u:"µg/l",g:"Knochen",al:["knochen-ap","knochenspezifische alkalische phosphatase","bone alkaline phosphatase","bone-specific alkaline phosphatase","bone specific alkaline phosphatase","ostase","ostase (knochen"],ref:[5.5,22.9],opt:[5.5,22.9],refF:[4.5,16.9],cv:{"ng/ml":1},lab:true,nurRef:true,
+ what:"Der Anteil der alkalischen Phosphatase aus dem Knochen.",why:"Ein Marker für den Knochenaufbau, erhöht bei hohem Knochenumsatz.",rel:["ap","p1np"]},
+{id:"fructosamin",n:"Fructosamin",u:"µmol/l",g:"Stoffwechsel",al:["fructosamin","fructosamine","fruktosamin"],ref:[205,285],opt:[205,285],nurRef:true,
+ what:"Verzuckerte Bluteiweiße — ein Blutzuckergedächtnis der letzten zwei bis drei Wochen.",why:"Eine Ergänzung zum HbA1c, wenn dieses durch Blutarmut oder Hämoglobinvarianten verfälscht ist.",rel:["hba1c","glukose"]},
+{id:"laktat",n:"Laktat",u:"mmol/l",g:"Stoffwechsel",al:["laktat","lactate","lactic acid","milchsäure","milchsaure"],ref:[0.5,2.2],opt:[0.5,2.2],cv:{"mg/dl":0.111},nurRef:true,
+ what:"Ein Stoffwechselprodukt, das bei Energiegewinnung ohne ausreichend Sauerstoff entsteht.",why:"In Ruhe niedrig. Nach Belastung oder bei zu langem Stauen vor der Abnahme erhöht.",rel:["glukose"]},
+{id:"glukose_pp",n:"Blutzucker nach dem Essen",u:"mg/dl",g:"Stoffwechsel",al:["post prandial blood sugar","postprandial blood sugar","post-prandial blood sugar","postprandial glucose","ppbs","blutzucker 2 h nach","2 hours post prandial","2 hr post prandial","glucose 2h pp"],ref:[70,140],opt:[70,120],cv:{"mmol/l":18.02},
+ what:"Der Blutzucker etwa zwei Stunden nach einer Mahlzeit.",why:"Zeigt, wie gut der Körper mit einer Zuckerlast fertig wird. Über 140 mg/dl spricht für eine gestörte Verwertung.",rel:["glukose","hba1c","insulin"]},
+{id:"glukose_zuf",n:"Blutzucker (nicht nüchtern)",u:"mg/dl",g:"Stoffwechsel",al:["random blood sugar","random blood glucose","random glucose","rbs","gelegenheitsblutzucker","zufallsblutzucker"],ref:[70,140],opt:[70,140],cv:{"mmol/l":18.02},nurRef:true,
+ what:"Der Blutzucker zu einem beliebigen Zeitpunkt, nicht nüchtern.",why:"Weniger aussagekräftig als der Nüchternwert. Über 200 mg/dl ist auch ohne Nüchternheit auffällig.",rel:["glukose","hba1c"]},
+{id:"bhb",n:"Beta-Hydroxybutyrat",u:"mmol/l",g:"Stoffwechsel",al:["beta-hydroxybutyrat","beta-hydroxybutyrate","3-hydroxybutyrat","3-hydroxybutyrate","beta hydroxybutyrate","ketonkörper im blut","blood ketones","bhb"],ref:[0,0.4],opt:[0,0.4],cv:{"mg/dl":0.0961},nurRef:true,
+ what:"Der wichtigste Ketonkörper im Blut.",why:"Steigt beim Fasten und bei kohlenhydratarmer Ernährung — dann ist das gewollt. Sehr hoch zusammen mit hohem Blutzucker ist ein Notfall.",rel:["glukose"]},
+{id:"aldolase",n:"Aldolase",u:"U/l",g:"Muskel",al:["aldolase"],ref:[0,7.6],opt:[0,7.6],lab:true,nurRef:true,
+ what:"Ein Enzym des Zuckerstoffwechsels, vor allem in Muskeln.",why:"Steigt bei Muskelschäden, ähnlich wie CK.",rel:["ck"]},
+{id:"hscrp",n:"hs-CRP",u:"mg/l",g:"Entzündung",al:["hs-crp","hs crp","hscrp","high sensitivity crp","crp, high sensitivity","high sensitivity c-reactive","high-sensitivity c-reactive","high sensitive crp","hochsensitives crp","crp hochsensitiv","crp (hs","crp, hs","crp-hs","hs-c-reaktives protein","c-reaktives protein, hochsensitiv"],ref:[0,3],opt:[0,1],cv:{"mg/dl":10,"µg/ml":1,"mg/100ml":10},
+ what:"Das C-reaktive Protein, mit einem besonders empfindlichen Test gemessen.",why:"Erfasst auch leichte, stille Dauerentzündungen, die das Gefäßrisiko erhöhen. Unter 1 mg/l gilt als niedriges, 1 bis 3 als mittleres, darüber als erhöhtes Risiko.",imp:["Nicht während oder kurz nach einem Infekt oder hartem Training messen","Bauchfett abbauen, Rauchen aufgeben, ausreichend schlafen","Bewegung im Alltag senkt den Wert messbar"],rel:["crp","ferritin","ldl"]},
+{id:"pct",n:"Procalcitonin",u:"ng/ml",g:"Entzündung",al:["procalcitonin","pct"],ref:[0,0.05],opt:[0,0.05],cv:{"µg/l":1},lab:true,einh:true,nurRef:true,
+ what:"Ein Eiweiß, das bei bakteriellen Infektionen stark ansteigt.",why:"Hilft zu unterscheiden, ob eine Entzündung bakteriell ist. Bei Virusinfekten bleibt es meist niedrig.",rel:["crp","leuko"]},
+{id:"il6",n:"Interleukin-6",u:"pg/ml",g:"Entzündung",al:["interleukin-6","interleukin 6","il-6","il 6","il6"],ref:[0,7],opt:[0,7],cv:{"ng/l":1},lab:true,nurRef:true,
+ what:"Ein Botenstoff des Immunsystems, der Entzündungen anstößt.",why:"Steigt sehr früh bei Infekten und auch nach intensivem Training.",rel:["crp"]},
+{id:"c3",n:"Komplement C3",u:"g/l",g:"Immunsystem",al:["komplement c3","complement c3","c3 komplement","c3c","komplementfaktor c3","complement 3"],ref:[0.9,1.8],opt:[0.9,1.8],cv:{"mg/dl":0.01},nurRef:true,
+ what:"Ein Teil des Komplementsystems, einer Abwehrkaskade im Blut.",why:"Sinkt, wenn das System verbraucht wird, etwa bei manchen Autoimmunerkrankungen.",rel:["c4","crp"]},
+{id:"c4",n:"Komplement C4",u:"g/l",g:"Immunsystem",al:["komplement c4","complement c4","c4 komplement","komplementfaktor c4","complement 4"],ref:[0.1,0.4],opt:[0.1,0.4],cv:{"mg/dl":0.01},nurRef:true,
+ what:"Ein Teil des Komplementsystems.",why:"Wie C3 vor allem bei Verdacht auf Autoimmunerkrankungen bestimmt.",rel:["c3"]},
+{id:"iga",n:"Immunglobulin A",u:"g/l",g:"Immunsystem",al:["iga","immunglobulin a","immunoglobulin a","iga gesamt","gesamt-iga","total iga"],ref:[0.7,4],opt:[0.7,4],cv:{"mg/dl":0.01},einh:true,nurRef:true,
+ what:"Die Antikörper der Schleimhäute.",why:"Ein Mangel ist der häufigste angeborene Antikörpermangel und verfälscht Zöliakie-Tests auf IgA-Basis.",rel:["igg","igm","ttg"]},
+{id:"igg",n:"Immunglobulin G",u:"g/l",g:"Immunsystem",al:["igg","immunglobulin g","immunoglobulin g","igg gesamt","gesamt-igg","total igg"],ref:[7,16],opt:[7,16],cv:{"mg/dl":0.01},einh:true,nurRef:true,
+ what:"Die häufigsten Antikörper im Blut, das Gedächtnis der Abwehr.",why:"Niedrig bei Antikörpermangel, erhöht bei chronischen Entzündungen.",rel:["iga","igm"]},
+{id:"igm",n:"Immunglobulin M",u:"g/l",g:"Immunsystem",al:["igm","immunglobulin m","immunoglobulin m","igm gesamt","gesamt-igm","total igm"],ref:[0.4,2.3],opt:[0.4,2.3],cv:{"mg/dl":0.01},einh:true,nurRef:true,
+ what:"Die ersten Antikörper bei einer neuen Infektion.",why:"Erhöht bei frischen Infekten, niedrig bei manchen Antikörpermängeln.",rel:["igg","iga"]},
+{id:"ige",n:"Gesamt-IgE",u:"IU/ml",g:"Immunsystem",al:["gesamt-ige","total ige","ige gesamt","ige, total","ige total","immunglobulin e","immunoglobulin e","gesamt ige","ige (gesamt"],ref:[0,100],opt:[0,100],cv:{"ku/l":1,"u/ml":1,"kiu/l":1},einh:true,nurRef:true,
+ what:"Die Antikörper, die bei Allergien und Wurmbefall ansteigen.",why:"Ein hoher Wert spricht für eine allergische Veranlagung, sagt aber nicht, wogegen.",rel:["eos_pct"]},
+{id:"tryptase",n:"Tryptase",u:"µg/l",g:"Immunsystem",al:["tryptase","mastzelltryptase","serum tryptase"],ref:[0,11.4],opt:[0,11.4],cv:{"ng/ml":1},nurRef:true,
+ what:"Ein Enzym aus Mastzellen.",why:"Erhöht bei schweren allergischen Reaktionen und bei Mastzellerkrankungen. Wichtig vor einer Insektengift-Hyposensibilisierung.",rel:["ige"]},
+{id:"cd3",n:"T-Lymphozyten (CD3)",u:"/µl",g:"Immunsystem",al:["cd3+","cd3 absolut","cd3 absolute","t-lymphozyten","t lymphocytes","t-zellen absolut","cd3 t cells"],ref:[700,2100],opt:[700,2100],cv:{"/nl":1000,"10^9/l":1000,"g/l":1000,"zellen/µl":1,"cells/µl":1},lab:true,einh:true,nurRef:true,
+ what:"Eine Untergruppe der Lymphozyten, als absolute Zahl pro Mikroliter.",why:"Wird bei Verdacht auf Immunschwäche bestimmt. Infekte, Stress und Training verschieben die Zahlen vorübergehend.",rel:["lympho_abs"]},
+{id:"cd4",n:"T-Helferzellen (CD4)",u:"/µl",g:"Immunsystem",al:["cd4+","cd4 absolut","cd4 absolute","t-helferzellen","t-helper cells","cd4 t cells","cd4-zellen","helper t cells"],ref:[410,1590],opt:[410,1590],cv:{"/nl":1000,"10^9/l":1000,"g/l":1000,"zellen/µl":1,"cells/µl":1},lab:true,einh:true,nurRef:true,
+ what:"Eine Untergruppe der Lymphozyten, als absolute Zahl pro Mikroliter.",why:"Wird bei Verdacht auf Immunschwäche bestimmt. Infekte, Stress und Training verschieben die Zahlen vorübergehend.",rel:["lympho_abs"]},
+{id:"cd8",n:"Zytotoxische T-Zellen (CD8)",u:"/µl",g:"Immunsystem",al:["cd8+","cd8 absolut","cd8 absolute","zytotoxische t-zellen","cytotoxic t cells","cd8 t cells","t-suppressorzellen","cd8-zellen"],ref:[190,1140],opt:[190,1140],cv:{"/nl":1000,"10^9/l":1000,"g/l":1000,"zellen/µl":1,"cells/µl":1},lab:true,einh:true,nurRef:true,
+ what:"Eine Untergruppe der Lymphozyten, als absolute Zahl pro Mikroliter.",why:"Wird bei Verdacht auf Immunschwäche bestimmt. Infekte, Stress und Training verschieben die Zahlen vorübergehend.",rel:["lympho_abs"]},
+{id:"cd19",n:"B-Lymphozyten (CD19)",u:"/µl",g:"Immunsystem",al:["cd19+","cd19 absolut","cd19 absolute","b-lymphozyten","b lymphocytes","b-zellen absolut","cd19 b cells"],ref:[90,660],opt:[90,660],cv:{"/nl":1000,"10^9/l":1000,"g/l":1000,"zellen/µl":1,"cells/µl":1},lab:true,einh:true,nurRef:true,
+ what:"Eine Untergruppe der Lymphozyten, als absolute Zahl pro Mikroliter.",why:"Wird bei Verdacht auf Immunschwäche bestimmt. Infekte, Stress und Training verschieben die Zahlen vorübergehend.",rel:["lympho_abs"]},
+{id:"nkzellen",n:"NK-Zellen (CD16/56)",u:"/µl",g:"Immunsystem",al:["nk-zellen","nk cells","natural killer","natürliche killerzellen","cd16/56","cd16+56","cd56+"],ref:[90,590],opt:[90,590],cv:{"/nl":1000,"10^9/l":1000,"g/l":1000,"zellen/µl":1,"cells/µl":1},lab:true,einh:true,nurRef:true,
+ what:"Eine Untergruppe der Lymphozyten, als absolute Zahl pro Mikroliter.",why:"Wird bei Verdacht auf Immunschwäche bestimmt. Infekte, Stress und Training verschieben die Zahlen vorübergehend.",rel:["lympho_abs"]},
+{id:"cd4cd8",n:"CD4/CD8-Quotient",u:"",g:"Immunsystem",al:["cd4/cd8","cd4 / cd8","cd4:cd8","cd4/cd8 ratio","helper/suppressor ratio","t4/t8"],ref:[1,3.6],opt:[1,3.6],lab:true,nurRef:true,
+ what:"Das Verhältnis von Helfer- zu zytotoxischen T-Zellen.",why:"Sinkt bei manchen Virusinfektionen und mit dem Alter.",rel:["cd4","cd8"]},
+{id:"ana",n:"ANA (Messwert)",u:"",g:"Autoimmun",al:["antinukleäre antikörper","antinuklare antikorper","anti nuclear antibod","antinuclear antibod","anti-nuclear antibod","ana screen","ana-screen","ana (elisa","ana (clia","ana-elisa"],ref:[0,40],opt:[0,40],cv:{"au/ml":1,"u/ml":1,"index":1,"ratio":1,"iu/ml":1,"ku/l":1,"e/ml":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper gegen Bestandteile des Zellkerns, hier als Messwert (Index oder Einheiten).",why:"Ein Suchtest bei Verdacht auf Autoimmunerkrankungen. Ein leicht positiver Wert ist bei Gesunden häufig, vor allem bei Frauen und im Alter — er hat nur zusammen mit Beschwerden Bedeutung.",rel:["dsdna","crp"]},
+{id:"anticcp",n:"Anti-CCP",u:"U/ml",g:"Autoimmun",al:["anti-ccp","anti ccp","accp","ccp-ak","ccp antikörper","ccp antikorper","cyclic citrullinated peptide","cyclisches citrulliniertes peptid","anti-cyclic citrullinated"],ref:[0,7],opt:[0,7],cv:{"au/ml":1,"u/ml":1,"index":1,"ratio":1,"iu/ml":1,"ku/l":1,"e/ml":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper, die sehr spezifisch für rheumatoide Arthritis sind.",why:"Können Jahre vor den ersten Beschwerden auftauchen. Die Grenze hängt vom Test ab — maßgeblich ist der Laborbereich.",rel:["rf","crp"]},
+{id:"rf",n:"Rheumafaktor",u:"IU/ml",g:"Autoimmun",al:["rheumafaktor","rheumatoid factor","ra factor","rf-latex","rf (","rf igm","rf-igm","rheumafaktor (rf"],ref:[0,14],opt:[0,14],cv:{"u/ml":1,"ku/l":1,"iu/ml":1},lab:true,nurRef:true,
+ what:"Antikörper, die bei rheumatoider Arthritis häufig vorkommen.",why:"Auch bei Gesunden, vor allem im Alter, und bei Infekten leicht erhöht. Anti-CCP ist spezifischer.",rel:["anticcp","crp"]},
+{id:"asl",n:"Antistreptolysin (ASL)",u:"IU/ml",g:"Autoimmun",al:["antistreptolysin","anti-streptolysin","aslo","aso","asl-titer","asl titer","asl"],ref:[0,200],opt:[0,200],cv:{"u/ml":1,"iu/ml":1},lab:true,nurRef:true,
+ what:"Antikörper gegen ein Gift von Streptokokken.",why:"Zeigt eine zurückliegende Streptokokken-Infektion, etwa nach einer Mandelentzündung.",rel:["crp"]},
+{id:"ttg",n:"Transglutaminase-IgA (tTG)",u:"U/ml",g:"Autoimmun",al:["transglutaminase","ttg-iga","ttg iga","anti-ttg","gewebstransglutaminase","tissue transglutaminase","tg2-iga","ttg-ak"],ref:[0,10],opt:[0,10],cv:{"au/ml":1,"u/ml":1,"index":1,"ratio":1,"iu/ml":1,"ku/l":1,"e/ml":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper, die bei Zöliakie auftreten.",why:"Nur aussagekräftig, solange Gluten gegessen wird und kein IgA-Mangel besteht.",rel:["iga"]},
+{id:"dsdna",n:"Anti-dsDNA",u:"IU/ml",g:"Autoimmun",al:["anti-dsdna","anti dsdna","ds-dna","dsdna","anti-ds-dna","doppelstrang-dna"],ref:[0,30],opt:[0,30],cv:{"au/ml":1,"u/ml":1,"index":1,"ratio":1,"iu/ml":1,"ku/l":1,"e/ml":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper gegen Erbgut, typisch für Lupus.",why:"Wird nach einem positiven ANA-Test bestimmt.",rel:["ana","c3","c4"]},
+{id:"ca125",n:"CA 125",u:"U/ml",g:"Tumormarker",al:["ca 125","ca125","ca-125","cancer antigen 125"],ref:[0,35],opt:[0,35],nurRef:true,
+ what:"Ein Eiweiß, das vor allem bei Eierstocktumoren ansteigt.",why:"Als Suchtest bei Beschwerdefreiheit ungeeignet: Periode, Endometriose, Schwangerschaft und Entzündungen heben es ebenfalls. Sinnvoll ist es zur Verlaufskontrolle bei bekannter Erkrankung.",imp:["Einen auffälligen Wert nicht isoliert bewerten, sondern ärztlich einordnen lassen"],rel:["cea"]},
+{id:"ca153",n:"CA 15-3",u:"U/ml",g:"Tumormarker",al:["ca 15-3","ca15-3","ca 15.3","ca-15-3","ca 153","cancer antigen 15-3"],ref:[0,30],opt:[0,30],nurRef:true,
+ what:"Ein Eiweiß, das vor allem bei Brustkrebs ansteigt.",why:"Zur Verlaufskontrolle bei bekannter Erkrankung, nicht als Suchtest — auch gutartige Leber- und Lungenerkrankungen heben es.",imp:["Einen auffälligen Wert nicht isoliert bewerten, sondern ärztlich einordnen lassen"],rel:["cea"]},
+{id:"ca724",n:"CA 72-4",u:"U/ml",g:"Tumormarker",al:["ca 72-4","ca72-4","ca-72-4","ca 724"],ref:[0,6.9],opt:[0,6.9],nurRef:true,
+ what:"Ein Tumormarker, vor allem für Magenkrebs.",why:"Zur Verlaufskontrolle, nicht als Suchtest.",rel:["cea","ca199"]},
+{id:"nse",n:"NSE",u:"ng/ml",g:"Tumormarker",al:["nse","neuronenspezifische enolase","neuron specific enolase","neuron-specific enolase"],ref:[0,16.3],opt:[0,16.3],cv:{"µg/l":1},nurRef:true,
+ what:"Ein Enzym aus Nerven- und neuroendokrinen Zellen.",why:"Zur Verlaufskontrolle bestimmter Tumoren. Zerfallene Blutzellen in einer alten Probe heben den Wert fälschlich."},
+{id:"cyfra",n:"CYFRA 21-1",u:"ng/ml",g:"Tumormarker",al:["cyfra 21-1","cyfra21-1","cyfra 21 1","cyfra"],ref:[0,3.3],opt:[0,3.3],cv:{"µg/l":1},nurRef:true,
+ what:"Ein Bruchstück eines Zellgerüsteiweißes.",why:"Vor allem zur Verlaufskontrolle bei Lungentumoren."},
+{id:"psaq",n:"PSA-Quotient (frei/gesamt)",u:"%",g:"Tumormarker",al:["% free psa","psa-quotient","psa quotient","fpsa/tpsa","free/total psa","psa ratio","freies psa/gesamt-psa","quotient fpsa/tpsa","f/t-psa","free psa ratio","percent free psa"],ref:[20,100],opt:[25,100],cv:{"ratio":100},
+ what:"Der Anteil des freien PSA am Gesamt-PSA.",why:"Hilft bei leicht erhöhtem PSA: Ein hoher Anteil freies PSA spricht eher für eine gutartige Vergrößerung, ein niedriger sollte urologisch abgeklärt werden.",rel:["psa"]},
+{id:"chromogranin",n:"Chromogranin A",u:"ng/ml",g:"Tumormarker",al:["chromogranin a","chromogranin","cga "],ref:[0,100],opt:[0,100],cv:{"µg/l":1},lab:true,nurRef:true,
+ what:"Ein Eiweiß aus neuroendokrinen Zellen.",why:"Magensäureblocker heben den Wert deutlich, ohne dass etwas dahintersteckt."},
+{id:"antihbs",n:"Anti-HBs (Hepatitis-B-Impfschutz)",u:"IU/l",g:"Infektion & Impfschutz",al:["anti-hbs","anti hbs","antihbs","hbs-antikörper","hbs-antikorper","hbsab","hbs ab","hbs-ak","hepatitis b surface antibody","anti-hbs-ak"],ref:[10,100000],opt:[100,100000],cv:{"miu/ml":1,"iu/ml":1000,"u/l":1},
+ what:"Antikörper gegen Hepatitis B — nach Impfung oder ausgeheilter Infektion.",why:"Ab 10 IU/l gilt man als geschützt, ab 100 als gut geschützt. Darunter ist eine Auffrischung sinnvoll."},
+{id:"roeteln_igg",n:"Röteln-IgG",u:"IU/ml",g:"Infektion & Impfschutz",al:["röteln igg","röteln-igg","roteln igg","rubella igg","rubella-igg","rubella antibody igg","rötelnvirus igg"],ref:[10,1000],opt:[10,1000],cv:{"iu/ml":1,"u/ml":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper gegen Röteln — nach Impfung oder durchgemachter Infektion.",why:"Zeigt den Immunschutz. Die Grenze, ab der man als geschützt gilt, hängt vom Test ab — maßgeblich ist der Laborbereich."},
+{id:"masern_igg",n:"Masern-IgG",u:"",g:"Infektion & Impfschutz",al:["masern igg","masern-igg","measles igg","measles-igg","masernvirus igg"],ref:[1,100],opt:[1,100],cv:{"au/ml":1,"u/ml":1,"index":1,"ratio":1,"iu/ml":1,"iu/l":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper gegen Masern — nach Impfung oder durchgemachter Infektion.",why:"Zeigt den Immunschutz. Die Grenze, ab der man als geschützt gilt, hängt vom Test ab — maßgeblich ist der Laborbereich."},
+{id:"varizellen_igg",n:"Varizellen-IgG",u:"",g:"Infektion & Impfschutz",al:["varizellen igg","varizellen-igg","varicella igg","varicella zoster igg","vzv igg","vzv-igg"],ref:[1,100],opt:[1,100],cv:{"au/ml":1,"u/ml":1,"index":1,"ratio":1,"iu/ml":1,"iu/l":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper gegen Varizellen — nach Impfung oder durchgemachter Infektion.",why:"Zeigt den Immunschutz. Die Grenze, ab der man als geschützt gilt, hängt vom Test ab — maßgeblich ist der Laborbereich."},
+{id:"mumps_igg",n:"Mumps-IgG",u:"",g:"Infektion & Impfschutz",al:["mumps igg","mumps-igg","mumpsvirus igg"],ref:[1,100],opt:[1,100],cv:{"au/ml":1,"u/ml":1,"index":1,"ratio":1,"iu/ml":1,"iu/l":1},lab:true,nurLabor:true,nurRef:true,
+ what:"Antikörper gegen Mumps — nach Impfung oder durchgemachter Infektion.",why:"Zeigt den Immunschutz. Die Grenze, ab der man als geschützt gilt, hängt vom Test ab — maßgeblich ist der Laborbereich."},
+{id:"tetanus_ak",n:"Tetanus-Antikörper",u:"IU/ml",g:"Infektion & Impfschutz",al:["tetanus-antikörper","tetanus antikorper","tetanus antitoxin","tetanus igg","anti-tetanus","tetanus-ak","tetanustoxoid-ak"],ref:[0.1,100],opt:[0.5,100],cv:{"iu/l":0.001},
+ what:"Der Impfschutz gegen Wundstarrkrampf.",why:"Ab 0,1 IU/ml gilt man als geschützt, ab 0,5 als sicher. Darunter ist eine Auffrischung sinnvoll."},
+{id:"diphtherie_ak",n:"Diphtherie-Antikörper",u:"IU/ml",g:"Infektion & Impfschutz",al:["diphtherie-antikörper","diphtherie antikorper","diphtheria antitoxin","diphtherie igg","anti-diphtherie","diphtherie-ak","diphtheria igg"],ref:[0.1,100],opt:[0.5,100],cv:{"iu/l":0.001},
+ what:"Der Impfschutz gegen Diphtherie.",why:"Ab 0,1 IU/ml gilt man als geschützt. Darunter ist eine Auffrischung sinnvoll."},
+{id:"sige_birke",n:"Birkenpollen (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["birke","birch","betula","birkenpollen"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Birkenpollen.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_gras",n:"Gräserpollen (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["lieschgras","timothy","phleum","gräserpollen","graserpollen","grass pollen","wiesenlieschgras"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Gräserpollen.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_roggen_p",n:"Roggenpollen (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["roggenpollen","rye pollen","secale cereale pollen"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Roggenpollen.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_beifuss",n:"Beifuß (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["beifuß","beifuss","mugwort","artemisia"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Beifuß.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_ambrosia",n:"Ambrosia (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["ambrosia","ragweed","traubenkraut"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Ambrosia.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_milbe_dp",n:"Hausstaubmilbe (D. pteronyssinus) (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["pteronyssinus","hausstaubmilbe","house dust mite"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Hausstaubmilbe (D. pteronyssinus).",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_milbe_df",n:"Mehlmilbe (D. farinae) (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["farinae","mehlmilbe"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Mehlmilbe (D. farinae).",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_katze",n:"Katzenhaare (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["katzenhaare","katzenschuppen","katze","cat dander","cat epithelium"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Katzenhaare.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_hund",n:"Hundehaare (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["hundehaare","hundeschuppen","hund","dog dander","dog epithelium"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Hundehaare.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_pferd",n:"Pferdehaare (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["pferdehaare","pferdeschuppen","horse dander"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Pferdehaare.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_alternaria",n:"Alternaria (Schimmelpilz) (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["alternaria"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Alternaria (Schimmelpilz).",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_aspergillus",n:"Aspergillus (Schimmelpilz) (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["aspergillus"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Aspergillus (Schimmelpilz).",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_erdnuss",n:"Erdnuss (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["erdnuss","peanut"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Erdnuss.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_haselnuss",n:"Haselnuss (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["haselnuss","hazelnut","hazel nut"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Haselnuss.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_huehnerei",n:"Hühnerei-Eiweiß (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["hühnereiweiß","huhnereiweiss","hühnerei","huhnerei","egg white","eiklar"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Hühnerei-Eiweiß.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_kuhmilch",n:"Kuhmilch (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["kuhmilch","cow's milk","cows milk","cow milk"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Kuhmilch.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_weizen",n:"Weizen (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["weizenmehl","weizen","wheat"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Weizen.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_soja",n:"Soja (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["sojabohne","soja","soybean","soy bean"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Soja.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_sellerie",n:"Sellerie (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["sellerie","celery"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Sellerie.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_kabeljau",n:"Kabeljau (Fisch) (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["kabeljau","dorsch","codfish"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Kabeljau (Fisch).",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_garnele",n:"Garnele (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["garnele","shrimp","krabbe"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Garnele.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_bienengift",n:"Bienengift (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["bienengift","bee venom","honey bee venom"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Bienengift.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"sige_wespengift",n:"Wespengift (spezifisches IgE)",u:"kU/l",g:"Allergie",al:["wespengift","wasp venom","yellow jacket venom"],ref:[0,0.35],opt:[0,0.35],cv:{"kua/l":1,"iu/ml":1,"u/ml":1,"ku/l":1},einh:true,nurRef:true,
+ what:"Antikörper vom Typ IgE gegen Wespengift.",why:"Unter 0,35 kU/l gilt als nicht sensibilisiert. Ein höherer Wert zeigt eine Sensibilisierung — eine Allergie besteht aber nur, wenn auch Beschwerden auftreten.",rel:["ige"]},
+{id:"calprotectin",n:"Calprotectin (Stuhl)",u:"µg/g",g:"Stuhl",al:["calprotectin","fecal calprotectin","faecal calprotectin","calprotectin im stuhl"],ref:[0,50],opt:[0,50],cv:{"mg/kg":1},nurRef:true,
+ what:"Ein Eiweiß aus weißen Blutkörperchen, gemessen im Stuhl.",why:"Erhöht bei Entzündungen der Darmschleimhaut. Ein normaler Wert spricht gegen eine chronisch-entzündliche Darmerkrankung. Schmerzmittel wie Ibuprofen heben ihn.",rel:["crp"]},
+{id:"elastase",n:"Pankreas-Elastase (Stuhl)",u:"µg/g",g:"Stuhl",al:["pankreas-elastase","pankreaselastase","pancreatic elastase","elastase im stuhl","fecal elastase","faecal elastase","elastase-1"],ref:[200,2000],opt:[200,2000],cv:{"mg/kg":1},
+ what:"Ein Verdauungsenzym der Bauchspeicheldrüse, gemessen im Stuhl.",why:"Unter 200 µg/g spricht für eine nachlassende Verdauungsleistung der Bauchspeicheldrüse.",rel:["lipase"]},
+{id:"stfr",n:"Löslicher Transferrinrezeptor (sTfR)",u:"mg/l",g:"Eisen",al:["löslicher transferrinrezeptor","loslicher transferrinrezeptor","soluble transferrin receptor","stfr","transferrinrezeptor","s-tfr"],ref:[2.2,5],opt:[2.2,5],cv:{"nmol/l":0.0123},lab:true,nurRef:true,
+ what:"Ein Rezeptor, über den die Zellen Eisen aufnehmen, teils frei im Blut.",why:"Steigt bei Eisenmangel im Gewebe — und anders als Ferritin nicht bei Entzündungen. Hilfreich, wenn Ferritin wegen erhöhtem CRP unklar ist.",rel:["ferritin","crp","transferrin"]},
+{id:"estron",n:"Estron (E1)",u:"pg/ml",g:"Sexualhormone",al:["estron","estrone","östron","oestron"],ref:[10,60],opt:[10,60],refF:[30,200],cv:{"pmol/l":0.2703,"ng/l":1},lab:true,nurRef:true,
+ what:"Ein schwächeres Östrogen, vor allem aus dem Fettgewebe.",why:"Nach den Wechseljahren das wichtigste Östrogen. Bei Männern steigt es mit dem Körperfett.",rel:["estradiol"]},
+{id:"oxldl",n:"Oxidiertes LDL",u:"U/l",g:"Fette",al:["oxidiertes ldl","oxidized ldl","oxidised ldl","ox-ldl","oxldl"],ref:[0,60],opt:[0,60],cv:{"u/ml":0.001,"ng/ml":1},lab:true,nurRef:true,
+ what:"LDL-Partikel, die durch oxidativen Stress verändert sind.",why:"Gilt als besonders gefäßschädigend. Die Bereiche hängen stark vom Test ab.",rel:["ldl","apob"]},
+{id:"ldlp",n:"LDL-Partikelzahl",u:"nmol/l",g:"Fette",al:["ldl particle number","ldl-partikelzahl","ldl-p","ldl partikelzahl","ldl particle no"],ref:[0,1138],opt:[0,1138],cv:{"nmol/l":1,"nm/l":1},lab:true,einh:true,nurRef:true,
+ what:"Ein Wert aus der Lipoprotein-Fraktionierung (Ionenmobilität, etwa Cardio IQ).",why:"Die Zahl der LDL-Partikel — oft aussagekräftiger als die Cholesterinmenge darin. Maßgeblich ist der Laborbereich.",rel:["ldl","apob"]},
+{id:"ldl_small",n:"LDL klein",u:"nmol/l",g:"Fette",al:["ldl small","small ldl","ldl, small","kleine ldl-partikel"],ref:[0,142],opt:[0,142],cv:{"nmol/l":1,"nm/l":1},lab:true,einh:true,nurRef:true,
+ what:"Ein Wert aus der Lipoprotein-Fraktionierung (Ionenmobilität, etwa Cardio IQ).",why:"Kleine LDL-Partikel dringen leichter in die Gefäßwand ein. Maßgeblich ist der Laborbereich.",rel:["ldl","apob"]},
+{id:"ldl_medium",n:"LDL mittel",u:"nmol/l",g:"Fette",al:["ldl medium","medium ldl","ldl, medium","mittlere ldl-partikel"],ref:[0,215],opt:[0,215],cv:{"nmol/l":1,"nm/l":1},lab:true,einh:true,nurRef:true,
+ what:"Ein Wert aus der Lipoprotein-Fraktionierung (Ionenmobilität, etwa Cardio IQ).",why:"Mittelgroße LDL-Partikel, ebenfalls ungünstig in großer Zahl. Maßgeblich ist der Laborbereich.",rel:["ldl","apob"]},
+{id:"hdl_large",n:"HDL groß",u:"nmol/l",g:"Fette",al:["hdl large","large hdl","hdl, large","große hdl-partikel"],ref:[6729,30000],opt:[6729,30000],cv:{"nmol/l":1,"nm/l":1},lab:true,einh:true,nurRef:true,
+ what:"Ein Wert aus der Lipoprotein-Fraktionierung (Ionenmobilität, etwa Cardio IQ).",why:"Große HDL-Partikel gelten als die schützenden — mehr ist hier besser. Maßgeblich ist der Laborbereich.",rel:["ldl","apob"]},
+{id:"ldl_peak",n:"LDL-Partikelgröße",u:"Å",g:"Fette",al:["ldl peak size","ldl-partikelgröße","ldl particle size","ldl pattern size"],ref:[222.9,300],opt:[222.9,300],cv:{"angstrom":1,"a":1},lab:true,einh:true,nurRef:true,
+ what:"Ein Wert aus der Lipoprotein-Fraktionierung (Ionenmobilität, etwa Cardio IQ).",why:"Größere LDL-Partikel sind günstiger als kleine, dichte. Maßgeblich ist der Laborbereich.",rel:["ldl","apob"]},
+{id:"lppla2",n:"Lp-PLA2-Aktivität",u:"nmol/min/ml",g:"Herz",al:["lp-pla2","lp pla2","lipoprotein-associated phospholipase","plac test","lppla2"],ref:[0,123],opt:[0,123],lab:true,nurRef:true,
+ what:"Ein Enzym aus Entzündungszellen in der Gefäßwand.",why:"Ein Hinweis auf Entzündung in Gefäßablagerungen. Maßgeblich ist der Laborbereich.",rel:["hscrp","ldl"]},
+{id:"mpo",n:"Myeloperoxidase (MPO)",u:"pmol/l",g:"Herz",al:["myeloperoxidase","mpo"],ref:[0,470],opt:[0,470],lab:true,nurRef:true,
+ what:"Ein Enzym aus weißen Blutkörperchen.",why:"Erhöht bei Entzündung in Gefäßablagerungen. Maßgeblich ist der Laborbereich.",rel:["hscrp"]},
+{id:"tmao",n:"TMAO",u:"µmol/l",g:"Herz",al:["tmao","trimethylamin-n-oxid","trimethylamine n-oxide","trimethylamine-n-oxide"],ref:[0,6.2],opt:[0,6.2],lab:true,nurRef:true,
+ what:"Ein Stoffwechselprodukt der Darmbakterien aus Fleisch, Eiern und Cholin.",why:"Hohe Werte werden mit einem höheren Gefäßrisiko in Verbindung gebracht. Steigt bei Nierenschwäche.",rel:["kreatinin"]},
+{id:"adma",n:"ADMA",u:"µmol/l",g:"Herz",al:["adma","asymmetrisches dimethylarginin","asymmetric dimethylarginine"],ref:[0.4,0.75],opt:[0.4,0.75],lab:true,nurRef:true,
+ what:"Ein körpereigener Hemmstoff der Gefäßerweiterung.",why:"Erhöht bei Gefäßschäden und Nierenschwäche.",rel:["homocystein"]},
 ];
+M.forEach(m=>{ m.imp=m.imp||[]; m.rel=m.rel||[]; m.what=m.what||""; m.why=m.why||"" });
 const byId = Object.fromEntries(M.map(m=>[m.id,m]));
+
+/* ===== Textergebnisse ==================================================
+   Ergebnisse ohne Zahl: Urin, Erregertests, Titer, Blutgruppe. Gespeichert bei den
+   weiteren Werten eines Befunds (x.tid), bewertet nach Stichworten. */
+const TX=[
+ {id:"u_farbe",n:"Urin Farbe",g:"Urin",art:"farbe",urin:true,al:["colour","color","farbe","urin farbe","urine colour","urine color"]},
+ {id:"u_aussehen",n:"Urin Aussehen",g:"Urin",art:"klarheit",urin:true,al:["appearance","clarity","aussehen","trübung","trubung","urine appearance"]},
+ {id:"u_sed_leuko",n:"Urin Leukozyten (Mikroskopie)",g:"Urin",art:"sediment",schwelle:5,al:["pus cells","eiterzellen","leukozyten im sediment","sediment leukozyten","wbc/hpf","leukocytes (microscop","leucocytes (microscop","wbc (urine"]},
+ {id:"u_sed_ery",n:"Urin Erythrozyten (Mikroskopie)",g:"Urin",art:"sediment",schwelle:2,al:["r.b.cs","r.b.c.","erythrozyten im sediment","sediment erythrozyten","rbc/hpf","rbcs (urine","red blood cells (urine"]},
+ {id:"u_epithel",n:"Urin Epithelien",g:"Urin",art:"sediment",schwelle:10,urin:true,al:["epithelial cells","epithelien","plattenepithelien","squamous epithelial"]},
+ {id:"u_bakterien",n:"Urin Bakterien",g:"Urin",art:"sediment",urin:true,al:["bacteria","bakterien"]},
+ {id:"u_zylinder",n:"Urin Zylinder",g:"Urin",art:"sediment",schwelle:0,urin:true,al:["casts","zylinder"]},
+ {id:"u_kristalle",n:"Urin Kristalle",g:"Urin",art:"sediment",urin:true,al:["crystals","kristalle"]},
+ {id:"u_hefen",n:"Urin Hefen",g:"Urin",art:"sediment",schwelle:0,urin:true,al:["yeast","hefen","sprosspilze"]},
+ {id:"u_kultur",n:"Urinkultur",g:"Urin",art:"kultur",al:["urine culture","culture yielded","urinkultur","kultur urin","culture / sensitivity - urine","culture/sensitivity","bakteriologie urin"]},
+ {id:"u_hcg",n:"Schwangerschaftstest (Urin)",g:"Urin",art:"test",al:["urine pregnancy","pregnancy test","schwangerschaftstest","hcg im urin","urine hcg","hcg (urin"]},
+ {id:"hbsag",n:"HBs-Antigen (Hepatitis B)",g:"Infektion & Impfschutz",art:"test",al:["hbsag","hbs-antigen","hbs ag","hbs-ag","hepatitis b surface antigen","australia antigen"]},
+ {id:"antihbc",n:"Anti-HBc (Hepatitis B, durchgemacht)",g:"Infektion & Impfschutz",art:"test",al:["anti-hbc","anti hbc","hbc-ak","hbc-antikörper","hbc antibod","hepatitis b core antibod","hbcab"]},
+ {id:"antihcv",n:"Anti-HCV (Hepatitis C)",g:"Infektion & Impfschutz",art:"test",al:["anti-hcv","anti hcv","hcv-ak","hcv-antikörper","hcv antibod","hepatitis c antibod","hcv ab"]},
+ {id:"hav_igm",n:"Hepatitis A IgM",g:"Infektion & Impfschutz",art:"test",al:["hav igm","anti-hav igm","hepatitis a igm","hav-igm","anti-hav-igm"]},
+ {id:"hiv",n:"HIV-1/2 (Antigen/Antikörper)",g:"Infektion & Impfschutz",art:"test",al:["hiv 1/2","hiv 1&2","hiv-1/2","hiv 1+2","hiv ag/ak","hiv ag/ab","hiv combo","hiv-ak","hiv antibod","hiv 1 & 2","hiv"]},
+ {id:"syphilis",n:"Syphilis-Suchtest",g:"Infektion & Impfschutz",art:"test",al:["tpha","tppa","vdrl","rpr","syphilis","treponema pallidum","lues","tp-ak"]},
+ {id:"hpylori",n:"Helicobacter pylori",g:"Infektion & Impfschutz",art:"test",al:["helicobacter","h. pylori","h.pylori","h pylori","hp-antigen","hp antigen"]},
+ {id:"toxo_igg",n:"Toxoplasmose IgG",g:"Infektion & Impfschutz",art:"test",immun:true,al:["toxoplasma igg","toxoplasmose igg","toxo igg","toxoplasma gondii igg"]},
+ {id:"toxo_igm",n:"Toxoplasmose IgM",g:"Infektion & Impfschutz",art:"test",al:["toxoplasma igm","toxoplasmose igm","toxo igm","toxoplasma gondii igm"]},
+ {id:"cmv_igg",n:"CMV IgG",g:"Infektion & Impfschutz",art:"test",immun:true,al:["cmv igg","cytomegalie igg","cytomegalovirus igg","cmv-igg"]},
+ {id:"cmv_igm",n:"CMV IgM",g:"Infektion & Impfschutz",art:"test",al:["cmv igm","cytomegalie igm","cytomegalovirus igm","cmv-igm"]},
+ {id:"ebv_igg",n:"EBV IgG (durchgemacht)",g:"Infektion & Impfschutz",art:"test",immun:true,al:["ebna","ebv igg","vca igg","ebna-1 igg","ebv-vca igg","ebna igg"]},
+ {id:"ebv_igm",n:"EBV IgM (frisch)",g:"Infektion & Impfschutz",art:"test",al:["vca igm","ebv igm","ebv-vca igm","ebv-igm"]},
+ {id:"borrelien",n:"Borrelien-Antikörper",g:"Infektion & Impfschutz",art:"test",al:["borrelia","borrelien","lyme"]},
+ {id:"igra",n:"Tuberkulose-Bluttest (IGRA)",g:"Infektion & Impfschutz",art:"test",al:["quantiferon","igra","tb gold","t-spot","tuberculosis igra"]},
+ {id:"covid_ak",n:"SARS-CoV-2-Antikörper",g:"Infektion & Impfschutz",art:"test",immun:true,al:["sars-cov-2 antibod","sars-cov-2 ak","covid antibod","covid-19 antibod","sars-cov-2-igg","spike-igg"]},
+ {id:"ana_titer",n:"ANA-Titer (Immunfluoreszenz)",g:"Autoimmun",art:"titer",al:["ana-titer","ana titer","ana (ift","ana ift","ana-ift","hep-2","hep2","antinukleäre antikörper (ift","antinuclear antibod (ifa","ana (ifa"]},
+ {id:"anca",n:"ANCA",g:"Autoimmun",art:"test",al:["anca","c-anca","p-anca","pr3-anca","mpo-anca"]},
+ {id:"okkult",n:"Blut im Stuhl",g:"Stuhl",art:"test",al:["occult blood","okkultes blut","hämoccult","haemoccult","hemoccult","ifobt","fobt","blut im stuhl","fit (stuhl","immunologischer stuhltest"]},
+ {id:"parasiten",n:"Parasiten im Stuhl",g:"Stuhl",art:"test",al:["ova and parasites","ova & parasites","parasiten","wurmeier","stool parasites"]},
+ {id:"blutgruppe",n:"Blutgruppe",g:"Blutbild",art:"info",al:["blood group","blutgruppe","abo group","abo/rh","abo-blutgruppe","abo and rh","abo & rh","rhesusfaktor","rh factor","rh type","rh(d)"]}
+];
+const txById=Object.fromEntries(TX.map(t=>[t.id,t]));
+TX.forEach(t=>t._al=t.al.map(flach));
+/* Teststreifen: „Nil“, „+“, „++“, „Spuren“ als Stufe 0 bis 4 */
+function stufeAus(t){
+  const s=flach(t||"").trim(); if(!s) return null;
+  if(/^(nil|neg|negativ|negative|absent|not detected|nicht nachweisbar|normal|unauffällig|unauffallig|none|kein)/.test(s)) return 0;
+  if(/^(trace|spuren|spur|\(\+\)|±|\+\/-)/.test(s)) return 0.5;
+  const p=s.match(/^(\+{1,4})(?!\S)/); if(p) return p[1].length;
+  const z=s.match(/^([1-4])\s*\+/); if(z) return +z[1];
+  if(/^(positiv|positive|present)/.test(s)) return 1;
+  return null;
+}
+/* Bewertung eines Textergebnisses */
+const NEG_RE=/^(non[\s-]?reactive|nicht reaktiv|negativ|negative|neg\b|not detected|nicht nachweisbar|nicht nachgewiesen|no growth|kein wachstum|keine? |steril|nil\b|absent|abwesend|none\b|not seen|nicht gesehen|o\.b\.|unauffällig|unauffallig)/;
+const POS_RE=/(positiv|positive|reactive|reaktiv|detected|nachweisbar|nachgewiesen|growth of|wachstum von|keimzahl|cfu|present|vorhanden|\+)/;
+const GRENZ_RE=/(grenzwertig|borderline|equivocal|fraglich|indeterminate|unklar|zweifelhaft)/;
+function textStatus(T,txt){
+  const t=flach(txt||"").trim(); if(!T||!t) return null;
+  const pos={k:"bad",s:"Positiv",t:"positiv — bitte ärztlich besprechen"};
+  if(T.art==="info") return {k:"ok",s:String(txt).slice(0,14),t:"Angabe aus dem Befund"};
+  if(T.art==="farbe") return /(yellow|gelb|straw|stroh|pale|hell|amber)/.test(t)?{k:"ok",s:"Unauffällig",t:"übliche Farbe"}:{k:"mid",s:"Auffällig",t:"ungewöhnliche Farbe — beim nächsten Mal beobachten"};
+  if(T.art==="klarheit") return /^(clear|klar)/.test(t)?{k:"ok",s:"Klar",t:"klar"}:/(slight|leicht|hazy)/.test(t)?{k:"mid",s:"Leicht trüb",t:"leicht trüb — oft harmlos"}:{k:"mid",s:"Trüb",t:"trüb — zusammen mit Leukozyten und Nitrit lesen"};
+  if(GRENZ_RE.test(t)) return {k:"mid",s:"Grenzwertig",t:"grenzwertig — Kontrolle oder ärztliche Einordnung"};
+  if(T.art==="sediment"){
+    if(NEG_RE.test(t)) return {k:"ok",s:"Keine",t:"nicht nachgewiesen"};
+    if(/(rare|few|occasional|vereinzelt|wenige|einzelne|selten)/.test(t)) return {k:"ok",s:"Vereinzelt",t:"vereinzelt — unauffällig"};
+    if(/(many|numerous|plenty|reichlich|viele|massenhaft|zahlreich|\+\+)/.test(t)) return {k:"bad",s:"Reichlich",t:"reichlich — bitte ärztlich besprechen"};
+    const z=(t.match(/\d+(?:[.,]\d+)?/g)||[]).map(x=>parseFloat(x.replace(",",".")));
+    if(z.length&&T.schwelle!==undefined){ const mx=Math.max(...z); return mx>T.schwelle?(mx>T.schwelle*2&&T.schwelle>0?{k:"bad",s:"Erhöht",t:"erhöht — bitte ärztlich besprechen"}:{k:"mid",s:"Leicht erhöht",t:"leicht erhöht — mit den übrigen Urinwerten lesen"}):{k:"ok",s:"Unauffällig",t:"im üblichen Bereich"} }
+    return null;
+  }
+  if(T.art==="titer"){
+    if(NEG_RE.test(t)||/<\s*1\s*:\s*(40|80)/.test(t)) return {k:"ok",s:"Negativ",t:"negativ"};
+    const m=t.match(/1\s*:\s*(\d+)/); if(m){ const n=+m[1]; return n>=320?pos:n>=160?{k:"mid",s:"Schwach positiv",t:"schwach positiv — häufig auch bei Gesunden, ärztlich einordnen lassen"}:n>=80?{k:"mid",s:"Grenzwertig",t:"grenzwertig — bei Gesunden nicht selten"}:{k:"ok",s:"Negativ",t:"negativ"} }
+  }
+  if(NEG_RE.test(t)) return {k:"ok",s:"Negativ",t:T.immun?"kein Kontakt bzw. kein Schutz nachweisbar":"negativ"};
+  if(POS_RE.test(t)) return T.immun?{k:"ok",s:"Positiv",t:"Antikörper vorhanden — früherer Kontakt oder Impfung"}:pos;
+  return null;
+}
+/* Textergebnisse und Teststreifen-Stufen aus dem Befundtext. Urinwörter wie „Colour“
+   oder „Bacteria“ zählen nur innerhalb eines Urinabschnitts. */
+function textAus(txt){
+  const out={werte:{},texte:[]};
+  const STUFE={protein:"u_protein",glucose:"u_glukose",glukose:"u_glukose",ketones:"u_keton",ketone:"u_keton","ketonkorper":"u_keton",blood:"u_blut",blut:"u_blut",bilirubin:"u_bili",urobilinogen:"u_urobi",nitrite:"u_nitrit",nitrit:"u_nitrit",leucocytes:"u_leuko",leukocytes:"u_leuko",leukozyten:"u_leuko","leukocyte esterase":"u_leuko"};
+  let urin=0;
+  String(txt||"").split(/\r?\n/).forEach(raw=>{
+    const z=prepZeile(raw); if(!z) return;
+    if(/urin(e)?\s*(analysis|chemistry|macroscopic|microscopic|examination|status|sediment|teststreifen)|urinalysis|urinstatus|harnstatus|urinsediment|\bu-status/.test(z)) urin=45;
+    else if(/(hematology|haematology|chemistry report|biochemistry|serology|immunology|lipid profile|blutbild|klinische chemie|microbiology report|end of report|ende des befund)/.test(z)) urin=0;
+    if(urin>0) urin--;
+    const kern=z.replace(/^[*\s]+/,"");
+    if(urin>0){
+      for(const k in STUFE){
+        if(kern.startsWith(k+" ")){ const rest=kern.slice(k.length+1).replace(/^[:\s]+/,""); const v=stufeAus(rest);
+          if(v!==null&&out.werte[STUFE[k]]===undefined) out.werte[STUFE[k]]=v; return }
+      }
+    }
+    for(const T of TX){
+      if(T.urin&&urin<=0) continue;
+      let treffer=null;
+      for(const a of T._al){ const i=findeAlias(kern,a); if(i>=0&&(!treffer||a.length>treffer.a.length)) treffer={a,i} }
+      if(!treffer) continue;
+      if(T.urin&&treffer.i>2) continue;    /* nur am Zeilenanfang — sonst steckt das Wort im Fließtext */
+      const rest=kern.slice(treffer.i+treffer.a.length).replace(/^[\s:)*.\-]+/,"");
+      let wert=null;
+      if(T.art==="kultur"){ const m=rest.match(/(no growth[^.]*?hours|no growth|kein wachstum|steril|growth of [^.]{0,60}|wachstum von [^.]{0,60})/); if(m) wert=m[1] }
+      else if(T.art==="sediment"){ const m=rest.match(/^(\d+\s*-\s*\d+|\d+|nil|none|absent|rare|few|occasional|many|numerous|plenty|vereinzelt|wenige|einzelne|reichlich|viele|negativ|keine)/); if(m) wert=m[1] }
+      else if(T.art==="farbe"||T.art==="klarheit"){ const m=rest.match(/^(pale yellow|light yellow|dark yellow|straw|yellow|amber|red|brown|orange|clear|slightly turbid|turbid|hazy|cloudy|hellgelb|dunkelgelb|gelb|klar|leicht trüb|leicht trub|trüb|trub|rot|braun)/); if(m) wert=m[1] }
+      else if(T.art==="titer"){ const m=rest.match(/^(<?\s*1\s*:\s*\d+[^,;]{0,30}|negativ\w*|positiv\w*)/); if(m) wert=m[1] }
+      else if(T.art==="info"){ const m=rest.match(/^((?:a|b|ab|0|o)\s*(?:rh)?\s*[+-]?\s*(?:positiv|negativ|positive|negative|pos|neg)?)/); if(m&&m[1].trim()) wert=m[1].trim().toUpperCase() }
+      else { const m=rest.match(/^(non[\s-]?reactive|nicht reaktiv|negativ\w*|not detected|nicht nachweisbar|reactive|reaktiv|positiv\w*|detected|nachweisbar|grenzwertig|borderline|equivocal|indeterminate)/); if(m) wert=m[1] }
+      if(wert&&!out.texte.some(x=>x.tid===T.id)) out.texte.push({tid:T.id, t:wert});
+      return;
+    }
+  });
+  return out;
+}
+
 const GROUPS = [...new Set(M.map(m=>m.g))];
 /* ===== 2 — Speicher =================================================== */
 const WS = (typeof window.storage!=="undefined" && window.storage && typeof window.storage.get==="function");
@@ -1252,7 +1756,7 @@ function optOf(m,ph){
    Passt ihre Größenordnung nicht zu Serums Bereich, stimmt Einheit oder Methode nicht —
    dann entscheidet das Labor und der Wert wird zur Prüfung markiert. */
 function laborCheck(m,v,ph,ref){
-  if(!ref) return null;
+  if(!ref||m.lab||m.nurLabor) return null;
   const num=x=>x===null||x===undefined||x===""||!isFinite(+x)?null:+x;
   const lo=num(ref.lo), hi=num(ref.hi), f=ref.f||"";
   if(lo===null&&hi===null&&!f) return null;
@@ -1272,7 +1776,20 @@ function laborAbw(m,v,ph,q,ref){
   if(!L.ueber&&!L.unter) return "";
   return statusSerum(m,v,ph,q).k==="bad"?"":(L.ueber?"hoch":"niedrig");
 }
+/* Für Werte, deren Bereiche stark von Methode und Probe abhängen, zählt der Laborbereich. */
+function statusLabor(m,v,q,ref){
+  const lo=ref.lo!=null&&ref.lo!==""?+ref.lo:null, hi=ref.hi!=null&&ref.hi!==""?+ref.hi:null, f=ref.f||"";
+  const ok={k:"ok",t:"im Laborbereich",s:"Normal",labor:true};
+  const hoch={k:"bad",t:"über dem Laborbereich",s:"Hoch",labor:true}, tief={k:"bad",t:"unter dem Laborbereich",s:"Niedrig",labor:true};
+  if(q==="<"){ if(lo!==null&&v<=lo) return tief; if(hi===null||v<=hi) return (lo===null||lo<=0)?ok:{k:"mid",t:"nicht sicher einzuordnen",s:"Unklar",unklar:true,labor:true}; return {k:"mid",t:"nicht sicher einzuordnen",s:"Unklar",unklar:true,labor:true} }
+  if(q===">"){ if(hi!==null&&v>=hi) return hoch; if(lo!==null&&v>=lo) return hi===null?ok:{k:"mid",t:"nicht sicher einzuordnen",s:"Unklar",unklar:true,labor:true}; return {k:"mid",t:"nicht sicher einzuordnen",s:"Unklar",unklar:true,labor:true} }
+  if(f==="H"||(hi!==null&&v>hi)) return hoch;
+  if(f==="L"||(lo!==null&&v<lo)) return tief;
+  return ok;
+}
 function status(m,v,ph,q,ref){
+  if((m.lab||m.nurLabor)&&ref&&(ref.lo!=null||ref.hi!=null||ref.f)) return statusLabor(m,v,q,ref);
+  if(m.nurLabor) return {k:"mid",t:"ohne Laborbereich nicht bewertbar",s:"Unbewertet",unklar:true};
   const st=statusSerum(m,v,ph,q);
   const L=laborCheck(m,v,ph,ref); if(!L) return st;
   if(L.skala) return (L.ueber||L.unter)
@@ -1302,7 +1819,7 @@ function statusSerum(m,v,ph,q){
   }
   if(v<rl) return {k:"bad",t:"unter Referenz",s:"Niedrig",unsicher};
   if(v>rh) return {k:"bad",t:"über Referenz",s:"Hoch",unsicher};
-  if(v>=ol&&v<=oh) return {k:unsicher?"mid":"ok",t:unsicher?"Zyklusangabe fehlt":"im Idealbereich",s:unsicher?"unklar":"Optimal",unsicher};
+  if(v>=ol&&v<=oh) return {k:unsicher?"mid":"ok",t:unsicher?"Zyklusangabe fehlt":m.nurRef?"im Referenzbereich":"im Idealbereich",s:unsicher?"unklar":m.nurRef?"Normal":"Optimal",unsicher};
   return v<ol?{k:"mid",t:"niedrig-normal",s:"Niedrig-normal",unsicher}
              :{k:"mid",t:"hoch-normal",s:"Hoch-normal",unsicher};
 }
@@ -1353,6 +1870,7 @@ function series(id){
 /* --- Weitere Werte ----------------------------------------------------
    Werte, die Serum nicht kennt, werden nach der Laborreferenz bewertet. */
 function xStatus(x){
+  if(x.tid&&txById[x.tid]) return textStatus(txById[x.tid],x.t);
   if(x.v===null||x.v===undefined) return null;
   const v=+x.v;
   const ueber=x.f==="H"||(x.hi!==null&&x.hi!==undefined&&x.q!=="<"&&v>+x.hi);
@@ -1363,9 +1881,10 @@ function xStatus(x){
   return null;
 }
 /* Alle weiteren Werte über alle Befunde — je Name die Messungen, neueste zuerst */
-function weitereAlle(){
+function weitereAlle(text){
   const map=new Map();
   sortedEntries().forEach(e=>(e.x||[]).forEach(x=>{
+    if(!!x.tid!==!!text) return;
     const k=flach(x.n); if(!k) return;
     if(!map.has(k)) map.set(k,{n:x.n, list:[]});
     map.get(k).list.push({d:e.date, x});
@@ -1612,7 +2131,9 @@ const RULES=[
  z:["Verminderte androgene Wirkung","Kann sich als Antriebslosigkeit, schlechterer Muskelaufbau, geringere Libido und schlechtere Regeneration zeigen."],
  a:["Zwischen 7 und 10 Uhr nachmessen","Der Wert schwankt über den Tag stark. LH, FSH, Prolaktin und SHBG gehören zur Abklärung dazu."]},
 {id:"prolaktin_hoch",c:["prolaktin"],sev:"bad",when:c=>c.hi("prolaktin"),
- f:c=>["Prolaktin erhöht","Erhöhtes Prolaktin unterdrückt die Sexualhormone und ist eine häufige, gut behandelbare Ursache für niedriges Testosteron."],
+ f:c=>["Prolaktin erhöht",isF()
+   ?"Erhöhtes Prolaktin kann den Zyklus und den Eisprung stören. Häufige Ursachen sind Stress, Schlafmangel, manche Medikamente und eine Schilddrüsenunterfunktion — seltener ein gutartiger Knoten der Hirnanhangdrüse, der sich gut behandeln lässt."
+   :"Erhöhtes Prolaktin unterdrückt die Sexualhormone und ist eine häufige, gut behandelbare Ursache für niedriges Testosteron."],
  a:["Kontrolle morgens und ausgeruht","Stress vor der Abnahme hebt den Wert. Bleibt er erhöht, gehört er ärztlich abgeklärt."]},
 {id:"harnsaeure_hoch",c:["harnsaeure"],sev:"bad",when:c=>c.hi("harnsaeure"),
  f:c=>["Harnsäure erhöht",`${c.t("harnsaeure")} mg/dl. Viel Fleisch, Innereien und Bier heben den Wert, hartes Training und Fasten kurzfristig ebenfalls.`],
@@ -1718,8 +2239,17 @@ function ntPaar(c){
   const a=s[s.length-2], b=s[s.length-1];
   return (!a.q&&!b.q&&a.v>0&&b.v/a.v>=2&&b.v>=50) ? {a,b} : null;
 }
+/* Ist hs-CRP gemessen, zählt es für die Entzündungsregeln — im unteren Bereich ist es genauer als CRP. */
+function mitHsCrp(S){
+  if(!S||!S.v||S.v.hscrp===undefined) return S;
+  if(S.v.crp!==undefined&&S.d&&S.d.crp&&S.d.hscrp&&S.d.crp>S.d.hscrp) return S;
+  const T={}; Object.keys(S).forEach(k=>{ T[k]=S[k]&&typeof S[k]==="object"&&!Array.isArray(S[k])?Object.assign({},S[k]):S[k] });
+  ["v","q","ph","zeit","d","e","ref"].forEach(k=>{ if(T[k]&&S[k]&&S[k].hscrp!==undefined) T[k].crp=S[k].hscrp });
+  return T;
+}
 function assess(S, meta){
   meta=meta||{};
+  S=mitHsCrp(S);
   /* Werte, deren Größenordnung nicht zur Laborreferenz passt, gehen nicht in die Regeln ein —
      sonst entstehen aus einem Einheitenfehler ganze Krankheitsbilder. */
   const pruef=Object.keys(S.v).filter(id=>byId[id]&&statOf(S,id).pruef);
@@ -1946,8 +2476,11 @@ function carePlan(){
     if(plan[id].t!=="anlass"&&every===0) plan[id].t="einmal";
     plan[id].wegen.push(c.lab||c.n);
   }));
+  const ERSATZ={crp:"hscrp", lpa:"lpa_nmol"};
   Object.values(plan).forEach(p=>{
-    const s=series(p.id), m=byId[p.id];
+    let s=series(p.id), m=byId[p.id];
+    const e=ERSATZ[p.id], s2=e&&byId[e]?series(e):[];
+    if(s2.length&&(!s.length||s2[s2.length-1].d>s[s.length-1].d)){ s=s2; m=byId[e] }
     if(!s.length){ p.state="fehlt"; return }
     const last=s[s.length-1];
     p.last=last; p.alter=monthsSince(last.d);
@@ -2006,7 +2539,7 @@ function chart(m,s){
     return `<g>${p.q?`<circle cx="${cx}" cy="${cy.toFixed(1)}" r="${r}" fill="var(--card)" stroke="${col}" stroke-width="2.2"/>${pfeil}`
       :`<circle cx="${cx}" cy="${cy.toFixed(1)}" r="${r}" fill="${col}" stroke="var(--card)" stroke-width="2"/>`}<title>${dlong(p.d)}: ${fq(p.v,p.q)} ${m.u} — ${st.t}</title></g>`}).join("");
   const xl=s.map((p,i)=>(s.length>6&&i%Math.ceil(s.length/5)!==0&&i!==s.length-1)?"":`<text x="${x(i).toFixed(1)}" y="${H-9}" text-anchor="middle" class="mono" font-size="9.5" fill="var(--muted)">${dshort(p.d)}</text>`).join("");
-  const optLab=(cl(oh)-T)>13?`<text x="${L+pw-4}" y="${(cl(oh)+12).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" fill="var(--opt)">ideal ${fmt(ol)}–${fmt(oh)}</text>`:"";
+  const optLab=(cl(oh)-T)>13?`<text x="${L+pw-4}" y="${(cl(oh)+12).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" fill="var(--opt)">${m.nurRef?"Referenz":"ideal"} ${fmt(ol)}–${fmt(oh)}</text>`:"";
 
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Verlauf ${m.n}, aktuell ${fq(cur.v,cur.q)} ${m.u}">
     ${hiZone}${loZone}
@@ -2136,7 +2669,7 @@ function viewDash(){
   const nTests=DB.entries.length, nB=S.befunde.length;
   const alt24=ids.filter(id=>monthsSince(S.d[id])>=24).length;
 
-  const lead=`Für jeden deiner ${c.total} Messwerte zählt die jüngste Messung${nB>1?` — zusammengesetzt aus ${nB} Befunden zwischen ${dmed(aeltest)} und ${dmed(juengst.date)}`:` vom ${dlong(juengst.date)}`}. ${c.bad===0?"Keiner liegt":c.bad===1?"Einer liegt":c.bad+" liegen"} außerhalb des Referenzbereichs${c.mid?`, ${c.mid} im Grenzbereich`:""}.${alt24?` ${alt24===1?"Ein Wert ist":alt24+" Werte sind"} älter als zwei Jahre — die Vorsorge zeigt, was nachgemessen werden sollte.`:""}${nTests<2?" Ab dem zweiten Befund bewertet Serum zusätzlich den Verlauf.":""}${(()=>{const n=weitereAlle().length;return n?` Dazu ${n===1?"kommt ein weiterer Wert":"kommen "+n+" weitere Werte"}, die Serum nicht kennt — sie stehen unter „Messwerte“ und werden nach der Laborreferenz bewertet.`:""})()}`;
+  const lead=`Für jeden deiner ${c.total} Messwerte zählt die jüngste Messung${nB>1?` — zusammengesetzt aus ${nB} Befunden zwischen ${dmed(aeltest)} und ${dmed(juengst.date)}`:` vom ${dlong(juengst.date)}`}. ${c.bad===0?"Keiner liegt":c.bad===1?"Einer liegt":c.bad+" liegen"} außerhalb des Referenzbereichs${c.mid?`, ${c.mid} im Grenzbereich`:""}.${alt24?` ${alt24===1?"Ein Wert ist":alt24+" Werte sind"} älter als zwei Jahre — die Vorsorge zeigt, was nachgemessen werden sollte.`:""}${nTests<2?" Ab dem zweiten Befund bewertet Serum zusätzlich den Verlauf.":""}${(()=>{const n=weitereAlle().length;return n?` Dazu ${n===1?"kommt ein weiterer Wert":"kommen "+n+" weitere Werte"}, die Serum nicht kennt — sie stehen unter „Messwerte“ und werden nach der Laborreferenz bewertet.`:""})()}${(()=>{const p=weitereAlle(true).filter(w=>{const st=xStatus(w.list[0].x);return st&&st.k==="bad"});return p.length?` Auffällige Textergebnisse: ${p.map(w=>w.n).join(", ")} — bitte ärztlich besprechen.`:""})()}`;
 
   const trendItems=[...up.map(x=>({t:`${x.m.n} verbessert`,p:`Von ${fmt(x.prev.v)} auf ${fmt(x.cur.v)} ${x.m.u} — Richtung Idealbereich.`,sev:"ok"})),
                     ...dn.map(x=>({t:`${x.m.n} verschlechtert`,p:`Von ${fmt(x.prev.v)} auf ${fmt(x.cur.v)} ${x.m.u} — weg vom Idealbereich.`,sev:"mid"}))];
@@ -2191,13 +2724,13 @@ function markerCard(m){
   const s=series(m.id),cur=s[s.length-1],st=status(m,cur.v,cur.ph,cur.q,cur.ref),tr=trend(m,s);
   const na=answersFor("m:"+m.id).length;
   return `<article class="mcard" id="m-${m.id}">
-    <div class="card-top"><div><h3>${m.n}</h3><div class="sub">${m.g} · Referenz ${fmt(refOf(m,cur.ph)[0])}–${fmt(refOf(m,cur.ph)[1])}${cur.ph?" · "+PHASEN[cur.ph]:""}</div></div>
+    <div class="card-top"><div><h3>${m.n}</h3><div class="sub">${m.g} · ${(m.lab||m.nurLabor)&&cur.ref&&(cur.ref.lo!=null||cur.ref.hi!=null)?"Laborbereich "+labTxt(cur.ref):"Referenz "+fmt(refOf(m,cur.ph)[0])+"–"+fmt(refOf(m,cur.ph)[1])}${cur.ph?" · "+PHASEN[cur.ph]:""}</div></div>
       <div class="readout"><div class="val">${fq(cur.v,cur.q)}</div><div class="unit">${m.u}</div><span class="pill ${st.k}">${st.t}</span></div></div>
     ${chart(m,s)}
     <div class="trend"><span class="arrow">${tr.arrow}</span><span>${tr.txt}</span></div>
     ${m.warn?`<div class="warnbox" style="margin:10px 18px 0">${m.warn}</div>`:""}
     <details class="acc"><summary>Was wird gemessen und warum zählt es?</summary><div class="body"><p>${m.what}</p><p>${m.why}</p></div></details>
-    <details class="acc"><summary>Was den Wert beeinflusst</summary><div class="body"><ul>${m.imp.map(i=>`<li>${i}</li>`).join("")}</ul></div></details>
+    ${m.imp.length?`<details class="acc"><summary>Was den Wert beeinflusst</summary><div class="body"><ul>${m.imp.map(i=>`<li>${i}</li>`).join("")}</ul></div></details>`:""}
     <div class="card-foot"><button class="btn primary" onclick="openAsk('${m.id}')">Frag Claude${na?` <span class="badge">${na}</span>`:""}</button>
       ${m.rel&&m.rel.length?`<span class="hint" style="margin:0;align-self:center">Hängt zusammen mit ${m.rel.map(r=>byId[r]&&byId[r].n).filter(Boolean).join(", ")}</span>`:""}</div>
   </article>`;
@@ -2210,7 +2743,7 @@ function sortByDeviation(list){
 function groupHead(g,list){
   const bad=list.filter(m=>{const s=series(m.id),x=s[s.length-1];return status(m,x.v,x.ph,x.q,x.ref).k==="bad"}).length;
   const mid=list.filter(m=>{const s=series(m.id),x=s[s.length-1];return status(m,x.v,x.ph,x.q,x.ref).k==="mid"}).length;
-  const txt=bad?`${bad} außerhalb der Referenz`:mid?`${mid} im Grenzbereich`:"alle im Idealbereich";
+  const txt=bad?`${bad} außerhalb der Referenz`:mid?`${mid} im Grenzbereich`:list.every(m=>m.nurRef)?"alle im Normbereich":"alle im Idealbereich";
   return `<div class="grp-h"><h3>${g}</h3><span style="color:${bad?"var(--alert)":mid?"var(--serum)":"var(--opt)"}">${txt}</span><span class="n">${list.length} Werte</span></div>`;
 }
 /* Sucht über Namen, Laborbezeichnungen und Kategorie — „gt“ findet Gamma-GT, „holo“ nichts Falsches. */
@@ -2219,19 +2752,21 @@ function trifft(m,q){
   const f=flach(q).trim(); if(!f) return true;
   return flach(m.n).includes(f)||m.id.includes(f)||(m._al||[]).some(a=>a.includes(f))||flach(m.g).includes(f);
 }
-function weitereKarte(liste){
+function weitereKarte(liste,text){
   if(!liste.length) return "";
-  return `<div class="grp-h"><h3>Weitere Werte</h3></div>
-    <div class="card" style="padding:6px 0 4px"><div class="detected" style="border:0;margin:0;max-height:none;overflow:visible"><table><thead><tr><th>Name im Befund</th><th>Zuletzt</th><th>Labor</th></tr></thead><tbody>
-    ${liste.map(w=>{const z=w.list[0], st=xStatus(z.x);return `<tr class="xrow"><td><strong>${esc(w.n)}</strong><br><span class="hint" style="margin:0">${w.list.length>1?w.list.length+" Messungen · vorher "+w.list.slice(1,3).map(y=>xWert(y.x)+" ("+dmed(y.d)+")").join(", "):"eine Messung"}</span></td>
+  return `<div class="grp-h"><h3>${text?"Textergebnisse":"Weitere Werte"}</h3></div>
+    <div class="card" style="padding:6px 0 4px"><div class="detected" style="border:0;margin:0;max-height:none;overflow:visible"><table><thead><tr><th>${text?"Test":"Name im Befund"}</th><th>Zuletzt</th>${text?"":"<th>Labor</th>"}</tr></thead><tbody>
+    ${liste.map(w=>{const z=w.list[0], st=xStatus(z.x);if(text) return `<tr class="xrow"><td><strong>${esc(w.n)}</strong><br><span class="hint" style="margin:0">${w.list.length>1?w.list.length+" Messungen · vorher "+w.list.slice(1,3).map(y=>esc(y.x.t||"—")+" ("+dmed(y.d)+")").join(", "):"eine Messung"}</span></td>
+      <td class="mono" style="white-space:normal;word-break:break-word">${esc(z.x.t||"—")}<br><span class="hint" style="margin:0">${dmed(z.d)}${z.x.rt?" · Labor: "+esc(z.x.rt):""}</span>${st?`<br><span class="pill ${st.k}" style="margin-top:6px;display:inline-block">${st.s}</span>`:""}</td></tr>`;
+      return `<tr class="xrow"><td><strong>${esc(w.n)}</strong><br><span class="hint" style="margin:0">${w.list.length>1?w.list.length+" Messungen · vorher "+w.list.slice(1,3).map(y=>xWert(y.x)+" ("+dmed(y.d)+")").join(", "):"eine Messung"}</span></td>
       <td class="mono" style="white-space:nowrap">${xWert(z.x)}<br><span class="hint" style="margin:0">${dmed(z.d)}</span>${st?`<br><span class="pill ${st.k}" style="margin-top:6px;display:inline-block">${st.s}</span>`:""}</td>
       <td class="labref">${labTxt(z.x)||"—"}</td></tr>`}).join("")}</tbody></table></div>
-    <p class="hint" style="padding:0 16px">Diese Werte kennt Serum (noch) nicht. Bewertet wird nach der Referenz, die das Labor angibt.</p></div>`;
+    <p class="hint" style="padding:0 16px">${text?"Ergebnisse ohne Zahl. Positive Erregertests und auffällige Befunde bitte ärztlich besprechen.":"Diese Werte kennt Serum (noch) nicht. Bewertet wird nach der Referenz, die das Labor angibt."}</p></div>`;
 }
 function viewMarks(){
   const have=M.filter(m=>series(m.id).length);
-  const wl=weitereAlle();
-  if(!have.length&&wl.length&&!suche.trim()) return weitereKarte(wl);
+  const wl=weitereAlle(), tl=weitereAlle(true);
+  if(!have.length&&(wl.length||tl.length)&&!suche.trim()) return weitereKarte(tl,true)+weitereKarte(wl);
   if(!have.length) return `<div class="empty"><h2>Noch keine Werte</h2><p>Füge deinen ersten Befund hinzu, dann entstehen hier die Verlaufsdiagramme.</p><button class="btn primary" onclick="openAdd()">Befund hinzufügen</button></div>`;
   if(suche.trim()){
     const list=sortByDeviation(have.filter(m=>trifft(m,suche)));
@@ -2242,7 +2777,7 @@ function viewMarks(){
         :`<div class="empty" style="padding:28px 24px"><p style="margin:0 auto">Kein gemessener Wert passt zu dieser Suche.</p></div>`)+
       (nie.length?`<p class="hint" style="margin-top:18px">Kennt Serum, wurde bei dir aber noch nicht gemessen: ${nie.map(m=>esc(m.n)).join(", ")}.</p>`:"")+
       (rechen.length?`<p class="hint" style="margin-top:12px">Berechnet Serum automatisch, sobald die Ausgangswerte im selben Befund stehen: ${rechen.map(m=>`${esc(m.n)} aus ${m.calc.map(r=>byId[r].n).join(" und ")}${m.bed?" — "+m.bed:""}`).join("; ")}.</p>`:"")+
-      weitereKarte(wl.filter(w=>flach(w.n).includes(flach(suche.trim()))));
+      weitereKarte(tl.filter(w=>flach(w.n).includes(flach(suche.trim()))),true)+weitereKarte(wl.filter(w=>flach(w.n).includes(flach(suche.trim()))));
   }
   if(filter!=="Alle"){
     const list=sortByDeviation(have.filter(m=>m.g===filter));
@@ -2255,7 +2790,7 @@ function viewMarks(){
       return {g,list,r:RANK[status(top,x.v,x.ph,x.q,x.ref).k],d:deviation(top,x.v,x.ph,x.q)}})
     .filter(Boolean).sort((a,b)=>a.r-b.r||b.d-a.d);
   return `<p class="hint" style="margin:0 0 18px">Sortiert nach Abweichung — was am weitesten vom Idealbereich entfernt liegt, steht oben.</p>`+
-    secs.map(sec=>groupHead(sec.g,sec.list)+`<div class="grid">${sec.list.map(markerCard).join("")}</div>`).join("")+weitereKarte(wl);
+    secs.map(sec=>groupHead(sec.g,sec.list)+`<div class="grid">${sec.list.map(markerCard).join("")}</div>`).join("")+weitereKarte(tl,true)+weitereKarte(wl);
 }
 
 /* --- Vorsorge --- */
@@ -2364,7 +2899,9 @@ function viewTest(date){
   const abw=ids.map(id=>({m:byId[id],r:laborAbw(byId[id],+ev[id],eph,S.q[id]||"",S.ref&&S.ref[id])})).filter(x=>x.r);
   const und=a=>a.length>1?a.slice(0,-1).join(", ")+" und "+a[a.length-1]:a[0];
   const abwTxt=abw.length?` Das Labor markiert ${und(abw.map(x=>x.m.n))} als ${abw.every(x=>x.r==="hoch")?"erhöht":abw.every(x=>x.r==="niedrig")?"niedrig":"auffällig"}; Serum bewertet ${abw.length>1?"diese Werte":"diesen Wert"} nach eigenem Bereich anders — Details beim jeweiligen Wert.`:"";
-  const lead=`In diesem Befund wurden ${c.total} Werte bestimmt${e.x&&e.x.length?`, dazu ${e.x.length} weitere, die Serum nach der Laborreferenz bewertet`:""}. ${c.bad?`${c.bad} liegen außerhalb des Referenzbereichs`:"Alle liegen im Referenzbereich"}${c.mid?`, ${c.mid} im Grenzbereich zwischen Norm und Ideal`:""}.${abwTxt}${prev?` Verglichen wird jeweils mit der letzten Messung davor.`:""}`;
+  const exW=(e.x||[]).filter(x=>!x.tid), exT=(e.x||[]).filter(x=>x.tid);
+  const exTpos=exT.filter(x=>{const st=xStatus(x);return st&&st.k==="bad"}), exTmid=exT.filter(x=>{const st=xStatus(x);return st&&st.k==="mid"});
+  const lead=`In diesem Befund wurden ${c.total} Werte bestimmt${exW.length?`, dazu ${exW.length} weitere, die Serum nach der Laborreferenz bewertet`:""}${exT.length?`, und ${exT.length} Textergebnis${exT.length===1?"":"se"}`:""}.${exTpos.length?` Auffällig ${exTpos.length===1?"ist":"sind"}: ${exTpos.map(x=>x.n).join(", ")} — bitte ärztlich besprechen.`:""} ${c.bad?`${c.bad} liegen außerhalb des Referenzbereichs`:"Alle liegen im Referenzbereich"}${c.mid?`, ${c.mid} im Grenzbereich zwischen Norm und Ideal`:""}.${abwTxt}${prev?` Verglichen wird jeweils mit der letzten Messung davor.`:""}`;
 
   return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <button class="back" style="margin:0" onclick="setView('tests')">‹ Alle Befunde</button>
@@ -2406,13 +2943,18 @@ function viewTest(date){
             ${m.warn?`<div class="warnbox">${m.warn}</div>`:""}
             <div class="d">${d!==null?`Vorher ${fmt(pv)}${pdat} · ${d>0?"+":""}${fmt(d)} ${m.u}`:pv!==null?`Vorher ${fq(pv,pq)} ${m.u}${pdat}`:"Erste Messung dieses Werts"}${gerechnet?" · automatisch berechnet":""}
               ${q?`&nbsp;·&nbsp; Labor meldet ${q==="<"?"unter":"über"} der Messgrenze`:""}
-              &nbsp;·&nbsp; ideal ${fmt(optOf(m,eph)[0])}–${fmt(optOf(m,eph)[1])}</div>
+              ${m.nurRef?"":`&nbsp;·&nbsp; ideal ${fmt(optOf(m,eph)[0])}–${fmt(optOf(m,eph)[1])}`}</div>
             <div style="margin-top:10px"><button class="btn sm" onclick="openAsk('${id}')">Frag Claude</button>
             <button class="btn sm ghost" onclick="jumpTo('${id}')">Verlauf</button></div>
           </div></div>`}).join("")}</details>`}).join("")}
-    ${(e.x&&e.x.length)?(()=>{const xb=e.x.filter(x=>{const st=xStatus(x);return st&&st.k==="bad"}).length;
-      return `<details class="panel card"${xb?" open":""}><summary>Weitere Werte<span class="cnt" style="color:${xb?"var(--alert)":"var(--muted)"}">${xb?xb+" laut Labor auffällig":"nach Laborreferenz"} · ${e.x.length}</span></summary>
-      ${e.x.map(x=>{const st=xStatus(x);return `<div class="bm"><div>
+    ${exT.length?`<details class="panel card"${exTpos.length?" open":""}><summary>Textergebnisse<span class="cnt" style="color:${exTpos.length?"var(--alert)":exTmid.length?"var(--serum)":"var(--opt)"}">${exTpos.length?exTpos.length+" auffällig":exTmid.length?exTmid.length+" leicht auffällig":"unauffällig"} · ${exT.length}</span></summary>
+      ${exT.map(x=>{const st=xStatus(x);return `<div class="bm"><div>
+          <h4>${esc(x.n)} ${st?`<span class="pill ${st.k}">${st.s}</span>`:""}</h4>
+          <div class="sub mono" style="font-size:13px;margin-top:4px">${esc(x.t||"—")}</div></div>
+          <div class="why">${st?esc(st.t.charAt(0).toUpperCase()+st.t.slice(1))+".":""}${x.rt?` <span class="labref">Labor: ${esc(x.rt)}</span>`:""}</div></div>`}).join("")}</details>`:""}
+    ${exW.length?(()=>{const xb=exW.filter(x=>{const st=xStatus(x);return st&&st.k==="bad"}).length;
+      return `<details class="panel card"${xb?" open":""}><summary>Weitere Werte<span class="cnt" style="color:${xb?"var(--alert)":"var(--muted)"}">${xb?xb+" laut Labor auffällig":"nach Laborreferenz"} · ${exW.length}</span></summary>
+      ${exW.map(x=>{const st=xStatus(x);return `<div class="bm"><div>
           <h4>${esc(x.n)} ${st?`<span class="pill ${st.k}">${st.s}</span>`:""}</h4>
           <div class="sub mono" style="font-size:13px;margin-top:4px">${xWert(x)}</div></div>
           <div class="why"><span class="labref">${labTxt(x)?"Labor: "+labTxt(x):"Ohne Laborreferenz"}</span></div></div>`}).join("")}
@@ -2494,7 +3036,7 @@ function openAdd(){
   $("#fDate").value=new Date().toISOString().slice(0,10); $("#fLab").value=""; $("#fTime").value="";
   $("#fTime").value=""; $("#fCycle").value=""; $("#fCycleDay").value=""; zyklusFeld();
   $("#pasteBox").value=""; $("#detected").innerHTML=""; tab("file");
-  fillMarkerSelect(); show("#mAdd");
+  fillMarkerSelect(); claudeBoxAuf(); show("#mAdd");
 }
 window.openAdd=openAdd;
 
@@ -2524,7 +3066,7 @@ window.openEdit=openEdit;
 /* Namen, die einen bekannten Namen enthalten, aber etwas anderes messen —
    „Non-HDL“ ist kein HDL, „Free PSA“ kein PSA. Sie gewinnen als längster Treffer
    und sorgen dafür, dass die Zeile übersprungen wird statt falsch zugeordnet. */
-const SPERRE=[{id:"_sperre", n:"", u:"", g:"", al:["non-hdl", "non hdl", "nonhdl", "vldl", "ldl/hdl", "hdl/ldl", "ldl / hdl", "tc/hdl", "chol/hdl", "cholesterol/hdl", "total cholesterol/hdl", "cholesterin/hdl", "apo b/apo a1", "apob/apoa1", "apo b / apo a1", "apo-b/apo-a1", "apo b/a1", "apolipoprotein a1", "apolipoprotein - a1", "apolipoprotein a-1", "apo a1", "apoa1", "apo a-1", "apo-a1", "free psa", "freies psa", "psa frei", "psa, frei", "% free psa", "psa ratio", "psa-quotient", "total iron binding", "tibc", "uibc", "unsaturated iron binding", "iron binding capacity", "eisenbindungskapazitat", "average blood glucose", "estimated average glucose", "eag", "mean blood glucose", "insulin like growth", "insulin-like growth", "igf-1", "igf 1", "igf1", "globulin", "albumin/globulin", "a/g ratio", "a/g-quotient", "bun/creatinine", "bun/kreatinin", "harnstoff/kreatinin", "urea/creatinine", "dihydrotestosteron", "dihydrotestosterone", "vitamin d2", "vitamin d3", "25-oh-vitamin d2", "25-oh vitamin d2", "ck-mb", "rdw-sd", "rdw sd", "small dense ldl", "sd-ldl", "sdldl", "ldl-partikel", "ldl particle", "oxidiertes ldl", "oxidized ldl", "ox-ldl", "c-peptid", "c-peptide", "t3 total", "total t3", "t3, total", "t4 total", "total t4", "t4, total", "ca 125", "ca125", "ca 15-3", "ca15-3", "ca 72-4", "beta hcg", "beta-hcg", "b-hcg", "hemoglobin a2", "hba2", "hb a2", "fetal hemoglobin", "hbf", "hemoglobin f", "methemoglobin", "carboxyhemoglobin", "reticulocyte hemoglobin", "ret-he", "immature granulocytes", "nrbc", "nucleated rbc", "p-lcr", "pdw", "plateletcrit", "vitamin b1", "vitamin b2", "vitamin b3", "vitamin b5", "vitamin b6", "vitamin b7", "thiamin", "riboflavin", "nicotinic", "pantothen", "biotin", "vitamin k2", "urine culture", "urine microalbumin/creatinine", "albumin/creatinine", "albumin/kreatinin"]}];
+const SPERRE=[{id:"_sperre", n:"", u:"", g:"", al:["vitamin b9", "pyridoxal phosphate", "pyridoxal-5", "pyridoxal 5", "ldl/hdl", "hdl/ldl", "ldl / hdl", "tc/hdl", "chol/hdl", "cholesterol/hdl", "total cholesterol/hdl", "cholesterin/hdl", "free psa", "freies psa", "psa frei", "psa, frei", "uibc", "unsaturated iron binding", "average blood glucose", "estimated average glucose", "eag", "mean blood glucose", "insulin like growth", "insulin-like growth", "bun/creatinine", "bun/kreatinin", "harnstoff/kreatinin", "urea/creatinine", "vitamin d3", "ldl-partikel", "ldl particle", "oxidiertes ldl", "oxidized ldl", "ox-ldl", "nicotinic", "pantothen", "vitamin k2", "urine culture"]}];
 SPERRE.forEach(x=>{ x._al=x.al.map(flach); x._al2=[] });
 M.forEach(m=>{
   m._al=m.al.map(flach);
@@ -2554,7 +3096,12 @@ function prepZeile(raw){
     .replace(/\b10\s*12\s*\/\s*l\b/g,"10^12/l")
     .replace(/mmol\/\s*mol/g,"mmol/mol")
     .replace(/ml\/min\/?\s*1[.,]73\s*m2?/g,"ml/min")
-    .replace(/\b([usk])-\s+(?=[a-z])/g,"$1-");   /* "U- Proteini" wieder zusammenfügen */
+    .replace(/\b([usk])-\s+(?=[a-z])/g,"$1-")   /* "U- Proteini" wieder zusammenfügen */
+    /* Seitenzahlen sind keine Messwerte */
+    .replace(/\b(page|seite|stran)\s*:?\s*\d+\s*(of|von|od|\/)\s*\d+/g," ")
+    /* „> or =“, „up to 20“, „less than 5“ sind Grenzen, keine Ergebnisse */
+    .replace(/([<>])\s*or\s*=/g,"$1=").replace(/≥/g,">=").replace(/≤/g,"<=")
+    .replace(/\b(up\s*to|upto|less\s+than|below)\s+(?=\d)/g,"<").replace(/\b(more|greater)\s+than\s+(?=\d)/g,">");
 }
 /* Freistehende Zahlen. "25-oh" und "1,73m2" fallen bewusst heraus. */
 function zahlenIn(txt){
@@ -2564,10 +3111,18 @@ function zahlenIn(txt){
 }
 /* Wie zahlenIn, merkt sich aber, ob „<“ oder „>“ davor steht. */
 function zahlenQ(txt){
-  const out=[], re=/(?:^|\s)([<>])?\s*(-?\d+(?:[.,]\d+)?)(?=\s|%|$)/g; let m;
-  while((m=re.exec(txt))){ const v=parseFloat(m[2].replace(",",".")); if(isFinite(v)) out.push({v,q:m[1]||"", i:m.index+(m[0].length-m[0].trimStart().length), end:m.index+m[0].length}) }
+  const out=[], re=/(?:^|\s)(<=|>=|<|>)?\s*(-?\d+(?:[.,]\d+)?)(?=\s|%|$)/g; let m;
+  while((m=re.exec(txt))){
+    const v=parseFloat(m[2].replace(",",".")); if(!isFinite(v)) continue;
+    const i=m.index+(m[0].length-m[0].trimStart().length), end=m.index+m[0].length;
+    out.push({v, q:m[1]?m[1][0]:"", i, end,
+      schwelle:!!m[1]&&m[1].length===2,                                         /* „>=5.5“ ist eine Risikostufe */
+      bereich:/\d\s*[-–]\s*$/.test(txt.slice(0,i))||/^\s*[-–]\s*\d/.test(txt.slice(end))});   /* „25.1 - 165.0“ ist ein Bereich */
+  }
   return out;
 }
+/* Kandidaten für das Ergebnis: ohne Bereichsgrenzen und Schwellen */
+const ergebnisse=z=>z.filter(x=>!x.bereich&&!x.schwelle);
 /* H/L-Markierung des Labors direkt neben dem Wert */
 function flagBei(src,w){
   const nach=src.slice(w.end).match(/^\s*(hh|ll|h|l|high|low|hoch|niedrig|\+|↑|↓)(?=\s|$)/);
@@ -2578,6 +3133,7 @@ function flagBei(src,w){
 /* Referenzbereich aus dem Rest der Zeile — nur wenn er eindeutig ist.
    Mehrere Bereiche oder Risikostufen („>=5.5 3.8-5.4 <=3.7“) bleiben lieber leer. */
 function refAus(txt){
+  if(/deficien|insuffici|sufficien|desirable|borderline|optimal|risk|toxic|pregnan|trimester|phase|menopaus|smoker|children|week|mangel|schwanger/.test(txt)) return null;
   const komp=(txt.match(/[<>]=?|≤|≥/g)||[]).length;
   const ber=[...txt.matchAll(/(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)/g)];
   const z=x=>parseFloat(x.replace(",","."));
@@ -2646,7 +3202,7 @@ function zerlege(line){
     else grp.push({i:t.i, end:t.end, mit:[t]});
   });
   return grp.map((g,k)=>({
-    kand:g.mit,
+    kand:g.mit, zeile:line,
     urin: line.slice(Math.max(0,g.i-2), g.i)==="u-",   /* "U-Proteini" ist kein Serumwert */
     vor: line.slice(0,g.i), nach: line.slice(g.end),
     rest: line.slice(g.end, k+1<grp.length?grp[k+1].i:line.length)
@@ -2658,11 +3214,17 @@ function parseText(txt){
 
   /* Zerrissene Tabellenzeilen anhängen, solange die Folgezeile keinen eigenen Namen nennt. */
   const stuecke=[];
+  /* „Test Asked: AFP,AMA,ANA,…,CEA,COMPREHENSIVE 120“ — eine Liste bestellter Tests, keine Werte */
+  const istListe=z=>(z.match(/[^\s,],[a-z]/g)||[]).length>=2;
+  /* Erklärtexte der Labore nennen Werte beim Namen — „Levels of Anti-TPO antibodies…“ */
+  const woerter=z=>(z.match(/[a-zäöüß]{3,}/g)||[]).length;
+  const istProsa=z=>woerter(z)>=16;
   for(let i=0;i<zeilen.length;i++){
+    if(istListe(zeilen[i])||istProsa(zeilen[i])) continue;
     let st=zerlege(zeilen[i]);
     if(!st.length) continue;
     let n=0;
-    while(n<2 && i+n+1<zeilen.length && !zerlege(zeilen[i+n+1]).length
+    while(n<2 && i+n+1<zeilen.length && !istListe(zeilen[i+n+1]) && !istProsa(zeilen[i+n+1]) && !zerlege(zeilen[i+n+1]).length
           && !findeEinheit(st[st.length-1].rest)){
       n++; st[st.length-1].rest += " "+zeilen[i+n];
     }
@@ -2681,19 +3243,22 @@ function parseText(txt){
   });
   const layout = refZuerst>ergZuerst ? "refZuerst" : "ergZuerst";
 
-  const found={}, notes={}, grenze={}, refs={};
+  const kand={}; let nr=0;
+  const belegt=id=>(kand[id]||[]).some(k=>k.gut);
   stuecke.forEach(t=>{
     let wahl=null, einheit="", src="", ohne="";
     if(t.e){
       const A=t.rest.slice(0,t.e.i), B=t.rest.slice(t.e.i+t.e.len);
-      const zA=zahlenQ(A), zB=zahlenQ(B);
+      const zA=ergebnisse(zahlenQ(A)), zB=ergebnisse(zahlenQ(B));
       einheit=t.e.u;
       const ausA=w=>{ wahl=w; src=A; ohne=A.slice(0,w.i)+" "+A.slice(w.end)+" "+B };
       const ausB=w=>{ wahl=w; src=B; ohne=A+" "+B.slice(0,w.i)+" "+B.slice(w.end) };
-      if(layout==="refZuerst"){ if(zB.length) ausB(zB[0]); else if(zA.length) ausA(zA[zA.length-1]) }
-      else { if(zA.length) ausA(zA[zA.length-1]); else if(zB.length) ausB(zB[0]) }
+      /* „4.4  >5.4 % by wt“: die Einheit gehört zur Referenz, der Wert steht davor */
+      const letzteA=()=>{ const l=zA[zA.length-1]; return (zA.length>1&&l.q&&!zA[zA.length-2].q)?zA[zA.length-2]:l };
+      if(layout==="refZuerst"){ if(zB.length) ausB(zB[0]); else if(zA.length) ausA(letzteA()) }
+      else { if(zA.length) ausA(letzteA()); else if(zB.length) ausB(zB[0]) }
     }else{
-      const z=zahlenQ(t.rest);
+      const z=ergebnisse(zahlenQ(t.rest));
       if(z.length){ wahl = layout==="refZuerst" ? z[z.length-1] : z[0]; src=t.rest; ohne=t.rest.slice(0,wahl.i)+" "+t.rest.slice(wahl.end) }
     }
     if(!wahl||!isFinite(wahl.v)) return;
@@ -2708,6 +3273,8 @@ function parseText(txt){
     /* Steht ein "U-" davor, kommt nur ein Urinwert in Frage — sonst landet
        „U-Proteini" als Gesamteiweiß im Serum. */
     let moegl=t.urin ? t.kand.filter(k=>k.m.g==="Urin") : t.kand;
+    /* Mehrdeutige Namen wie „IgG“ oder „Birke“ nur mit passender Einheit */
+    moegl=moegl.filter(k=>!k.m.einh||(einheit&&passtEinheit(k.m,einheit)));
     if(!moegl.length) return;
     /* Der spezifischere Name gewinnt immer: „U-Proteini" schlägt „Proteini",
        „LDL-Cholesterin" schlägt „Cholesterin". Die Einheit entscheidet erst
@@ -2715,9 +3282,10 @@ function parseText(txt){
     const laengste=Math.max.apply(null,moegl.map(k=>k.a.length));
     moegl=moegl.filter(k=>k.a.length===laengste);
     if(moegl.some(k=>k.m.id==="_sperre")) return;
-    let passend=moegl.filter(k=>found[k.m.id]===undefined && passtEinheit(k.m,einheit));
-    if(!passend.length) passend=moegl.filter(k=>found[k.m.id]===undefined);
-    if(!passend.length) return;
+    let passend=moegl.filter(k=>!belegt(k.m.id) && passtEinheit(k.m,einheit));
+    if(!passend.length) passend=moegl.filter(k=>passtEinheit(k.m,einheit));
+    if(!passend.length) passend=moegl.filter(k=>!belegt(k.m.id));
+    if(!passend.length) passend=moegl;
     passend.sort((x,y)=>y.a.length-x.a.length);
     const m=passend[0].m, ak=passend[0].a;
     /* „LDL/HDL“, „BUN/Creatinine Ratio“, „Albumin/Kreatinin“: ein Quotient ist kein Messwert —
@@ -2730,21 +3298,50 @@ function parseText(txt){
       if(/^[\s-]*(ratio|quotient|verhaltnis)/.test(t.nach||"")) return;
     }
     /* „Free PSA“, „Freies Cortisol“, „Non-HDL“: steht das davor, ist es ein anderer Wert. */
-    if(!/^(free|freies|freie|frei|non)\b/.test(ak) && /(^|[^a-z])(free|freies|freie|frei|non)[\s-]*$/.test(t.vor||"")) return;
+    const vorName=t.zeile.slice(0,passend[0].i);
+    if(!/^(free|freies|freie|frei|non)\b/.test(ak) && /(^|[^a-z])(free|freies|freie|frei|non)[\s-]*$/.test(vorName)) return;
 
     const c=convertTo(m,wert,einheit);
-    found[m.id]=c.v;
-    if(wahl.q) grenze[m.id]=wahl.q;
+    /* Eine bekannte Einheit, die zu diesem Wert nicht passt („BUN 21,68 mg/dl … GLDH-Methode“),
+       heißt fast immer: Die Zahl gehört zu einem anderen Wert in derselben Zeile. */
+    if(c.warn) return;
     /* Laborreferenz und Markierung — umgerechnet mit derselben Einheit wie der Wert */
     const fl=flagBei(src,wahl), rr=refAus(ohne);
+    let ref=null;
     if(fl||rr){
       const um=x=>x===null||x===undefined?null:convertTo(m,x,einheit).v;
-      refs[m.id]={lo:rr?um(rr.lo):null, hi:rr?um(rr.hi):null, f:fl, t:rr?rr.t:""};
+      ref={lo:rr?um(rr.lo):null, hi:rr?um(rr.hi):null, f:fl, t:rr?rr.t:""};
     }
+    /* Wie glaubwürdig ist diese Fundstelle? Einheit erkannt, Größenordnung plausibel,
+       Laborbereich passt zu Serum — daraus entscheidet sich, welche Lesart zählt. */
+    const r=refOf(m), v=c.v;
+    const plaus=(m.lab||m.nurLabor)?true:!(v>0 && (v>r[1]*5 || (r[0]>=0.1 && v<r[0]/5)));
+    const L=ref?laborCheck(m,v,null,ref):null, skala=!!(L&&L.skala);
+    /* Liegen viele Wörter zwischen Name und Zahl, gehört die Zahl meist zu etwas anderem */
+    const pos=t.rest.indexOf(src), vorWert=pos>=0?t.rest.slice(0,pos+wahl.i):t.rest;
+    const weit=woerter(vorWert)>6;
+    const score=(einheit?(c.warn?-2:2):0)+(plaus?1:-3)+(ref?(skala?-2:1):0)+(wahl.q?-1:0)+(weit?-3:0);
+    const streng=v<=r[1]*5&&(r[0]<0.1||v>=r[0]/5);
+    (kand[m.id]=kand[m.id]||[]).push({nr:nr++, v, q:wahl.q, roh:wahl.v, c, ref, score, gut:plaus&&!c.warn&&!skala&&!weit, streng, einheit, src, rest:t.rest});
+  });
+
+  if(window.__serumDebug) window.__serumDebug.push(kand);
+  /* Kommt ein Wert mehrmals vor — Kommentartabelle, zweites Labor, anderes Datum —,
+     zählt die erste glaubwürdige Fundstelle. Abweichende glaubwürdige werden gemeldet. */
+  const found={}, notes={}, grenze={}, refs={}, guete={}, dupl=[];
+  const gleich=(a,b)=>Math.abs(a-b)<=0.03*Math.max(Math.abs(a),Math.abs(b),1e-9);
+  Object.keys(kand).forEach(id=>{
+    const K=kand[id], gute=K.filter(k=>k.gut);
+    const w=gute.length?gute[0]:K.slice().sort((a,b)=>b.score-a.score||a.nr-b.nr)[0];
+    found[id]=w.v; guete[id]=w.score+(w.gut?10:0);
+    if(w.q) grenze[id]=w.q;
+    if(w.ref) refs[id]=w.ref;
     const hin=[];
-    if(c.note) hin.push(c.note);
-    if(wahl.q) hin.push(`Messgrenze „${wahl.q} ${fmt(wahl.v)}“ übernommen`);
-    if(hin.length) notes[m.id]={t:hin.join(" · "), warn:!!c.warn};
+    if(w.c.note) hin.push(w.c.note);
+    if(w.q) hin.push(`Messgrenze „${w.q} ${fmt(w.roh)}“ übernommen`);
+    if(hin.length) notes[id]={t:hin.join(" · "), warn:!!w.c.warn};
+    /* Als zweiter Wert gemeldet wird nur, was für sich allein überzeugt: Einheit erkannt, plausibel */
+    gute.forEach(k=>{ if(k!==w&&k.score>=3&&k.streng&&!gleich(k.v,w.v)&&!dupl.some(d=>d.id===id&&gleich(d.v,k.v))) dupl.push({id, v:k.v, q:k.q, ref:k.ref}) });
   });
 
   /* Fehlt im Ausdruck die Einheit, kann ein Wert um Zehnerpotenzen danebenliegen.
@@ -2753,6 +3350,7 @@ function parseText(txt){
   Object.keys(found).forEach(id=>{
     if(notes[id]) return;
     const m=byId[id], v=found[id], r=refOf(m);
+    if(m.lab||m.nurLabor) return;
     if(!(v>0 && (v>r[1]*5 || (r[0]>=0.1 && v<r[0]/5)))) return;   /* Spurenwerte wie Basophile ausnehmen */
     let best=null;
     Object.keys(m.cv||{}).forEach(k=>{
@@ -2767,9 +3365,40 @@ function parseText(txt){
     else notes[id]={warn:true,
       t:`${fmt(v)} liegt weit außerhalb ${fmt(r[0])}–${fmt(r[1])} ${m.u} und keine Einheit erklärt das. Möglicherweise wurde eine fremde Zeile eingelesen — bitte gegen den Befund prüfen oder entfernen.`};
   });
-  return {values:found, notes, q:grenze, ref:refs, layout};
+  return {values:found, notes, q:grenze, ref:refs, layout, guete, dupl};
 }
-const labTxt=x=>!x?"":((x.t||x.rt)?esc(x.t||x.rt):[x.lo!=null?fmt(x.lo):"",x.hi!=null?fmt(x.hi):""].filter(Boolean).join("–"))+(x.f?` <b style="color:var(--alert)">${x.f}</b>`:"");
+/* Beide Lesarten eines PDFs: je Wert die glaubwürdigere. Bei Gleichstand die bewährte
+   Speicher-Reihenfolge — sie ist an allen bisherigen Befunden geprüft. */
+function liesBeide(strom,lage){
+  const a=parseText(strom||""), b=parseText(lage||"");
+  const r={values:{},notes:{},q:{},ref:{},dupl:[]};
+  const gleich=(x,y)=>Math.abs(x-y)<=0.03*Math.max(Math.abs(x),Math.abs(y),1e-9);
+  new Set([...Object.keys(a.values),...Object.keys(b.values)]).forEach(id=>{
+    const ga=a.values[id]!==undefined?a.guete[id]:-99, gb=b.values[id]!==undefined?b.guete[id]:-99;
+    const s=gb>ga?b:a;
+    r.values[id]=s.values[id];
+    if(s.notes[id]) r.notes[id]=s.notes[id];
+    if(s.q[id]) r.q[id]=s.q[id];
+    if(s.ref[id]) r.ref[id]=s.ref[id];
+  });
+  a.dupl.concat(b.dupl).forEach(d=>{
+    const w=r.values[d.id]; if(w===undefined||gleich(d.v,w)) return;
+    if(r.dupl.some(x=>x.id===d.id&&gleich(x.v,d.v))) return;
+    r.dupl.push(d);
+  });
+  return r;
+}
+function textUebernehmen(r){
+  Object.keys(r.werte).forEach(id=>{ if(staged[id]===undefined&&byId[id]){ staged[id]=r.werte[id]; stagedNotes[id]={t:"Teststreifen als Stufe "+fmt(r.werte[id])+" gelesen (0 = negativ)"} } });
+  r.texte.forEach(x=>{ if(!stagedX.some(y=>y.tid===x.tid)) stagedX.push({n:txById[x.tid].n, v:null, t:x.t.charAt(0).toUpperCase()+x.t.slice(1), q:"", u:"", lo:null, hi:null, f:"", rt:"", tid:x.tid}) });
+}
+const DOPPELT="Zweiter Wert im Befund — anderes Labor, Datum oder Verfahren. Gezählt wird der erste.";
+function duplAlsWeitere(d){
+  const m=byId[d.id];
+  return {n:m.n, v:d.v, t:"", q:d.q||"", u:m.u||"", lo:d.ref?d.ref.lo:null, hi:d.ref?d.ref.hi:null,
+    f:d.ref&&d.ref.f||"", rt:d.ref&&d.ref.t||"", vorschlag:d.id, hin:DOPPELT};
+}
+const labTxt=x=>!x?"":(("rt" in x?x.rt:x.t)?esc("rt" in x?x.rt:x.t):[x.lo!=null?fmt(x.lo):"",x.hi!=null?fmt(x.hi):""].filter(Boolean).join("–"))+(x.f?` <b style="color:var(--alert)">${x.f}</b>`:"");
 function showDetected(){
   const ids=Object.keys(staged);
   if(!ids.length&&!stagedX.length){ $("#detected").innerHTML=`<p class="hint">Keine bekannten Werte gefunden. Lass Claude den Befund lesen — oder trag die Werte über „Manuell“ ein.</p>`; return }
@@ -2781,13 +3410,13 @@ function showDetected(){
       <td><button class="btn ghost sm" data-del="${id}">Entfernen</button></td></tr>`}).join("")}</tbody></table></div>`:"";
   const optionen=M.filter(m=>!m.calc||m.parsbar).sort((a,b)=>a.n.localeCompare(b.n,"de"))
     .map(m=>`<option value="${m.id}">${esc(m.n)}${m.u?" ("+esc(m.u)+")":""}</option>`).join("");
-  const weitere=stagedX.length?`<div class="sect-h" style="margin:20px 0 8px">Weitere Werte <span class="hint" style="font-weight:400;margin:0">· nicht im Serum-Katalog</span></div>
+  const weitere=stagedX.length?`<div class="sect-h" style="margin:20px 0 8px">${stagedX.every(x=>x.tid)?"Textergebnisse":stagedX.some(x=>x.tid)?"Textergebnisse und weitere Werte":"Weitere Werte"} <span class="hint" style="font-weight:400;margin:0">· ${stagedX.some(x=>x.tid)&&!stagedX.some(x=>!x.tid)?"ohne Zahl, nach Stichworten bewertet":stagedX.some(x=>x.hin)?"doppelt im Befund oder nicht im Katalog":"nicht im Serum-Katalog"}</span></div>
     <div class="detected"><table><thead><tr><th>Name im Befund</th><th>Ergebnis</th><th>Labor</th></tr></thead><tbody>
-    ${stagedX.map((x,i)=>`<tr class="xrow"><td><strong>${esc(x.n||"—")}</strong>${x.vorschlag&&byId[x.vorschlag]?`<br><span class="hint" style="margin:2px 0 0">Vermutlich ${esc(byId[x.vorschlag].n)} — Einheit „${esc(x.u)}“ ist Serum unbekannt</span>`:""}</td>
+    ${stagedX.map((x,i)=>{const st=x.tid?xStatus(x):null; return `<tr class="xrow"><td><strong>${esc(x.n||"—")}</strong>${x.tid?`<br>${st?`<span class="pill ${st.k}" style="margin-top:4px;display:inline-block">${st.s}</span>`:`<span class="hint" style="margin:2px 0 0">Textergebnis</span>`}`:x.hin?`<br><span class="hint" style="margin:2px 0 0">${esc(x.hin)}</span>`:x.vorschlag&&byId[x.vorschlag]?`<br><span class="hint" style="margin:2px 0 0">Vermutlich ${esc(byId[x.vorschlag].n)} — Einheit „${esc(x.u)}“ ist Serum unbekannt</span>`:""}</td>
       <td class="mono" style="white-space:nowrap">${x.v!==null&&x.v!==undefined?fq(x.v,x.q):esc(x.t||"—")} ${esc(x.u||"")}</td>
       <td class="labref">${labTxt(x)}</td></tr>
-      <tr class="xact"><td colspan="3"><div><select class="xsel" data-zu="${i}" aria-label="Einem Serum-Wert zuordnen"><option value="">Zuordnen …</option>${optionen}</select>
-        <button class="btn ghost sm" data-xdel="${i}">Entfernen</button></div></td></tr>`).join("")}</tbody></table></div>
+      <tr class="xact"><td colspan="3"><div>${x.tid?"":`<select class="xsel" data-zu="${i}" aria-label="Einem Serum-Wert zuordnen"><option value="">Zuordnen …</option>${optionen}</select>`}
+        <button class="btn ghost sm" data-xdel="${i}"${x.tid?' style="margin-left:auto"':""}>Entfernen</button></div></td></tr>`}).join("")}</tbody></table></div>
     <p class="hint">Serum speichert sie mit der Laborreferenz und bewertet sie danach. Gehört einer zu einem Serum-Wert, über „Zuordnen“ verknüpfen — Serum merkt sich den Namen für künftige Befunde.</p>`:"";
   $("#detected").innerHTML=tabelle+weitere+
     `<p class="hint">${ids.length} Wert${ids.length===1?"":"e"} zugeordnet${stagedX.length?`, ${stagedX.length} weitere`:""}. Bitte gegen den Befund prüfen und bei Bedarf korrigieren.</p>`;
@@ -2833,7 +3462,7 @@ async function readPDF(file){
     pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   }
   const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
-  let txt="";
+  let txt="", lage=[];
   for(let p=1;p<=pdf.numPages;p++){
     const c=await (await pdf.getPage(p)).getTextContent(); let last=null;
     c.items.forEach(it=>{
@@ -2843,16 +3472,59 @@ async function readPDF(file){
       last=it.transform[5];
     });
     txt+="\n";
+    lage.push(lageText(c.items));
   }
-  return txt;
+  return {strom:txt, lage:lage.join("\n")};
+}
+/* Zweite Lesart: nach Lage auf der Seite. Zeilen nach Höhe, darin von links nach rechts,
+   breite Lücken als Spaltentrenner. Manche Labore speichern Namen, Werte und Referenzen
+   spaltenweise — in der Speicher-Reihenfolge landet der Wert dann in einer fremden Zeile.
+   Umbrochene Namen („MEAN CORPUSCULAR“ / „VOLUME(MCV)“) werden wieder zusammengesetzt. */
+function lageText(items){
+  const its=items.filter(it=>it.str&&it.str.trim()).map(it=>({s:it.str,x:it.transform[4],y:it.transform[5],
+    w:it.width||0,h:Math.abs(it.transform[3])||it.height||8,f:it.fontName||""}));
+  its.sort((a,b)=>b.y-a.y||a.x-b.x);
+  const zeilen=[];
+  its.forEach(it=>{
+    const z=zeilen.find(z=>Math.abs(z.y-it.y)<=Math.max(2,Math.min(z.h,it.h)*0.45));
+    if(z) z.it.push(it); else zeilen.push({y:it.y,h:it.h,it:[it]});
+  });
+  zeilen.sort((a,b)=>b.y-a.y);
+  zeilen.forEach(z=>{
+    z.it.sort((a,b)=>a.x-b.x); z.segs=[]; let ende=null;
+    z.it.forEach(it=>{
+      const cw=it.h*0.5, gap=ende===null?1e9:it.x-ende;
+      if(gap>cw*1.8) z.segs.push({x:it.x,f:it.f,txt:it.s});
+      else z.segs[z.segs.length-1].txt+=(gap>cw*0.15?" ":"")+it.s;
+      ende=it.x+it.w;
+    });
+  });
+  const zahl=t=>/^[<>≤≥]?\s*-?\d+(?:[.,]\d+)?$/.test(t.trim());
+  const fort=(a,b)=>/[()]/.test(b)||/[-(\/,]\s*$/.test(a)||/^(count|ratio|level|total|serum|plasma|rate|antibod)/i.test(b.trim());
+  const aus=[];
+  zeilen.forEach(z=>{
+    const p=aus[aus.length-1], a=z.segs[0];
+    if(p&&a&&(p.fort||0)<2&&p.segs.length>1&&p.segs.some(s=>zahl(s.txt))&&!z.segs.some(s=>zahl(s.txt))
+       &&Math.abs(a.x-p.segs[0].x)<=4&&a.f===p.segs[0].f&&(p.yu-z.y)<=Math.max(p.h,z.h)*1.9
+       &&a.txt.length<=40&&fort(p.segs[0].txt,a.txt)){
+      p.segs[0].txt+=" "+a.txt; p.segs.push(...z.segs.slice(1)); p.yu=z.y; p.fort=(p.fort||0)+1; return;
+    }
+    z.yu=z.y; aus.push(z);
+  });
+  return aus.map(z=>z.segs.map(s=>s.txt.trim()).join("   ")).join("\n");
 }
 async function handleFile(f){
   if(!f) return;
   try{
     quelle={file:f, text:""};
     let r={values:{},notes:{},q:{},ref:{}};
-    if(f.type==="application/pdf"){ const txt=await readPDF(f); quelle.text=txt; r=parseText(txt); personVorschlag(txt) }
+    if(f.type==="application/pdf"){
+      const t=await readPDF(f); quelle.text=t.lage; quelle.strom=t.strom;
+      r=liesBeide(t.strom,t.lage); personVorschlag(t.strom+"\n"+t.lage);
+    }
     Object.assign(staged,r.values); Object.assign(stagedNotes,r.notes); Object.assign(stagedRef,r.ref||{});
+    (r.dupl||[]).forEach(d=>{ if(!stagedX.some(x=>x.vorschlag===d.id&&x.hin&&Math.abs(x.v-d.v)<1e-9)) stagedX.push(duplAlsWeitere(d)) });
+    if(f.type==="application/pdf") textUebernehmen(textAus(quelle.text+"\n"+(quelle.strom||"")));
     Object.keys(r.values).forEach(id=>{ if(r.q[id]) stagedQ[id]=r.q[id]; else delete stagedQ[id] });
     showDetected(); claudeBoxAuf();
     const n=Object.keys(r.values).length;
@@ -2907,6 +3579,8 @@ ${S.befunde.map(e=>"  "+befundZeile(e)).join("\n")}
 
 ALLE WERTE${mitGrenze?"\n  („<“ heißt unter der Messgrenze des Labors, „>“ über dem Messbereich — kein genauer Wert.)":""}
 ${zeilen}
+${(()=>{const tl=weitereAlle(true); if(!tl.length) return "";
+  return "\nTEXTERGEBNISSE (jeweils jüngstes)\n"+tl.map(w=>{const z=w.list[0];return `  ${w.n}: ${z.x.t||"—"} vom ${dmed(z.d)}${z.x.rt?" — Labor: "+z.x.rt:""}`}).join("\n")+"\n"})()}
 ${(()=>{const wl=weitereAlle(); if(!wl.length) return "";
   return "\nWEITERE WERTE (nicht in Serums Katalog, jeweils jüngste Messung mit Laborreferenz)\n"+wl.map(w=>{const z=w.list[0];
     return `  ${w.n}: ${xWert(z.x).replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">")} vom ${dmed(z.d)}${labTxt(z.x)?" — Labor: "+String(z.x.rt||[z.x.lo,z.x.hi].filter(v=>v!=null).join("–"))+(z.x.f?" ("+z.x.f+")":""):""}`}).join("\n")+"\n"})()}
@@ -2986,18 +3660,87 @@ window.openAsk=openAsk;
 /* --- Claude-API ----------------------------------------------------
    Neuestes Modell zuerst; kennt der Key es nicht, das bewährte. */
 const MODELLE=["claude-sonnet-5-5","claude-sonnet-4-6"];
-async function claudeCall(body){
-  let letzter=null;
+/* Der Key wird auf zwei Arten mitgeschickt: bewährt als „x-api-key“, neu als
+   „Authorization: Bearer“. Wird er auf der einen Art abgewiesen, versucht Serum die andere
+   und merkt sich für die Sitzung, welche klappt. Eine abgewiesene Anfrage kostet nichts. */
+let anmeldeArt="x";
+function kopfFuer(key,art){
+  const h={"content-type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
+  if(art==="bearer") h.authorization="Bearer "+key; else h["x-api-key"]=key;
+  return h;
+}
+/* Unsichtbare Zeichen, Zeilenumbrüche und Anführungszeichen kommen beim Kopieren oft mit */
+const keyRein=s=>String(s||"").replace(/[\s\u00A0\u200B-\u200D\u2060\uFEFF"'„“”‚‘’`]/g,"");
+function keyFormat(k){
+  if(!k) return null;
+  if(/\.\.\.|…/.test(k)) return {bad:true,t:"Das ist nur die gekürzte Anzeige aus der Console (mit Punkten in der Mitte). Den vollständigen Key zeigt die Console nur einmal beim Erstellen — bitte einen neuen erstellen und sofort kopieren."};
+  if(/^apikey_/i.test(k)) return {bad:true,t:"Das ist die ID des Keys, nicht der Key selbst. Der Key beginnt mit sk-ant-."};
+  if(!/^sk-ant-/.test(k)) return {bad:true,t:"Ein Anthropic-Key beginnt mit sk-ant-. Bitte den ganzen Key einfügen."};
+  if(/[^\x21-\x7E]/.test(k)) return {bad:true,t:"Der Key enthält Zeichen, die in keinem Key vorkommen. Bitte neu kopieren."};
+  if(k.length<60) return {bad:true,t:`Der Key wirkt unvollständig (nur ${k.length} Zeichen) — meist fehlt beim Kopieren ein Stück.`};
+  return {bad:false,t:`Format passt · ${k.length} Zeichen`};
+}
+function fehlerText(f){
+  const m=(f&&f.msg)||"", st=(f&&f.status)||0, tech=m?` (Anthropic: ${m.slice(0,160)})`:"";
+  if(!st) return "Keine Verbindung zu Anthropic. Bitte Internet prüfen und nochmal versuchen."+(m?` (${m.slice(0,120)})`:"");
+  if(st===401&&/cors/i.test(m)) return "Deine Anthropic-Organisation lässt keine Anfragen direkt aus Apps wie Serum zu. Das lässt sich nur in der Anthropic-Console ändern — bis dahin geht es über „Prompt kopieren“."+tech;
+  if(st===401) return "Der API-Key wird nicht angenommen: falsch, unvollständig, abgelaufen oder gelöscht. Die Console zeigt den vollständigen Key nur einmal beim Erstellen — die gekürzte Anzeige mit Punkten funktioniert nicht. Im Zweifel einen neuen Key erstellen."+tech;
+  if(/credit balance/i.test(m)) return "Das Guthaben bei Anthropic ist aufgebraucht. In der Anthropic-Console unter Billing aufladen."+tech;
+  if(/workspace/i.test(m)) return "Der Key ist keinem Arbeitsbereich zugeordnet. Bitte einen neuen Key erstellen und dabei den Arbeitsbereich „Default“ wählen."+tech;
+  if(st===403) return "Der Key hat dafür keine Berechtigung. In der Anthropic-Console Rolle und Arbeitsbereich prüfen."+tech;
+  if(st===413||/too large|too long|exceed/i.test(m)) return "Der Befund ist zu groß für eine Anfrage. Tipp: nur die Seiten mit Werten hochladen oder Fotos einzeln."+tech;
+  if(st===404||/model/i.test(m)) return "Für diesen Key ist kein passendes Claude-Modell freigeschaltet."+tech;
+  if(st===429) return "Zu viele Anfragen in kurzer Zeit. Bitte eine Minute warten und nochmal versuchen."+tech;
+  if(st>=500) return "Anthropic ist gerade überlastet oder gestört. Bitte in ein paar Minuten nochmal versuchen."+tech;
+  return `Anthropic hat die Anfrage abgelehnt (Fehler ${st}).`+tech;
+}
+async function claudeCall(body,keyArg){
+  const key=keyRein(keyArg===undefined?DB.profile.key:keyArg);
+  const fmtK=keyFormat(key);
+  if(!key) throw new Error("Es ist kein API-Key eingetragen.");
+  /* Gekürzte Anzeige oder fremde Zeichen: gar nicht erst senden */
+  if(fmtK&&fmtK.bad&&/\.\.\.|…|[^\x21-\x7E]/.test(key)) throw new Error(fmtK.t);
+  const arten=anmeldeArt==="bearer"?["bearer","x"]:["x","bearer"];
+  let fehler=null;
   for(const model of MODELLE){
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
-      headers:{"content-type":"application/json","x-api-key":DB.profile.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify(Object.assign({model},body))});
-    if(r.ok) return r.json();
-    let msg=""; try{ msg=(await r.json()).error.message||"" }catch(e){}
-    letzter=new Error("API-Fehler "+r.status+(msg?": "+msg:"")+" — Key und Guthaben prüfen.");
-    if(!(r.status===404||(r.status===400&&/model/i.test(msg)))) throw letzter;
+    let modellFehlt=false;
+    for(const art of arten){
+      let r;
+      try{ r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:kopfFuer(key,art),body:JSON.stringify(Object.assign({},body,{model}))}) }
+      /* Keine Verbindung: Die Anmeldeart ist nicht schuld — nicht ein zweites Mal senden */
+      catch(e){ throw new Error(fehlerText({status:0,msg:String((e&&e.message)||e||"")})) }
+      if(r.ok){ anmeldeArt=art; const d=body.stream?await streamLesen(r):await r.json(); try{ Object.defineProperty(d,"_auth",{value:art,enumerable:false}) }catch(e){} return d }
+      let msg=""; try{ const j=await r.json(); msg=(j&&j.error&&j.error.message)||"" }catch(e){}
+      const jetzt={status:r.status,msg};
+      /* Abgewiesen: andere Anmeldeart versuchen — die erste Begründung bleibt die aussagekräftige */
+      if(r.status===401&&!/cors/i.test(msg)){ if(!(fehler&&fehler.status===401)) fehler=jetzt; continue }
+      fehler=jetzt;
+      if(r.status===404&&!/workspace/i.test(msg)||(r.status===400&&/model/i.test(msg))){ modellFehlt=true; break }
+      throw new Error(fehlerText(fehler));
+    }
+    if(!modellFehlt) break;   // Key abgewiesen oder keine Verbindung: anderes Modell hilft nicht
   }
-  throw letzter;
+  throw new Error(fehlerText(fehler));
+}
+/* Liest eine gestreamte Antwort (Server-Sent Events) und baut daraus dieselbe Form wie ohne Stream. */
+async function streamLesen(r,fortschritt){
+  const out={content:[{type:"text",text:""}],stop_reason:null,model:null,usage:{}};
+  const verarbeite=block=>{
+    const zeile=block.split("\n").find(l=>l.startsWith("data:")); if(!zeile) return;
+    let d; try{ d=JSON.parse(zeile.slice(5).trim()) }catch(e){ return }
+    if(d.type==="message_start"&&d.message){ out.model=d.message.model; Object.assign(out.usage,d.message.usage||{}) }
+    else if(d.type==="content_block_delta"&&d.delta&&d.delta.type==="text_delta"){ out.content[0].text+=d.delta.text; if(fortschritt) fortschritt(out.content[0].text.length) }
+    else if(d.type==="message_delta"){ if(d.delta&&d.delta.stop_reason) out.stop_reason=d.delta.stop_reason; Object.assign(out.usage,d.usage||{}) }
+    else if(d.type==="error"){ throw new Error(fehlerText({status:529,msg:(d.error&&d.error.message)||"Abbruch während der Antwort"})) }
+  };
+  if(r.body&&r.body.getReader){
+    const rd=r.body.getReader(), dec=new TextDecoder(); let puffer="";
+    for(;;){ const {value,done}=await rd.read(); if(done) break;
+      puffer+=dec.decode(value,{stream:true}); let i;
+      while((i=puffer.indexOf("\n\n"))>=0){ verarbeite(puffer.slice(0,i)); puffer=puffer.slice(i+2) } }
+    if(puffer.trim()) verarbeite(puffer);
+  } else (await r.text()).split("\n\n").forEach(verarbeite);
+  return out;
 }
 const dateiB64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(f)});
 
@@ -3007,6 +3750,7 @@ const dateiB64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>
    Laborreferenz sinnvoll in Serums Bereich bringen — sonst wird der Wert markiert. */
 function claudeLesePrompt(text, mitDatei){
   const liste=M.map(m=>`${m.id} | ${m.n} | ${m.u||"ohne Einheit"}`).join("\n");
+  const tliste=TX.map(t=>`${t.id} | ${t.n}`).join("\n");
   return `Du liest einen Laborbefund aus. Antworte ausschließlich mit JSON, ohne Text davor oder danach.
 
 AUFGABE
@@ -3019,10 +3763,19 @@ WICHTIGE UNTERSCHEIDUNGEN
 - Direkt gemessenes freies Testosteron → testofrei, berechnetes → testofrei_calc.
 - Transferrinsättigung in % → transferrin, Transferrin in g/l → transferrin_g.
 - BUN (Harnstoff-Stickstoff) → bun, Harnstoff/Urea → harnstoff.
-- Gibt es hs-CRP und CRP, ordne hs-CRP als crp zu und CRP mit id null.
+- hs-CRP (hochsensitiv) → hscrp, normales CRP → crp.
+- Gesamt-T3/Gesamt-T4 (total) → t3_ges/t4_ges, niemals ft3/ft4.
+- Lipoprotein(a) in nmol/l → lpa_nmol, in mg/dl → lpa.
+- Folsäure/Vitamin B9 per LC-MS/MS (Bereich etwa 0,2–20 ng/ml) ist nicht das Serum-Folat → id null.
 - Quotienten (LDL/HDL, BUN/Kreatinin, Albumin/Globulin …) nur zuordnen, wenn die Liste genau diesen Quotienten enthält.
 - Vitamin D2 oder D3 einzeln ist nicht vitd; vitd ist 25-OH-Vitamin D gesamt.
-- Werte ohne Zahl (negativ, positiv, Farbe, Titer wie 1:80) mit "text" statt "wert".
+- Werte ohne Zahl (negativ, positiv, Farbe, Titer wie 1:80) mit "text" statt "wert". Gehören sie zur TEXT-LISTE (Erregertests, Urinsediment, Urinkultur, ANA-Titer, Blutgruppe …), setze dort die id.
+- Urin-Teststreifen mit Ergebnis wie „Nil“, „+“, „++“, „Spuren“ → id des Urinwerts aus der Serum-Liste (u_protein, u_leuko …) mit "text".
+
+MEHRERE LABORE ODER DATEN IN EINEM DOKUMENT
+- Alles gehört in EINEN Befund. "datum" ist das früheste Abnahmedatum.
+- Kommt derselbe Messwert mehrfach vor (anderes Labor, Datum oder Verfahren), gib jeden Eintrag einzeln an — mit derselben id, in der Reihenfolge des Dokuments. Serum zählt den ersten.
+- Lass Felder weg, die leer oder null wären — das hält die Antwort kurz.
 
 FORMAT
 {"datum":"JJJJ-MM-TT der Blutabnahme oder null","labor":"Name des Labors oder null","patient":"Name der Person oder null",
@@ -3031,6 +3784,9 @@ Zahlen mit Punkt als Dezimaltrennzeichen. Bei "<5" ist wert 5 und grenze "<".
 
 SERUM-LISTE (id | Name | Einheit)
 ${liste}
+
+TEXT-LISTE (id | Name) — nur für Ergebnisse ohne Zahl
+${tliste}
 
 ${mitDatei?"BEFUND: siehe angehängte Datei.":`BEFUND${text?" (Text aus der automatischen Umwandlung — falls dir der Befund auch als Datei vorliegt, lies die Datei, Tabellen können verschoben sein)":""}:
 ${text||"(Bitte lade den Befund als Datei oder Foto mit hoch.)"}`}`;
@@ -3090,7 +3846,11 @@ function uebernimmClaude(txt){
   werte.forEach(w=>{
     if(!w||typeof w!=="object") return;
     const m=w.id&&byId[w.id];
-    if(!m||!zahlOk(w.wert)||neu[m.id]!==undefined){ if(w.name||w.text||zahlOk(w.wert)) nX.push(weiterAus(w,m?m.id:null)); return }
+    const T=w.id&&txById[w.id];
+    if(T){ if(w.text||w.wert!=null){ const x=weiterAus(w,null); x.n=T.n; x.tid=T.id; if(!x.t&&x.v!=null){ x.t=String(x.v)+(x.u?" "+x.u:""); x.v=null } if(!nX.some(y=>y.tid===T.id)) nX.push(x) } return }
+    if(m&&m.stufe&&!zahlOk(w.wert)&&stufeAus(w.text)!==null){ if(neu[m.id]===undefined){ neu[m.id]=stufeAus(w.text); nNotes[m.id]={t:"„"+String(w.text).slice(0,20)+"“ als Stufe "+fmt(neu[m.id])+" übernommen"} } return }
+    if(m&&zahlOk(w.wert)&&neu[m.id]!==undefined){ const x=weiterAus(w,m.id); x.hin=DOPPELT; nX.push(x); return }
+    if(!m||!zahlOk(w.wert)){ if(w.name||w.text||zahlOk(w.wert)) nX.push(weiterAus(w,m?m.id:null)); return }
     const r=claudeWert(m,w);
     if(!r){ nX.push(weiterAus(w,m.id)); return }
     neu[m.id]=r.v; if(w.grenze==="<"||w.grenze===">") nQ[m.id]=w.grenze;
@@ -3108,7 +3868,13 @@ function uebernimmClaude(txt){
   });
   /* Beim Bearbeiten bleiben die bisherigen weiteren Werte, sofern Claude sie nicht neu liefert */
   const namen=new Set(nX.map(x=>flach(x.n)));
-  stagedX.forEach(x=>{ if(!namen.has(flach(x.n))) nX.push(x) });
+  const gleich=(a,b)=>a!=null&&b!=null&&Math.abs(a-b)<=0.03*Math.max(Math.abs(a),Math.abs(b),1e-9);
+  stagedX.forEach(x=>{
+    if(namen.has(flach(x.n))) return;
+    if(x.tid&&nX.some(y=>y.tid===x.tid)) return;                                          /* Textergebnis schon von Claude */
+    if(x.hin&&x.vorschlag&&nX.some(y=>y.vorschlag===x.vorschlag&&gleich(y.v,x.v))) return; /* dasselbe Duplikat */
+    nX.push(x);
+  });
   staged=neu; stagedQ=nQ; stagedRef=nRef; stagedNotes=nNotes; stagedX=nX;
   const heute=new Date().toISOString().slice(0,10);
   if(!editing&&d.datum&&/^\d{4}-\d{2}-\d{2}$/.test(d.datum)&&$("#fDate").value===heute) $("#fDate").value=d.datum;
@@ -3135,20 +3901,23 @@ async function claudeLesen(){
         : {type:"image",source:{type:"base64",media_type:quelle.file.type,data:b64}});
     }
     content.push({type:"text",text:claudeLesePrompt(datei?"":quelle.text, datei)});
-    const res=await claudeCall({max_tokens:16000, messages:[{role:"user",content}]});
+    const res=await claudeCall({max_tokens:32000, stream:true, messages:[{role:"user",content}]});
     const txt=(res.content||[]).map(x=>x.text||"").join("");
     if(res.stop_reason==="max_tokens") throw new Error("Der Befund ist zu lang für eine Antwort. Bitte in Teilen einfügen.");
     uebernimmClaude(txt);
-  }catch(e){ cbStatus(""); alert("Claude konnte den Befund nicht lesen: "+e.message+"\n\nDie Werte des eingebauten Lesers bleiben stehen.") }
+  }catch(e){ cbStatus(""); alert("Claude konnte den Befund nicht lesen: "+e.message+"\n\nDie Werte des eingebauten Lesers bleiben stehen. Ohne funktionierenden Key: „Prompt kopieren“ und in deiner Claude-App lesen lassen.") }
   finally{ $("#cbRun").disabled=false }
 }
 function cbStatus(t){ $("#cbStatus").textContent=t||"" }
-function claudeBoxZu(){ $("#claudeBox").hidden=true; $("#cbPaste").hidden=true; $("#cbAnswer").value=""; cbStatus("") }
+function claudeBoxZu(){ $("#claudeBox").hidden=true; $("#cbAnswer").value=""; cbStatus("") }
 function claudeBoxAuf(){
   const key=!!DB.profile.key, bild=quelle.file&&/^image\//.test(quelle.file.type);
-  $("#cbRun").hidden=!key;
-  $("#cbInfo").textContent=key
-    ? "Claude liest alle Werte, auch unbekannte Namen und Einheiten, und ordnet sie zu. Serum rechnet nach und markiert, was nicht zusammenpasst. Der Befund geht dafür über deinen API-Key an Anthropic (je nach Umfang etwa 5–15 Cent)."
+  const da=!!(quelle.file||String(quelle.text||"").trim());
+  $("#cbRun").hidden=!key||!da;
+  $("#cbInfo").textContent=!da
+    ? "Du kannst den Befund auch in deiner Claude-App lesen lassen: Prompt kopieren, in Claude einfügen, den Befund dort als Datei mit hochladen und die Antwort hier einfügen. Mit API-Key liest Claude automatisch, sobald du oben eine Datei auswählst."
+    : key
+    ? "Claude liest alle Werte, auch unbekannte Namen und Einheiten, und ordnet sie zu. Serum rechnet nach und markiert, was nicht zusammenpasst. Der Befund geht dafür über deinen API-Key an Anthropic — je nach Umfang etwa 5 bis 50 Cent, große Befunde mit vielen Seiten am oberen Ende."
     : `Claude kann alle Werte lesen, auch unbekannte Namen und Einheiten. Ohne API-Key: Prompt kopieren, in deinem Claude einfügen${bild||quelle.file?" und den Befund dort als Datei mit hochladen":""}, die Antwort hier einfügen.`;
   $("#claudeBox").hidden=false;
 }
@@ -3157,9 +3926,11 @@ $("#cbCopy").onclick=async()=>{
   const datei=!!quelle.file;
   const p=claudeLesePrompt(quelle.text||"", datei&&!quelle.text);
   try{ await navigator.clipboard.writeText(p); toast("Prompt kopiert — jetzt in Claude einfügen") }catch(e){ alert(p) }
-  $("#cbPaste").hidden=false;
 };
-$("#cbApply").onclick=()=>{ if(uebernimmClaude($("#cbAnswer").value)){ $("#cbAnswer").value=""; $("#cbPaste").hidden=true } };
+$("#cbApply").onclick=()=>{
+  if(!$("#cbAnswer").value.trim()) return alert("Bitte zuerst die komplette Antwort von Claude in das Feld einfügen.");
+  if(uebernimmClaude($("#cbAnswer").value)) $("#cbAnswer").value="";
+};
 
 async function askDirect(){
   if(!DB.profile.key){ alert("Dafür brauchst du einen API-Key im Profil.\n\nOhne Key: „Prompt kopieren“ und in Claude einfügen — das kostet nichts."); return }
@@ -3239,7 +4010,8 @@ function md(t){
 /* ===== 9 — Kleinkram ================================================== */
 const show=s=>$(s).hidden=false, hide=s=>$(s).hidden=true;
 function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),2200)}
-function tab(n){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===n));document.querySelectorAll("[data-pane]").forEach(p=>p.hidden=p.dataset.pane!==n)}
+function tab(n){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tab===n));document.querySelectorAll("[data-pane]").forEach(p=>p.hidden=p.dataset.pane!==n);
+  const cb=$("#claudeBox"); if(cb) cb.classList.toggle("aus",n==="manual")}
 function openData(){
   zurueck();
   const mehr=ALLE.personen.filter(p=>!p.beispiel).length>1;
@@ -3313,7 +4085,7 @@ const dz=$("#drop");
 ["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("hot")}));
 dz.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
 $("#parsePaste").onclick=()=>{const r=parseText($("#pasteBox").value); personVorschlag($("#pasteBox").value);
-  quelle={file:null, text:$("#pasteBox").value}; Object.assign(stagedRef,r.ref||{}); setTimeout(()=>{ claudeBoxAuf(); if(DB.profile.key&&quelle.text.trim()) claudeLesen() },0);Object.assign(staged,r.values);Object.assign(stagedNotes,r.notes);
+  quelle={file:null, text:$("#pasteBox").value}; Object.assign(stagedRef,r.ref||{}); setTimeout(()=>{ claudeBoxAuf(); if(DB.profile.key&&quelle.text.trim()) claudeLesen() },0);Object.assign(staged,r.values); (r.dupl||[]).forEach(d=>stagedX.push(duplAlsWeitere(d))); textUebernehmen(textAus(quelle.text));Object.assign(stagedNotes,r.notes);
   Object.keys(r.values).forEach(id=>{ if(r.q[id]) stagedQ[id]=r.q[id]; else delete stagedQ[id] });
   showDetected();toast(Object.keys(r.values).length+" Werte erkannt")};
 function fillUnits(){
@@ -3429,7 +4201,7 @@ function openProfile(neu){
   $("#saveProfile").textContent=neu?"Person anlegen":"Profil speichern";
   $("#delPerson").hidden=neu||ALLE.personen.length<2;
   $("#pName").value=p.name;$("#pSex").value=p.sex;$("#pYear").value=p.year;$("#pKg").value=p.kg;$("#pCm").value=p.cm;
-  $("#pCond").value=p.cond;$("#pCtx").value=p.ctx;$("#pKey").value=p.key||"";
+  $("#pCond").value=p.cond;$("#pCtx").value=p.ctx;$("#pKey").value=p.key||""; zeigeKeyInfo(keyFormat(keyRein(p.key)));
   renderConds(neu?[]:(Array.isArray(p.condSel)?p.condSel:condTextHits().map(c=>c.n)));
   condWarn(); show("#mProfile");
   if(neu) setTimeout(()=>{ try{ $("#pName").focus() }catch(e){} },50);
@@ -3452,9 +4224,26 @@ function condWarn(){
 }
 $("#pCond").oninput=()=>{ condAutoCheck(); condWarn() };
 $("#pCtx").oninput=condAutoCheck;
+function zeigeKeyInfo(f){
+  const el=$("#pKeyInfo"); el.className="keyinfo"+(f&&f.ok?" ok":f&&f.bad?" bad":"");
+  el.textContent=f?f.t:"";
+}
+$("#pKey").oninput=()=>zeigeKeyInfo(keyFormat(keyRein($("#pKey").value)));
+$("#pKeyTest").onclick=async()=>{
+  const k=keyRein($("#pKey").value), b=$("#pKeyTest");
+  if(!k) return zeigeKeyInfo({bad:true,t:"Bitte zuerst den Key einfügen."});
+  b.disabled=true; zeigeKeyInfo({t:"prüfe …"});
+  try{
+    const d=await claudeCall({max_tokens:1,messages:[{role:"user",content:"Hi"}]},k);
+    zeigeKeyInfo({ok:true,t:`✓ Key funktioniert (${d.model||"Claude"}). Jetzt „Profil speichern“.`});
+  }catch(e){ zeigeKeyInfo({bad:true,t:e.message}) }
+  finally{ b.disabled=false }
+};
 $("#saveProfile").onclick=async()=>{
+  const keyNeu=keyRein($("#pKey").value), kf=keyFormat(keyNeu);
+  if(kf&&kf.bad&&!confirm(kf.t+"\n\nTrotzdem so speichern?")) return;
   const neu={name:$("#pName").value.trim(),sex:$("#pSex").value,year:$("#pYear").value,kg:$("#pKg").value,cm:$("#pCm").value,
-    cond:$("#pCond").value.trim(),condSel:gewaehlt(),ctx:$("#pCtx").value,key:$("#pKey").value.trim()};
+    cond:$("#pCond").value.trim(),condSel:gewaehlt(),ctx:$("#pCtx").value,key:keyNeu};
   const a=alterVon(neu);
   if(a!==null&&a<18) return alert("Serum ist für Erwachsene ab 18 Jahren gedacht. Bei Kindern und Jugendlichen weichen viele Referenzbereiche stark ab — die Bewertungen wären falsch.");
   const mehrere=profilNeu||ALLE.personen.length>1;
@@ -3517,6 +4306,7 @@ function unbekannteListe(){
   zurueck();
   const map=new Map();
   ALLE.personen.forEach(p=>p.entries.forEach(e=>(e.x||[]).forEach(x=>{
+    if(x.tid||x.hin) return;
     const k=flach(x.n)+"|"+normU(x.u); if(!x.n||map.has(k)) return;
     map.set(k,{n:x.n,u:x.u||"",lab:e.lab||""});
   })));
