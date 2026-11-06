@@ -274,9 +274,13 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 .claudebox{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0;background:#fff}
 .claudebox .cb-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .claudebox .cb-st{font-size:12.5px;color:var(--muted)}
+.claudebox .cb-st.fertig{color:var(--opt);font-weight:600}
+.claudebox .cb-wach{font-size:12.5px;color:var(--serum);margin:0 0 10px;line-height:1.45}
 .claudebox .cb-a{display:flex;gap:8px;flex-wrap:wrap}
 .xrow td{vertical-align:top}
 #detected .xrow td{border-bottom:none;padding-bottom:4px}
+#detected .xrow td:first-child strong{word-break:break-word}
+.xrow .pill{white-space:nowrap;word-break:normal}
 .xact td{padding-top:2px}
 .xact div{display:flex;gap:8px;align-items:center}
 .xsel{flex:1;min-width:0;font-size:12.5px;padding:6px 8px}
@@ -306,6 +310,119 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 .toast.show{transform:translate(-50%,0);visibility:visible;transition-delay:0s}
 .spinner{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:-2px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+
+/* ===== V16: Zeitleiste ===== */
+:root{--phase-ink:#74550A;--phase-bd:#E2CB86;--ne-bd:#B5D7CF;--inf-bd:#E9BDB4;
+  --med:#4E4294;--med-soft:#E7E4F4;--med-bd:#C8C1E7;--vac:#255A88;--vac-soft:#DDE9F4;--vac-bd:#B6CDE4;--op-soft:#E9EDF0;--op-bd:#CDD5DA}
+.c-phase{background:var(--serum-soft);border-color:var(--phase-bd);color:var(--phase-ink)}
+.c-ne{background:var(--opt-soft);border-color:var(--ne-bd);color:var(--opt)}
+.c-med{background:var(--med-soft);border-color:var(--med-bd);color:var(--med)}
+.c-inf{background:var(--alert-soft);border-color:var(--inf-bd);color:var(--alert)}
+.c-imp{background:var(--vac-soft);border-color:var(--vac-bd);color:var(--vac)}
+.c-op,.c-misc{background:var(--op-soft);border-color:var(--op-bd);color:var(--ink2)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid;flex:none;vertical-align:-1px}
+.leer{font-size:12.5px;color:var(--muted)}
+/* Verlauf */
+.plot{padding:0 8px 2px}
+.plot .chart{padding:0}
+.lanes{position:relative;padding:2px 0 10px}
+.lane-area{position:relative;margin-left:var(--lp);width:var(--wp)}
+.tguide{position:absolute;top:-4px;bottom:-4px;border-left:1px dashed var(--line);pointer-events:none}
+.evb{position:absolute;height:20px;min-width:8px;border:1px solid;border-radius:5px;padding:0;font:500 11.5px/18px Inter,-apple-system,sans-serif;white-space:nowrap;text-align:left;cursor:pointer}
+.evb span{position:absolute;left:6px;top:0;pointer-events:none}
+.evb.lout span{left:calc(100% + 5px)}
+.evb.lleft span{left:auto;right:calc(100% + 5px)}
+.evb.on::after{content:"›";position:absolute;right:5px;top:-1px;font-weight:600}
+.evb.cl{border-top-left-radius:0;border-bottom-left-radius:0;border-left-style:dashed}
+.evb.cl::before{content:"‹";position:absolute;left:5px;top:-1px;font-weight:600}
+.evb.cl span{left:16px}
+.evb:hover,.evb:focus-visible{box-shadow:0 0 0 2px var(--card),0 0 0 3px currentColor;outline:none}
+.evnach{margin:0 18px 8px;font-size:12.5px;color:var(--ink2)}
+.evinfo{margin:10px 18px 0;padding:10px 13px;border-radius:10px;background:var(--serum-soft);color:var(--phase-ink);font-size:13px;line-height:1.5}
+.evkopf{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;margin:0 0 18px}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.fgroup{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+.flabel{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.chip.sm{padding:4px 11px;font-size:12.5px}
+.evlink{background:none;border:none;padding:0;margin:0;text-align:left;color:inherit;font:inherit;cursor:pointer;display:inline-flex;gap:7px;align-items:baseline;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.evlink .sw{transform:translateY(1px)}
+/* Befund-Dialog */
+.tlbox{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px;margin:0 0 16px}
+.tl-h{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.tl-r{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:6px 0;font-size:13.5px;border-top:1px solid var(--hair)}
+.tl-h+.tl-r{border-top:none}
+.tl-r .k{color:var(--muted);font-size:12.5px}
+.tl-r em{font-style:normal;font-size:12px;color:var(--muted)}
+.tl-q{margin-top:6px;padding-top:10px;border-top:1px solid var(--hair);font-size:13.4px;color:var(--ink2)}
+.tl-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ptag{display:inline-block;border:1px solid var(--phase-bd);background:var(--serum-soft);color:var(--phase-ink);border-radius:99px;padding:2px 10px;font:500 12.5px Inter,sans-serif;cursor:default}
+button.ptag{cursor:pointer}
+.zyk-hint{margin:-6px 0 16px;padding:10px 13px;border-radius:10px;background:var(--ref-soft);font-size:13px;color:var(--ink2);line-height:1.5}
+/* Befund-Detail */
+.tlcard{padding:16px 20px;margin-bottom:14px}
+.tl-kopf{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.tl-kopf h3{font-size:16px;margin-right:auto}
+.tl-kopf span{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.tlkv{grid-template-columns:minmax(150px,auto) 1fr;gap:9px 18px}
+.tlkv dd{font-weight:400}
+.tl-ul{margin:0;padding:0;list-style:none;display:grid;gap:5px}
+.tlacc{margin-top:14px;border-top:1px solid var(--hair);padding-top:10px}
+.tlacc summary{cursor:pointer;font-size:13.4px;font-weight:500;color:var(--ink2)}
+.tlpre{margin:10px 0 0;padding:12px 14px;border-radius:10px;background:var(--ref-soft);font:12.5px/1.6 "IBM Plex Mono",monospace;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink2)}
+/* Liste */
+.listkopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.ev-row .et{font-weight:600;font-size:15px;line-height:1.35}
+.ev-row .sw{width:14px;height:14px}
+.hinweiskarte{display:flex;gap:12px 18px;align-items:center;flex-wrap:wrap;padding:14px 18px;margin-bottom:16px;border-color:var(--phase-bd);background:#FFFCF3}
+.hinweiskarte>div:first-child{flex:1 1 320px}
+.hinweiskarte p{margin:4px 0 0;font-size:13.4px;color:var(--ink2)}
+.hk-a{display:flex;gap:8px;flex-wrap:wrap}
+/* Ereignis-Dialog */
+#mEv{z-index:70}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr));gap:8px}
+.tile{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px 14px;color:var(--ink)}
+.tile:hover{border-color:var(--ink2)}
+.tile .sw{width:14px;height:14px;margin-top:4px}
+.tile b{display:block;font-size:14.5px;font-weight:600}
+.tile small{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:1px}
+.tile.weit{grid-column:1/-1}
+.evwer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.evwer .btn{margin-left:auto}
+label.evck{display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-family:Inter,sans-serif;font-size:13.5px;color:var(--ink2);margin:8px 0 0;cursor:pointer}
+.evck input{accent-color:var(--opt);width:16px;height:16px;margin:0}
+.everr{font-size:12.5px;color:var(--alert);margin-top:5px;font-weight:500}
+.evtabs{margin-bottom:16px}
+.cbxs{display:flex;gap:6px;flex-wrap:wrap}
+label.cbx{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px 5px 9px;font:13px Inter,sans-serif;text-transform:none;letter-spacing:0;color:var(--ink2);margin:0;cursor:pointer}
+.cbx input{accent-color:var(--opt);margin:0}
+.cbx:has(input:checked){border-color:var(--opt);background:var(--opt-soft);color:var(--opt)}
+.calc{margin:-4px 0 14px;padding:9px 12px;border-radius:9px;background:var(--serum-soft);color:var(--phase-ink);font-size:13px;line-height:1.5}
+.etikett{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.etikett-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.etikett .cb-st{font-size:12.5px;color:var(--muted)}
+.etikett .cb-st.fertig{color:var(--opt);font-weight:600}
+.etikett .cb-a{display:flex;gap:8px;flex-wrap:wrap}
+.etikett-p{margin-top:10px}
+.etikett-p summary{cursor:pointer;font-size:13.4px;font-weight:500;color:var(--ink2)}
+.inhl{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.inhz{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--hair);border-radius:10px;background:#fff}
+.inhz input[type=text],.inhz select{padding:7px 9px;font-size:13.5px;width:auto}
+.inhz .inh-n{order:1;flex:1 1 calc(100% - 52px);min-width:0}
+.inhz .inh-x{order:2;flex:0 0 auto}
+.inhz input.inh-m{order:3;flex:0 0 80px;width:80px;min-width:0}
+.inhz select.inh-e{order:4;flex:0 0 78px;width:78px;min-width:0}
+.inhz select.inh-s{order:5;flex:1 1 110px;width:auto;min-width:0}
+.btn.evdel{color:var(--alert);margin-right:auto}
+.btn.evdel.arm{background:var(--alert);border-color:var(--alert);color:#fff}
+@media (max-width:640px){
+  .tl-r{grid-template-columns:1fr;gap:2px}
+  .tlkv{grid-template-columns:1fr;gap:2px 0}
+  .tlkv dd{margin-bottom:10px}
+  .evb{font-size:11px}
+  .fgroup{margin-left:0}
+}
 
 @media (max-width:760px){ .bm{grid-template-columns:1fr;gap:14px} }
 @media (max-width:640px){
@@ -344,6 +461,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
     </nav>
     <button class="btn" id="btnData">Daten</button>
     <button class="btn pbtn" id="btnPerson" aria-label="Person wechseln oder Profil bearbeiten"><span class="pav" id="pAv">?</span><span class="pnm" id="pNm">Profil</span></button>
+    <button class="btn" id="btnEv">Ereignis&nbsp;+</button>
     <button class="btn primary" id="btnAdd">Befund&nbsp;+</button>
   </div>
   <div class="filters" id="filterBar" hidden>
@@ -376,17 +494,18 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
         <div><label for="fLab">Labor <span style="text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="fLab" placeholder="Synevo Adria Lab"></div>
       </div>
       <p class="hint" style="margin:-8px 0 14px">Testosteron, Cortisol, TSH und Eisen schwanken über den Tag. Mit der Uhrzeit erkennt Serum, ob ein Wert überhaupt vergleichbar ist.</p>
+      <div class="tlbox" id="fCtx" hidden></div>
       <div class="row" id="cycleRow" hidden>
-        <div><label for="fCycle">Zyklusphase</label><select id="fCycle">
+        <div><label for="fCycle">Zyklus</label><select id="fCycle">
           <option value="">unbekannt</option>
           <option value="follikel">Tag 1–12 · Follikelphase</option>
           <option value="ovulation">Tag 13–15 · Eisprung</option>
           <option value="luteal">ab Tag 16 · Lutealphase</option>
-          <option value="postmeno">nach der Menopause</option>
-          <option value="pille">hormonelle Verhütung</option>
+          <option value="kein">weder noch · kein Zyklus</option>
         </select></div>
         <div style="flex:0 0 130px"><label for="fCycleDay">Zyklustag</label><input type="number" id="fCycleDay" min="1" max="60" placeholder="optional"></div>
       </div>
+      <div class="zyk-hint" id="fCycleHint" hidden></div>
       <div class="row">
         <div style="flex:0 0 200px"><label for="fFast">Nüchtern abgenommen?</label><select id="fFast">
           <option value="">weiß nicht</option><option value="ja">ja, mind. 8 Stunden</option><option value="nein">nein</option></select></div>
@@ -421,6 +540,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
       <div class="claudebox" id="claudeBox" hidden>
         <div class="cb-h"><strong>Claude liest den Befund</strong><span class="cb-st" id="cbStatus"></span></div>
         <p class="hint" id="cbInfo" style="margin:6px 0 10px"></p>
+        <p class="cb-wach" id="cbWach" hidden>Serum bitte geöffnet lassen, bis „Fertig“ erscheint — beim Sperren oder App-Wechsel bricht das Handy die Verbindung ab.</p>
         <div class="cb-a"><button class="btn" id="cbRun">Claude lesen lassen</button><button class="btn ghost" id="cbCopy">Prompt kopieren</button></div>
         <div id="cbPaste" style="margin-top:12px">
           <label for="cbAnswer">Antwort von Claude</label>
@@ -432,6 +552,15 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
     </div>
     <div class="modal-f"><button class="btn ghost" data-close>Abbrechen</button><button class="btn primary" id="saveEntry">Werte speichern</button></div>
   </div>
+</div>
+
+<div class="veil" id="mEv" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="evTitle">
+    <div class="modal-h"><h2 id="evTitle">Ereignis eintragen</h2><button class="btn ghost" data-close>Schließen</button></div>
+    <div class="modal-b" id="evBody"></div>
+    <div class="modal-f" id="evFoot"></div>
+  </div>
+  <input type="file" id="evFotoIn" accept="image/*" multiple hidden>
 </div>
 
 <div class="veil" id="mAsk" hidden>
@@ -548,7 +677,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.55}
 /* --- Aktualisierung ------------------------------------------------
    Ohne das hier merkt eine installierte App nicht, dass es eine neue
    Fassung gibt — sie startet aus ihrem Zwischenspeicher weiter. */
-window.SERUM_VERSION = "15";
+window.SERUM_VERSION = "16";
 window.serumApplyUpdate = function(){ location.reload() };
 window.serumCheckUpdate = function(){ alert("Aktualisierung ist nur möglich, wenn Serum über eine Adresse läuft."); };
 
@@ -724,7 +853,7 @@ const M = [
 {id:"lh",n:"LH",u:"mIU/ml",g:"Sexualhormone",al:["luteinisierendes hormon","luteinizing","lh ","luteinizing hormone","luteinising hormone"],zyk:{follikel:[2,12],ovulation:[15,95],luteal:[0.5,17],postmeno:[8,60]},ref:[1.7,8.6],opt:[2,7],cv:{"IU/l":1,"U/l":1,"mIU/l":0.001},zyk:{follikel:[2,12],ovulation:[15,95],luteal:[1,12],postmeno:[10,55]},
  what:"Steuerhormon, das beim Mann die Testosteronproduktion in den Hoden anstößt.",why:"Steuert bei Frauen den Eisprung, bei Männern die Testosteronbildung. Zusammen mit FSH zeigt es, ob eine Störung von Eierstöcken bzw. Hoden selbst kommt oder von der Steuerung im Gehirn. Bei Frauen schwankt es im Zyklus um ein Vielfaches.",
  imp:["Immer gemeinsam mit FSH und Testosteron bewerten","Schlafmangel und Übertraining senken LH","Bei Auffälligkeiten endokrinologisch abklären lassen"],rel:["fsh","testo"]},
-{id:"prolaktin",n:"Prolaktin",u:"ng/ml",g:"Sexualhormone",al:["prolaktin","prolactin"],tag:{von:8,bis:11,txt:"Prolaktin ist nachts und früh am Morgen erhöht; Stress vor der Abnahme hebt den Wert zusätzlich."},ref:[4,15],opt:[4,12],refF:[4,23],optF:[4,18],cv:{"µg/l":1,"mIU/l":0.0472,"µIU/ml":0.0472},zeit:{von:8,bis:11,txt:"Steigt durch Stress, Schlaf und körperliche Anstrengung."},
+{id:"prolaktin",still:[3,200],n:"Prolaktin",u:"ng/ml",g:"Sexualhormone",al:["prolaktin","prolactin"],tag:{von:8,bis:11,txt:"Prolaktin ist nachts und früh am Morgen erhöht; Stress vor der Abnahme hebt den Wert zusätzlich."},ref:[4,15],opt:[4,12],refF:[4,23],optF:[4,18],cv:{"µg/l":1,"mIU/l":0.0472,"µIU/ml":0.0472},zeit:{von:8,bis:11,txt:"Steigt durch Stress, Schlaf und körperliche Anstrengung."},
  what:"Ein Hypophysenhormon, das in erhöhter Menge die Sexualhormone unterdrückt.",why:"Erhöhtes Prolaktin kann bei Frauen Zyklus und Eisprung stören und ist bei Männern eine häufige, gut behandelbare Ursache für niedriges Testosteron. Stress, Schlafmangel und manche Medikamente heben den Wert.",
  imp:["Morgens und ausgeruht messen, Stress vor der Abnahme verfälscht","Deutlich erhöhte Werte immer ärztlich abklären lassen","Medikamentenliste prüfen"],rel:["testo","lh"]},
 {id:"cortisol",n:"Cortisol (morgens)",u:"µg/dl",g:"Sexualhormone",al:["kortizol","kortizol","cortisol","kortisol"],tag:{von:7,bis:9,txt:"Cortisol folgt einem starken Tagesrhythmus — mittags liegt es bei einem Bruchteil des Morgenwerts."},ref:[6,23],opt:[10,18],cv:{"nmol/l":0.03625,"µg/l":0.1,"ng/ml":0.1},zeit:{von:7,bis:9,txt:"Cortisol folgt einem steilen Tagesrhythmus — nachmittags gemessen ist der Wert nicht mit einem Morgenwert vergleichbar."},
@@ -1665,7 +1794,7 @@ async function sset(k,v){
 /* condSel: null heißt „noch nie ausgewählt“ — dann gilt der Freitext wie bisher. */
 /* DB ist immer die gerade aktive Person — so arbeitet der Rest der App unverändert.
    ALLE hält sämtliche Personen auf diesem Gerät; der API-Key gilt für das ganze Gerät. */
-let DB={entries:[],answers:[],profile:{name:"",sex:"m",year:"",kg:"",cm:"",cond:"",condSel:null,ctx:"",key:""}};
+let DB={entries:[],answers:[],events:[],aus:[],profile:{name:"",sex:"m",year:"",kg:"",cm:"",cond:"",condSel:null,ctx:"",key:""}};
 let ALLE={aktiv:null,key:"",personen:[],lern:{alias:{},einheiten:{}}};
 /* Was Serum dazulernt: Namen („SGPT“ ist GPT) und Einheiten samt Faktor.
    Gilt für das ganze Gerät, damit der nächste Befund aus demselben Labor sofort passt. */
@@ -1681,7 +1810,8 @@ const LEERPROFIL=()=>({name:"",sex:"m",year:"",kg:"",cm:"",cond:"",condSel:null,
 function normPerson(p){
   p=p||{};
   const pr=Object.assign(LEERPROFIL(),p.profile||{}); delete pr.key;
-  const n={id:p.id||neueId(), profile:pr, entries:Array.isArray(p.entries)?p.entries:[], answers:Array.isArray(p.answers)?p.answers:[]};
+  const n={id:p.id||neueId(), profile:pr, entries:Array.isArray(p.entries)?p.entries:[], answers:Array.isArray(p.answers)?p.answers:[],
+    events:Array.isArray(p.events)?p.events.filter(e=>e&&e.cat&&e.from):[], aus:Array.isArray(p.aus)?p.aus:[]};
   if(p.beispiel) n.beispiel=true;
   return n;
 }
@@ -1690,7 +1820,7 @@ const aktivePerson=()=>person(ALLE.aktiv);
 /* Änderungen an DB in die aktive Person zurückschreiben */
 function zurueck(){
   const p=aktivePerson(); if(!p) return;
-  p.entries=DB.entries; p.answers=DB.answers||[];
+  p.entries=DB.entries; p.answers=DB.answers||[]; p.events=DB.events||[]; p.aus=DB.aus||[];
   const pr=Object.assign({},DB.profile);
   if(pr.key!==undefined) ALLE.key=pr.key||"";
   delete pr.key; p.profile=pr;
@@ -1699,6 +1829,8 @@ function binde(id){
   const p=person(id)||ALLE.personen[0]; if(!p) return;
   ALLE.aktiv=p.id;
   DB.entries=p.entries; DB.answers=p.answers;
+  if(!Array.isArray(p.events)) p.events=[]; if(!Array.isArray(p.aus)) p.aus=[];
+  DB.events=p.events; DB.aus=p.aus;
   DB.profile=Object.assign(LEERPROFIL(),p.profile,{key:ALLE.key});
 }
 async function loadDB(){
@@ -1719,7 +1851,7 @@ async function loadDB(){
 }
 async function saveDB(){
   zurueck();
-  await sset("serum.db",JSON.stringify({format:13, aktiv:ALLE.aktiv, key:ALLE.key, personen:ALLE.personen, lern:ALLE.lern}));
+  await sset("serum.db",JSON.stringify({format:14, aktiv:ALLE.aktiv, key:ALLE.key, personen:ALLE.personen, lern:ALLE.lern}));
 }
 async function wechsle(id){
   if(!person(id)||id===ALLE.aktiv) return;
@@ -1729,6 +1861,261 @@ async function wechsle(id){
 }
 window.wechsle=wechsle;
 const pname=p=>(p&&p.profile.name)||"Ohne Namen";
+function evListe(pid){ zurueck(); const p=person(pid)||aktivePerson(); if(!Array.isArray(p.events)) p.events=[]; if(p.id===ALLE.aktiv) DB.events=p.events; return p.events }
+function evFinden(id){ zurueck(); for(const p of ALLE.personen){ const e=(p.events||[]).find(x=>x.id===id); if(e) return {e,p} } return null }
+
+/* ===== 2b — Zeitleiste: Ereignisse und Lebensphasen ====================
+   Ereignisse sind Einträge der Person selbst: Medikamente, Nahrungsergänzung,
+   Infekte, Impfungen, Eingriffe, Lebensphasen. Serum zeigt sie neben den Werten,
+   bewertet sie aber nicht — nie „wegen“, nur „zur selben Zeit“.
+   Ausnahme: Eine Lebensphase gilt für alle Befunde in ihrem Zeitraum und ersetzt
+   dort die Zyklusangabe. */
+const TAG=864e5;
+const tagMs=s=>Date.UTC(+String(s).slice(0,4),+String(s).slice(5,7)-1,+String(s).slice(8,10));
+const isoTag=t=>new Date(t).toISOString().slice(0,10);
+const plusTage=(s,n)=>isoTag(tagMs(s)+n*TAG);
+const heuteIso=()=>{ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0") };
+const neueEvId=()=>"e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* Arten — alphabetisch, „Sonstiges“ bewusst am Ende */
+const EV_ARTEN=[
+  {k:"op",   n:"Eingriff / OP",      d:"Operation, Blutspende, Zahnbehandlung", einzel:true},
+  {k:"imp",  n:"Impfung",            d:"Grippe, Corona, Tetanus …", einzel:true},
+  {k:"inf",  n:"Infekt",             d:"Erkältung, Grippe, Magen-Darm …"},
+  {k:"phase",n:"Lebensphase",        d:"Schwangerschaft, Stillzeit, Wechseljahre …"},
+  {k:"med",  n:"Medikament",         d:"Verordnet oder selbst gekauft"},
+  {k:"ne",   n:"Nahrungsergänzung",  d:"Einzelstoff oder Kombipräparat"},
+  {k:"misc", n:"Sonstiges",          d:"Alles andere, als Freitext"}];
+const EVN=Object.fromEntries(EV_ARTEN.map(a=>[a.k,a.n]));
+const einzelTag=k=>k==="op"||k==="imp";
+/* Reihenfolge der Spuren unter den Diagrammen */
+const EV_SPUR=["phase","med","ne","inf","imp","op","misc"];
+
+/* Lebensphasen — alphabetisch, „Sonstige“ am Ende. ersetzt: Zyklusphase entfällt */
+const LEBENSPHASEN=[
+  {k:"hormon",n:"Geschlechtsangleichende Hormontherapie",kurz:"Hormontherapie",sex:"fm",ersetzt:true,
+   h:"Hormonbehandlung im Rahmen einer Transition. Sexualhormone bewertet Serum in dieser Zeit nicht."},
+  {k:"pille",n:"Hormonelle Verhütung",sex:"f",ersetzt:true,
+   h:"Pille, Hormonspirale, Implantat oder Ring. Die Zyklusphase entfällt, Zyklushormone bewertet Serum in dieser Zeit nicht."},
+  {k:"postmeno",n:"Postmenopause (nach den Wechseljahren)",kurz:"Postmenopause",sex:"f",ersetzt:true,
+   h:"Ab zwölf Monaten ohne Periode. Die Hormonwerte haben dann eigene Bereiche."},
+  {k:"schwanger",n:"Schwangerschaft",sex:"f",ersetzt:true,
+   h:"Serum rechnet aus dem errechneten Geburtstermin für jeden Befund die Schwangerschaftswoche aus."},
+  {k:"stillzeit",n:"Stillzeit",sex:"f",ersetzt:true,
+   h:"Solange gestillt wird, auch ohne Periode. Prolaktin hat dann einen eigenen Bereich."},
+  {k:"peri",n:"Wechseljahre (Perimenopause)",kurz:"Wechseljahre",sex:"f",ersetzt:false,
+   h:"Der Zyklus wird unregelmäßig, die Periode kommt noch. Die Zyklusphase kannst du beim Befund weiter angeben."},
+  {k:"wochenbett",n:"Wochenbett",sex:"f",ersetzt:true,
+   h:"Die ersten sechs bis acht Wochen nach der Geburt. Zyklushormone bewertet Serum in dieser Zeit nicht."},
+  {k:"sonst",n:"Sonstige Lebensphase",sex:"fm",ersetzt:false,frei:true,
+   h:"Freitext. Serum zeigt ihn an und gibt ihn an Claude weiter, wertet ihn aber nicht selbst aus."}];
+const LPbyK=Object.fromEntries(LEBENSPHASEN.map(p=>[p.k,p]));
+/* Gelten mehrere Phasen zugleich, zählt für die Bewertung die erste dieser Liste */
+const PH_RANG=["schwanger","stillzeit","wochenbett","hormon","pille","postmeno"];
+
+/* Nahrungsergänzung: Stoffe — alphabetisch, „Anderer Stoff“ am Ende.
+   mk: Messwerte, bei denen der Stoff im Verlauf erscheint („Nur passende“). */
+const STOFFE=[
+  {k:"betacarotin",n:"Beta-Carotin",al:["beta-carotin","betacarotin","beta carotin","carotin"],mk:["betacarotin","vita"]},
+  {k:"biotin",n:"Biotin",al:["biotin","d-biotin","vitamin b7","vitamin h"],mk:["vitb7"]},
+  {k:"calcium",n:"Calcium",al:["calcium","kalzium","calciumcarbonat","calciumcitrat"],mk:["calcium","ica"]},
+  {k:"coq10",n:"Coenzym Q10",al:["coenzym q10","coenzyme q10","q10","ubichinon","ubiquinol","coq10"],mk:["coq10"]},
+  {k:"eisen",n:"Eisen",al:["eisen","eisenbisglycinat","eisengluconat","eisensulfat","eisenfumarat","eisencitrat","iron"],mk:["ferritin","eisen","transferrin","transferrin_g","tibc","stfr","hb","ret_he"]},
+  {k:"folsaeure",n:"Folsäure",al:["folsäure","folsaeure","folat","methylfolat","5-mthf","pteroylmonoglutaminsäure","folic acid","folate","vitamin b9"],mk:["folsaeure","folat_ery","homocystein"]},
+  {k:"jod",n:"Jod",al:["jod","iod","kaliumiodid","kaliumjodid","iodine","iodide"],mk:["tsh","ft3","ft4","jod_u"]},
+  {k:"kalium",n:"Kalium",al:["kalium","kaliumcitrat","kaliumchlorid","potassium"],mk:["kalium"]},
+  {k:"kreatin",n:"Kreatin",al:["kreatin","creatin","creatine","kreatin-monohydrat","creatin-monohydrat","creatine monohydrate"],mk:["kreatinin","egfr","ck"]},
+  {k:"kupfer",n:"Kupfer",al:["kupfer","kupfergluconat","copper"],mk:["kupfer","coerulo"]},
+  {k:"magnesium",n:"Magnesium",al:["magnesium","magnesiumcitrat","magnesiumoxid","magnesiumbisglycinat","magnesiumcarbonat"],mk:["magnesium","mg_vb"]},
+  {k:"omega3",n:"Omega-3",al:["omega-3","omega 3","omega3","epa","dha","eicosapentaensäure","docosahexaensäure","fischöl","fischoel","algenöl","algenoel","krillöl","krilloel"],mk:["omega3","omegacheck","o3sum","epa","dha","dpa","o6o3","aaepa","trigl"]},
+  {k:"selen",n:"Selen",al:["selen","natriumselenit","natriumselenat","selenomethionin","selenium"],mk:["selen","selenop"]},
+  {k:"vita",n:"Vitamin A",al:["vitamin a","retinol","retinylacetat","retinylpalmitat"],mk:["vita"]},
+  {k:"vitb1",n:"Vitamin B1",al:["vitamin b1","thiamin","thiamine","benfotiamin"],mk:["vitb1"]},
+  {k:"vitb2",n:"Vitamin B2",al:["vitamin b2","riboflavin"],mk:["vitb2"]},
+  {k:"vitb3",n:"Vitamin B3 (Niacin)",al:["vitamin b3","niacin","nicotinamid","niacinamid","nicotinsäure"],mk:["vitb3"]},
+  {k:"vitb5",n:"Vitamin B5",al:["vitamin b5","pantothensäure","pantothensaeure","pantothenat"],mk:["vitb5"]},
+  {k:"vitb6",n:"Vitamin B6",al:["vitamin b6","pyridoxin","pyridoxal","p-5-p","p5p"],mk:["vitb6","homocystein"]},
+  {k:"b12",n:"Vitamin B12",al:["vitamin b12","cobalamin","methylcobalamin","cyanocobalamin","hydroxocobalamin","adenosylcobalamin"],mk:["b12","holotc","mma","homocystein"]},
+  {k:"vitc",n:"Vitamin C",al:["vitamin c","ascorbinsäure","ascorbinsaeure","ascorbat"],mk:["vitc"]},
+  {k:"vitd",n:"Vitamin D",al:["vitamin d","vitamin d3","vitamin d2","cholecalciferol","colecalciferol","ergocalciferol"],mk:["vitd","vitd2","vitd3","calcium"]},
+  {k:"vite",n:"Vitamin E",al:["vitamin e","tocopherol","tocopherylacetat","tocopheryl"],mk:["vite"]},
+  {k:"vitk1",n:"Vitamin K1",al:["vitamin k1","phyllochinon","phytomenadion"],mk:["vitk1"]},
+  {k:"vitk2",n:"Vitamin K2",al:["vitamin k2","menachinon","mk-7","mk7","menaquinone"],mk:[]},
+  {k:"zink",n:"Zink",al:["zink","zinc","zinkgluconat","zinkcitrat","zinkbisglycinat","zinkpicolinat","zinkoxid"],mk:["zink","zink_vb","kupfer"]},
+  {k:"anders",n:"Anderer Stoff",al:[],mk:[]}];
+const STOFF=Object.fromEntries(STOFFE.map(s=>[s.k,s]));
+/* Schnell-Häkchen beim Kombipräparat: Stoffe, die Laborwerte direkt betreffen */
+const KOMBI_SCHNELL=["biotin","eisen","folsaeure","jod","omega3","selen","b12","vitd","zink"];
+const NE_EINHEITEN=["µg","mg","g","IE"];
+const NE_HAEUFIG=["täglich","mehrmals pro Woche","wöchentlich","bei Bedarf"];
+const INFEKTE=["Corona","Erkältung","Grippe","Harnwegsinfekt","Magen-Darm","Anderer Infekt"];
+
+/* Allgemeine Hinweise, die gut belegt sind — keine Aussage über den eigenen Wert.
+   min: erst ab dieser Tagesmenge in mg (Menge unbekannt: Hinweis erscheint).
+   start: nur, wenn der Stoff höchstens so viele Tage vor der Messung begonnen wurde. */
+const STOFF_HINWEISE=[
+  {s:"biotin",min:1,mk:["tsh","ft3","ft4","t3_ges","t4_ges","trak","tpoak","tgak","thyreoglobulin","hstnt","hstni","ntprobnp","testo","testofrei","estradiol","progesteron","prolaktin","lh","fsh","shbg","dheas","cortisol","pth","ferritin","vitd","b12","folsaeure","psa","cea","afp","bhcg","insulin","cpeptid","amh","acth"],
+   t:q=>`Biotin ist eingetragen (${q}). Vor allem hoch dosiertes Biotin, wie es in Haar- und Nagelpräparaten steckt, kann diese Messung je nach Labormethode verfälschen — nach oben oder unten. Sag es der Praxis vor der Blutabnahme; sie weiß, ob und wie lange vorher pausiert werden sollte.`},
+  {s:"kreatin",mk:["kreatinin","egfr"],
+   t:q=>`Kreatin ist eingetragen (${q}). Es kann den Kreatininwert erhöhen und die daraus berechnete eGFR senken, ohne dass die Nieren schlechter arbeiten. Cystatin C wird davon nicht beeinflusst.`},
+  {s:"eisen",mk:["eisen","transferrin"],
+   t:q=>`Eisen ist eingetragen (${q}). Kurz vor der Abnahme eingenommen, erhöht es das Serumeisen für einige Stunden. Viele Labore empfehlen deshalb, Eisenpräparate am Tag vor der Abnahme auszulassen. Ferritin betrifft das nicht.`},
+  {s:"vitd",mk:["vitd"],start:70,
+   t:q=>`Vitamin D wurde kurz vor dieser Messung begonnen (${q}). Der Blutwert braucht etwa zwei bis drei Monate, bis er sich auf eine neue Zufuhr eingestellt hat.`}];
+
+/* Inhaltsstoff-Name vom Etikett einem Stoff zuordnen — längster Treffer gewinnt */
+function stoffAus(name){
+  const t=" "+flach(String(name||"")).replace(/[()\[\],;:/]+/g," ")+" ";
+  let best=null, len=0;
+  STOFFE.forEach(s=>s.al.forEach(a=>{
+    const f=flach(a);
+    const i=t.indexOf(f); if(i<0) return;
+    const vor=t[i-1]||" ", nach=t[i+f.length]||" ";
+    if(/[a-z0-9]/.test(vor)&&!/^(eisen|zink|kupfer|calcium|magnesium|kalium|kreatin|selen)/.test(f)) return;
+    if(/[a-z0-9]/.test(nach)&&!/^(eisen|zink|kupfer|calcium|magnesium|kalium|selen)/.test(f)) return;
+    if(f.length>len){ best=s.k; len=f.length }
+  }));
+  return best;
+}
+
+/* --- Zeit eines Ereignisses ------------------------------------------ */
+function evStart(e){ return e.cat==="phase"&&e.ph==="schwanger"&&e.et ? plusTage(e.et,-280) : e.from }
+/* Ende als Datum oder null (läuft noch). Eine Schwangerschaft ohne Enddatum endet drei Wochen nach dem Termin. */
+function evEnde(e){
+  if(einzelTag(e.cat)) return e.from;
+  if(e.cat==="phase"&&e.ph==="schwanger"&&e.et) return e.to||plusTage(e.et,21);
+  return e.to||null;
+}
+const evAktivAm=(e,d)=>evStart(e)<=d&&(!evEnde(e)||evEnde(e)>=d);
+function phasenAm(d,evs){ return (evs||DB.events||[]).filter(e=>e.cat==="phase"&&e.from!==undefined&&evAktivAm(e,d)) }
+function phaseKeyAm(d,evs){ if(!d) return null; const ks=phasenAm(d,evs).map(e=>e.ph); return PH_RANG.find(k=>ks.includes(k))||null }
+
+/* Schwangerschaftswoche aus dem errechneten Termin: Beginn = Termin − 280 Tage */
+function ssw(e,d){
+  if(!(e&&e.ph==="schwanger"&&e.et&&d)) return null;
+  const tage=Math.round((tagMs(d)-tagMs(e.et))/TAG)+280;
+  if(tage<0||tage>300) return null;
+  const w=Math.floor(tage/7), r=tage%7, tri=w<13?1:w<28?2:3;
+  return {w,r,tri,t:`SSW ${w}+${r} · ${tri}. Trimester`};
+}
+function phaseText(e,d){
+  const p=LPbyK[e.ph]; if(!p) return "Lebensphase";
+  if(e.ph==="sonst") return e.name||"Sonstige Lebensphase";
+  if(e.ph==="schwanger"){ const s=d?ssw(e,d):null; return "Schwangerschaft"+(s?" · "+s.t:"") }
+  return p.kurz||p.n;
+}
+/* Phase eines Messpunkts lesbar, mit Schwangerschaftswoche */
+function phLabel(ph,d){
+  if(ph==="schwanger"&&d){ const e=phasenAm(d).find(x=>x.ph==="schwanger"), s=e&&ssw(e,d); return "Schwangerschaft"+(s?", "+s.t:"") }
+  return PHASEN[ph]||ph||"";
+}
+
+/* --- Texte zu einem Ereignis ----------------------------------------- */
+function stoffeVon(e){
+  if(!e||e.cat!=="ne") return [];
+  const l=e.kind==="kombi"?(e.inh||[]).map(x=>x.s):[e.stoff];
+  return [...new Set(l.filter(s=>s&&s!=="anders"))];
+}
+const mengeTxt=(m,u)=>m!==undefined&&m!==null&&String(m).trim()!==""?String(m).replace(".",",")+(u?" "+u:""):"";
+function evTitel(e){
+  if(e.cat==="phase") return phaseText(e);
+  if(e.cat==="ne"){
+    if(e.kind==="kombi") return e.name||"Kombipräparat";
+    const st=e.stoff==="anders"||!STOFF[e.stoff]?(e.name||"Einzelstoff"):STOFF[e.stoff].n;
+    const mg=mengeTxt(e.menge,e.einheit);
+    return st+(mg?" · "+mg:"")+(e.freq&&e.freq!=="täglich"?" "+e.freq:mg?" täglich":"");
+  }
+  if(e.cat==="med") return (e.name||"Medikament")+(e.dose?" · "+e.dose:"");
+  return e.name||EVN[e.cat]||"Ereignis";
+}
+function evZeitraum(e){
+  if(einzelTag(e.cat)) return "am "+dmed(e.from);
+  if(e.cat==="phase"&&e.ph==="schwanger"&&e.et) return "Geburtstermin "+dmed(e.et)+(e.to?" · endete "+dmed(e.to):evEnde(e)<heuteIso()?" · beendet":" · läuft");
+  return e.to?dmed(e.from)+" – "+dmed(e.to):"seit "+dmed(e.from)+" · läuft";
+}
+function evEnthaelt(e){
+  if(e.cat!=="ne"||e.kind!=="kombi"||!(e.inh||[]).length) return "";
+  const l=e.inh.map(x=>(x.s&&STOFF[x.s]&&x.s!=="anders"?STOFF[x.s].n:x.n)+(mengeTxt(x.menge,x.einheit)?" "+mengeTxt(x.menge,x.einheit):""));
+  return l.length>8?l.slice(0,8).join(", ")+" und "+(l.length-8)+" weitere":l.join(", ");
+}
+/* Tagesmenge eines Stoffs in mg, wenn bekannt */
+function stoffMg(e,s){
+  const x=e.kind==="kombi"?(e.inh||[]).find(y=>y.s===s):{menge:e.menge,einheit:e.einheit};
+  if(!x) return null;
+  const n=parseFloat(String(x.menge||"").replace(",","."));
+  if(!isFinite(n)) return null;
+  const u=String(x.einheit||"").toLowerCase();
+  return u==="µg"||u==="mcg"||u==="ug"?n/1000:u==="mg"?n:u==="g"?n*1000:null;
+}
+
+/* Gehört das Ereignis zu diesem Messwert? Nahrungsergänzung nur bei passenden Werten. */
+function evPasst(e,m){
+  if(e.cat!=="ne") return true;
+  return stoffeVon(e).some(s=>(STOFF[s]&&STOFF[s].mk.includes(m.id))||STOFF_HINWEISE.some(h=>h.s===s&&h.mk.includes(m.id)));
+}
+
+/* --- Kontext zu einem Datum: Phase, die vier Wochen davor, was gerade läuft --- */
+function kontextAm(d,evs){
+  evs=evs||DB.events||[];
+  const w0=plusTage(d,-28);
+  const phase=evs.filter(e=>e.cat==="phase"&&evAktivAm(e,d));
+  const vorher=evs.filter(e=>e.cat!=="phase"&&(
+    (evStart(e)>w0&&evStart(e)<=d) || (evEnde(e)&&evEnde(e)>w0&&evEnde(e)<d)));
+  const laeuft=evs.filter(e=>e.cat!=="phase"&&!einzelTag(e.cat)&&!vorher.includes(e)&&evAktivAm(e,d));
+  const srt=(a,b)=>EV_SPUR.indexOf(a.cat)-EV_SPUR.indexOf(b.cat)||evStart(a).localeCompare(evStart(b));
+  return {phase, vorher:vorher.sort(srt), laeuft:laeuft.sort(srt)};
+}
+function vorherText(e,d){
+  const t=evTitel(e), tage=a=>Math.round((tagMs(d)-tagMs(a))/TAG);
+  if(einzelTag(e.cat)) return `${EVN[e.cat]}: ${t} · am ${dmed(e.from)} (${tage(e.from)} Tage vorher)`;
+  const ende=evEnde(e);
+  if(ende&&ende<d) return `${EVN[e.cat]}: ${t} · ${evStart(e)>plusTage(d,-28)?dmed(evStart(e))+" – ":"beendet am "}${dmed(ende)} (${tage(ende)} Tage vor der Abnahme beendet)`;
+  return `${EVN[e.cat]}: ${t} · begonnen am ${dmed(evStart(e))}`;
+}
+const laeuftText=e=>`${EVN[e.cat]}: ${evTitel(e)}${evEnthaelt(e)?" (enthält "+evEnthaelt(e)+")":""}`;
+/* Zeilen für Claude — eingeleitet als Nutzerangabe, die Serum nicht bewertet */
+function kontextZeilen(d,evs,einzug){
+  const k=kontextAm(d,evs), z=einzug||"  ";
+  return [
+    z+"- Lebensphase: "+(k.phase.length?k.phase.map(e=>phaseText(e,d)).join(", "):"keine eingetragen"),
+    z+"- In den 4 Wochen vor der Abnahme: "+(k.vorher.length?k.vorher.map(e=>vorherText(e,d)).join("; "):"nichts eingetragen"),
+    z+"- Läuft zu diesem Zeitpunkt: "+(k.laeuft.length?k.laeuft.map(laeuftText).join("; "):"nichts eingetragen")].join("\n");
+}
+
+/* Hinweise zu Stoffen, die bei diesem Messwert gelten (Biotin, Kreatin, Eisen, Vitamin D) */
+function stoffHinweise(m,s){
+  if(!s||!s.length) return [];
+  const last=s[s.length-1].d, heute=heuteIso(), out=[], gesehen=new Set();
+  STOFF_HINWEISE.forEach(h=>{
+    if(!h.mk.includes(m.id)||gesehen.has(h.s)) return;
+    const treffer=(DB.events||[]).filter(e=>e.cat==="ne"&&stoffeVon(e).includes(h.s)).find(e=>{
+      const zurMessung=evAktivAm(e,last), jetzt=evAktivAm(e,heute);
+      if(h.start){ const t=(tagMs(last)-tagMs(evStart(e)))/TAG; return zurMessung&&t>=0&&t<h.start }
+      if(!zurMessung&&!jetzt) return false;
+      const mg=h.min?stoffMg(e,h.s):null;
+      return !(h.min&&mg!==null&&mg<h.min);
+    });
+    if(!treffer) return;
+    gesehen.add(h.s);
+    const mg=mengeTxt(treffer.menge,treffer.einheit), ende=evEnde(treffer);
+    out.push(h.t(treffer.kind==="kombi"?"in „"+(treffer.name||"Kombipräparat")+"“"
+      :[mg?mg+" "+(treffer.freq||"täglich"):"", ende?dmed(evStart(treffer))+" – "+dmed(ende):"seit "+dmed(evStart(treffer))].filter(Boolean).join(", ")));
+  });
+  return out;
+}
+
+/* Befunde mit einer alten Zyklusangabe, die jetzt eine Lebensphase ist */
+function altePhasen(){
+  if(!isF()) return [];
+  const aus=DB.aus||[], gruppen={};
+  DB.entries.forEach(e=>{
+    const k=e.cycle; if(!["postmeno","pille","stillzeit"].includes(k)||aus.includes(k)) return;
+    if(phasenAm(e.date).some(x=>x.ph===k)) return;
+    (gruppen[k]=gruppen[k]||[]).push(e.date);
+  });
+  return Object.keys(gruppen).map(k=>({k, daten:gruppen[k].sort()}));
+}
+
 const alterVon=pr=>pr&&pr.year?new Date().getFullYear()-(+pr.year):null;
 
 /* ===== 3 — Bewertung ================================================== */
@@ -1736,18 +2123,22 @@ const isF=()=>DB.profile.sex==="f";
 
 /* --- Zyklus ------------------------------------------------------- */
 const PHASEN={follikel:"Follikelphase",ovulation:"Eisprung",luteal:"Lutealphase",
-              postmeno:"nach der Menopause",pille:"hormonelle Verhütung"};
-const phaseOf=e=>(e&&e.cycle)||null;
+              postmeno:"nach der Menopause",pille:"hormonelle Verhütung",stillzeit:"Stillzeit (keine Periode)",
+              kein:"kein Zyklus",schwanger:"Schwangerschaft",wochenbett:"Wochenbett",hormon:"Hormontherapie"};
+/* Eine Lebensphase aus der Zeitleiste ersetzt die Zyklusangabe am Befund. */
+const phaseOf=e=>!e?null:(phaseKeyAm(e.date)||e.cycle||null);
 /* Ohne Phasenangabe spannt sich der Bereich über alle Phasen — dann ist der Wert nicht sicher deutbar. */
 function zykSpanne(m){
   const ph=Object.keys(m.zyk); 
   return [Math.min.apply(null,ph.map(k=>m.zyk[k][0])), Math.max.apply(null,ph.map(k=>m.zyk[k][1]))];
 }
 function refOf(m,ph){
+  if(ph==="stillzeit"&&m.still) return m.still;
   if(isF()&&m.zyk) return (ph&&m.zyk[ph]) ? m.zyk[ph] : zykSpanne(m);
   return (isF()&&m.refF)?m.refF:m.ref;
 }
 function optOf(m,ph){
+  if(ph==="stillzeit"&&m.still) return m.still;
   /* Bei zyklusabhängigen Hormonen gibt es kein „besser“ — innerhalb der Phase ist alles normal. */
   if(isF()&&m.zyk) return refOf(m,ph);
   return (isF()&&m.optF)?m.optF:m.opt;
@@ -1787,7 +2178,34 @@ function statusLabor(m,v,q,ref){
   if(f==="L"||(lo!==null&&v<lo)) return tief;
   return ok;
 }
+/* Sexualhormone ohne Cortisol, das im Katalog in derselben Gruppe steht */
+const sexHormon=m=>!!(m.zyk||(m.g==="Sexualhormone"&&m.id!=="cortisol"));
+/* Steigen oder fallen in der Schwangerschaft um ein Vielfaches — nicht bewerten */
+const SCHW_HORMON=new Set(["cortisol","bhcg","estron","ohp17","aldosteron","renin"]);
+function phasenStatus(m,v,ph,q,ref){
+  if(ph==="hormon"&&sexHormon(m)) return {k:"mid",t:"unter Hormontherapie nicht nach Geschlecht bewertbar",s:"Hormontherapie",unklar:true,neutral:true};
+  if(!isF()) return null;
+  if(ph==="schwanger"){
+    if(sexHormon(m)||SCHW_HORMON.has(m.id)) return {k:"mid",t:"in der Schwangerschaft stark verändert — nicht bewertet",s:"Schwangerschaft",unklar:true,neutral:true};
+    /* Bis es eigene Bereiche je Trimester gibt: nur der Laborbereich, keine Idealbereiche */
+    if(ref&&(ref.lo!=null||ref.hi!=null||ref.f)) return Object.assign({},statusLabor(m,v,q,ref),{schw:true});
+    return {k:"mid",t:"in der Schwangerschaft ohne Laborbereich nicht bewertet",s:"Unbewertet",unklar:true,neutral:true,schw:true};
+  }
+  if(m.zyk&&!m.still&&(ph==="wochenbett"||ph==="pille"||ph==="kein")){
+    const t={wochenbett:"im Wochenbett verändert — nicht nach Zyklus bewertbar",pille:"unter hormoneller Verhütung nicht nach Zyklus bewertbar",kein:"ohne Zyklus nicht nach Zyklusphase bewertbar"}[ph];
+    return {k:"mid",t,s:{wochenbett:"Wochenbett",pille:"Verhütung",kein:"Kein Zyklus"}[ph],unklar:true,neutral:true};
+  }
+  return null;
+}
 function status(m,v,ph,q,ref){
+  const pz=phasenStatus(m,v,ph,q,ref); if(pz) return pz;
+  /* Stillzeit: Zyklushormone ruhen — nicht nach Zyklusbereichen bewerten, Prolaktin mit eigenem Bereich */
+  if(ph==="stillzeit"&&isF()){
+    if(m.zyk&&!m.still) return {k:"mid",t:"in der Stillzeit verändert — nicht nach Zyklus bewertbar",s:"Stillzeit",unklar:true,neutral:true};
+    if(m.still){ const st=statusSerum(m,v,ph,q);
+      return st.k==="ok"?Object.assign({},st,{t:"für die Stillzeit üblich",s:"Stillzeit-normal"})
+        :st.k==="bad"&&st.s==="Hoch"?Object.assign({},st,{t:"auch für die Stillzeit hoch"}):st }
+  }
   if((m.lab||m.nurLabor)&&ref&&(ref.lo!=null||ref.hi!=null||ref.f)) return statusLabor(m,v,q,ref);
   if(m.nurLabor) return {k:"mid",t:"ohne Laborbereich nicht bewertbar",s:"Unbewertet",unklar:true};
   const st=statusSerum(m,v,ph,q);
@@ -1922,6 +2340,8 @@ function trend(m,s){
       :"Erste Messung. Ab der zweiten zeigt Serum hier den Verlauf und bewertet die Richtung."};
   }
   const cur=s[s.length-1],prev=s[s.length-2],first=s[0];
+  if(cur.ph==="schwanger"||status(m,cur.v,cur.ph,cur.q,cur.ref).neutral)
+    return {arrow:"·",txt:`${dmed(prev.d)}: ${fq(prev.v,prev.q)}${m.u?" "+m.u:""} · ${dmed(cur.d)}: ${fq(cur.v,cur.q)}${m.u?" "+m.u:""}. ${cur.ph==="schwanger"?"In der Schwangerschaft bewertet Serum die Richtung nicht — viele Werte verändern sich ganz normal.":"In dieser Lebensphase bewertet Serum diesen Wert nicht."}`};
   const ph=cur.ph, [ol,oh]=optOf(m,ph);
   /* Abstand zum Idealband, nicht zu dessen Mitte. Sonst gilt bei einseitigen Werten
      wie Gamma-GT (ideal 0–25) ein Rückgang von 17 auf 0,3 als Verschlechterung. */
@@ -2131,7 +2551,9 @@ const RULES=[
  z:["Verminderte androgene Wirkung","Kann sich als Antriebslosigkeit, schlechterer Muskelaufbau, geringere Libido und schlechtere Regeneration zeigen."],
  a:["Zwischen 7 und 10 Uhr nachmessen","Der Wert schwankt über den Tag stark. LH, FSH, Prolaktin und SHBG gehören zur Abklärung dazu."]},
 {id:"prolaktin_hoch",c:["prolaktin"],sev:"bad",when:c=>c.hi("prolaktin"),
- f:c=>["Prolaktin erhöht",isF()
+ f:c=>["Prolaktin erhöht",c.S&&c.S.ph&&c.S.ph.prolaktin==="stillzeit"
+   ?"Auch für die Stillzeit liegt der Wert hoch. Kurz nach dem Stillen steigt Prolaktin stark an — am besten vor dem Stillen nachmessen und bei weiter hohem Wert ärztlich einordnen lassen."
+   :isF()
    ?"Erhöhtes Prolaktin kann den Zyklus und den Eisprung stören. Häufige Ursachen sind Stress, Schlafmangel, manche Medikamente und eine Schilddrüsenunterfunktion — seltener ein gutartiger Knoten der Hirnanhangdrüse, der sich gut behandeln lässt."
    :"Erhöhtes Prolaktin unterdrückt die Sexualhormone und ist eine häufige, gut behandelbare Ursache für niedriges Testosteron."],
  a:["Kontrolle morgens und ausgeruht","Stress vor der Abnahme hebt den Wert. Bleibt er erhöht, gehört er ärztlich abgeklärt."]},
@@ -2244,7 +2666,8 @@ function mitHsCrp(S){
   if(!S||!S.v||S.v.hscrp===undefined) return S;
   if(S.v.crp!==undefined&&S.d&&S.d.crp&&S.d.hscrp&&S.d.crp>S.d.hscrp) return S;
   const T={}; Object.keys(S).forEach(k=>{ T[k]=S[k]&&typeof S[k]==="object"&&!Array.isArray(S[k])?Object.assign({},S[k]):S[k] });
-  ["v","q","ph","zeit","d","e","ref"].forEach(k=>{ if(T[k]&&S[k]&&S[k].hscrp!==undefined) T[k].crp=S[k].hscrp });
+  ["v","q","ph","zeit","d","e"].forEach(k=>{ if(T[k]&&S[k]&&S[k].hscrp!==undefined) T[k].crp=S[k].hscrp });
+  if(T.ref) T.ref.crp=null;   /* Risikostufen des hs-CRP sind kein CRP-Referenzbereich */
   return T;
 }
 function assess(S, meta){
@@ -2254,7 +2677,10 @@ function assess(S, meta){
      sonst entstehen aus einem Einheitenfehler ganze Krankheitsbilder. */
   const pruef=Object.keys(S.v).filter(id=>byId[id]&&statOf(S,id).pruef);
   if(pruef.length){ S=Object.assign({},S,{v:Object.assign({},S.v)}); pruef.forEach(id=>delete S.v[id]) }
-  const c=ctxOf(S,meta), out={f:[],z:[],a:[]}, seen=new Set();
+  /* In der Schwangerschaft gelten Serums Regeln nicht — sie beruhen auf Bereichen für Nicht-Schwangere */
+  const schwIds=Object.keys(S.v).filter(id=>S.ph&&S.ph[id]==="schwanger");
+  const Sr=schwIds.length?Object.assign({},S,{v:Object.assign({},S.v)}):S; schwIds.forEach(id=>delete Sr.v[id]);
+  const c=ctxOf(Sr,meta), out={f:[],z:[],a:[]}, seen=new Set();
   if(pruef.length) out.f.push({sev:"mid",t:"Bitte prüfen: Einheit oder Methode passt nicht",
     p:`${pruef.map(id=>byId[id].n).join(", ")}. Der Referenzbereich des Labors liegt in einer anderen Größenordnung als bei Serum — meist ist die Einheit falsch gelesen oder das Labor misst mit einem anderen Verfahren. Bewertet wird hier nach dem Labor; bitte den Wert gegen den Befund prüfen.`});
   RULES.forEach(r=>{
@@ -2270,8 +2696,9 @@ function assess(S, meta){
     const m=byId[id]; if(!m||seen.has(id)) return;
     const v=+S.v[id], q=S.q[id]||"", ph=S.ph[id]||null, st=status(m,v,ph,q,S.ref&&S.ref[id]), r=refOf(m,ph);
     if(st.k==="bad"){
+      const lr=S.ref&&S.ref[id];
       out.f.push({t:`${m.n} ${st.s==="Hoch"?"über":"unter"} dem Referenzbereich`,
-        p:`${fq(v,q)} ${m.u} gegenüber ${fmt(r[0])}–${fmt(r[1])}. ${m.why.split(". ")[0].replace(/\.+$/,"")}.`,sev:"bad"});
+        p:`${fq(v,q)} ${m.u} gegenüber ${st.labor&&lr?"dem Laborbereich "+String(lr.t||[lr.lo,lr.hi].filter(x=>x!=null).map(fmt).join("–")):fmt(r[0])+"–"+fmt(r[1])}. ${ph==="schwanger"?"In der Schwangerschaft verschiebt sich dieser Wert oft ganz normal — bitte mit der Frauenarztpraxis besprechen.":m.why.split(". ")[0].replace(/\.+$/,"")+"."}`,sev:"bad"});
       out.a.push({t:`${m.n} kontrollieren`,p:`Einzelwerte schwanken. Vor einer Bewertung mit einer zweiten Messung bestätigen und ärztlich besprechen.`});
     }
   });
@@ -2297,6 +2724,24 @@ function assess(S, meta){
   const nn=["glukose","insulin","trigl"].filter(id=>S.v[id]!==undefined&&c.nn(id));
   if(nn.length) out.f.push({sev:"mid",t:"Nicht nüchtern abgenommen",
     p:`${nn.map(id=>byId[id].n).join(", ")} ${nn.length>1?"steigen":"steigt"} nach dem Essen deutlich an. Erhöhte Werte sind dann kein sicherer Befund — für eine Beurteilung nüchtern nachmessen.`});
+  if(isF()&&Object.keys(S.v).some(id=>S.ph[id]==="stillzeit"&&byId[id]&&(byId[id].zyk||byId[id].still))){
+    const z=Object.keys(S.v).filter(id=>S.ph[id]==="stillzeit"&&byId[id]&&byId[id].zyk&&!byId[id].still).map(id=>byId[id].n);
+    out.f.push({sev:"ok",t:"Stillzeit berücksichtigt",
+      p:`${S.v.prolaktin!==undefined&&S.ph.prolaktin==="stillzeit"?"Prolaktin ist beim Stillen natürlich erhöht und wird mit dem Bereich für die Stillzeit bewertet — Abnahme möglichst vor dem Stillen, danach steigt es kurz stark an. ":""}${z.length?z.join(", ")+" ruhen in der Stillzeit und werden nicht nach Zyklusbereichen bewertet.":""}`});
+  }
+  if(isF()&&schwIds.length){
+    const d=schwIds.map(id=>S.d&&S.d[id]).filter(Boolean).sort().pop();
+    const ev=d&&phasenAm(d).find(x=>x.ph==="schwanger"), sw=ev&&ssw(ev,d);
+    const nh=schwIds.filter(id=>byId[id]&&(sexHormon(byId[id])||SCHW_HORMON.has(id))).map(id=>byId[id].n);
+    const ohne=schwIds.filter(id=>byId[id]&&!nh.includes(byId[id].n)&&statOf(S,id).neutral).length;
+    out.f.unshift({sev:"mid",t:"Schwangerschaft"+(sw?" · "+sw.t:"")+": Serum vergleicht nur mit dem Labor",
+      p:`Viele Werte verändern sich in der Schwangerschaft ganz normal, zum Beispiel Hämoglobin, Kreatinin, alkalische Phosphatase und die Schilddrüsenwerte. Serum vergleicht deshalb nur mit dem Laborbereich auf dem Befund — der gilt meist für Nicht-Schwangere — und lässt eigene Idealbereiche und Regeln weg.${nh.length?" "+nh.join(", ")+(nh.length>1?" bewertet":" bewertet")+" Serum in der Schwangerschaft nicht.":""}${ohne?` ${ohne===1?"Ein Wert ohne":ohne+" Werte ohne"} Laborbereich ${ohne===1?"bleibt":"bleiben"} unbewertet.`:""} Bitte alles mit der Frauenarztpraxis besprechen.`});
+  }
+  ["wochenbett","pille","kein","hormon"].forEach(ph=>{
+    const z=Object.keys(S.v).filter(id=>S.ph&&S.ph[id]===ph&&byId[id]&&statOf(S,id).neutral).map(id=>byId[id].n);
+    if(z.length) out.f.push({sev:"ok",t:{wochenbett:"Wochenbett",pille:"Hormonelle Verhütung",kein:"Kein Zyklus",hormon:"Hormontherapie"}[ph]+" berücksichtigt",
+      p:`${z.join(", ")} ${ph==="hormon"?"bewertet Serum unter Hormontherapie nicht nach Geschlecht":"bewertet Serum in dieser Zeit nicht nach Zyklusbereichen"}.`});
+  });
   if(isF()){
     const offen=Object.keys(S.v).filter(id=>byId[id]&&byId[id].zyk&&!S.ph[id]);
     if(offen.length) out.f.push({t:"Zyklusangabe fehlt",
@@ -2308,8 +2753,9 @@ function assess(S, meta){
 function counts(S){
   const ids=Object.keys(S.v).filter(id=>byId[id]);
   let bad=0,mid=0;
-  ids.forEach(id=>{const k=statOf(S,id).k; if(k==="bad")bad++; else if(k==="mid")mid++});
-  const t=ids.length, ok=t-bad-mid;
+  let neutral=0;
+  ids.forEach(id=>{const st=statOf(S,id); if(st.neutral){neutral++;return} if(st.k==="bad")bad++; else if(st.k==="mid")mid++});
+  const t=ids.length-neutral, ok=t-bad-mid;
   return {total:t, bad, mid, ok,
     pctIdeal: t?Math.round(ok/t*100):0,      /* grün: im angestrebten Bereich */
     pctNorm:  t?Math.round((t-bad)/t*100):0  /* innerhalb der Laborreferenz */ };
@@ -2428,6 +2874,9 @@ function condTextHits(cond,ctx){
 function condHits(){
   const sel=DB.profile.condSel;
   const hits=Array.isArray(sel) ? CONDS.filter(c=>sel.includes(c.n)) : condTextHits();
+  if(isF()&&phasenAm(heuteIso()).some(e=>e.ph==="schwanger"||e.ph==="stillzeit")){
+    const sc=CONDS.find(c=>c.n==="Schwangerschaft oder Kinderwunsch"); if(sc&&!hits.includes(sc)) hits.push(sc);
+  }
   return hits.filter(c=>!c.nurF||isF());
 }
 /* Trennt Stichworte an Komma oder Semikolon — aber nicht in Klammern
@@ -2500,12 +2949,21 @@ function carePlan(){
 }
 
 /* ===== 5 — Grafiken =================================================== */
-function chart(m,s){
+function chart(m,s,T0,T1){
   const W=460,H=204,L=54,R=16,T=18,B=30,pw=W-L-R,ph=H-T-B;
+  if(T0===undefined){ [T0,T1]=zeitfenster(s) }
   /* Bänder richten sich nach der Phase der jüngsten Messung, jeder Punkt nach seiner eigenen. */
-  const zph=s[s.length-1].ph||null;
-  const [rl,rh]=refOf(m,zph),[ol,oh]=optOf(m,zph),vals=s.map(p=>p.v);
-  const dmin=Math.min.apply(null,vals), dmax=Math.max.apply(null,vals);
+  const cur=s[s.length-1], zph=cur.ph||null, stCur=status(m,cur.v,cur.ph,cur.q,cur.ref);
+  let [rl,rh]=refOf(m,zph),[ol,oh]=optOf(m,zph);
+  const vals=s.map(p=>p.v), dmin=Math.min.apply(null,vals), dmax=Math.max.apply(null,vals);
+  /* Schwangerschaft: Band aus dem Laborbereich, kein Idealband. Nicht bewertete Werte: kein Idealband. */
+  const lr=cur.ref, labBand=zph==="schwanger"&&!stCur.neutral&&lr&&((lr.lo!=null&&lr.lo!=="")||(lr.hi!=null&&lr.hi!==""));
+  if(labBand){
+    const lo=lr.lo!=null&&lr.lo!==""?+lr.lo:null, hi=lr.hi!=null&&lr.hi!==""?+lr.hi:null;
+    rl=lo!==null?lo:0; rh=hi!==null?hi:Math.max(rl*2,dmax*1.1);
+  }
+  const ohneIdeal=labBand||stCur.neutral||zph==="schwanger";
+  if(ohneIdeal){ ol=rl; oh=rh }
   let lo=Math.min(rl,dmin), hi=Math.max(rh,dmax);
   /* Abstand am Referenzband bemessen, damit ein Ausreisser das Band nicht plattdrueckt. */
   const refSpan=(rh-rl)||Math.abs(hi-lo)||1;
@@ -2514,12 +2972,14 @@ function chart(m,s){
   if(rl===0&&dmin>=0) lo=Math.max(0,lo);
   if(hi-lo<1e-9){ lo-=1; hi+=1 }
   const y=v=>T+ph-((v-lo)/(hi-lo))*ph, cl=v=>Math.max(T,Math.min(T+ph,y(v)));
-  const x=i=>s.length<2?L+pw/2:L+(i/(s.length-1))*pw;
-  const cur=s[s.length-1], oor=status(m,cur.v,cur.ph,cur.q,cur.ref).k==="bad";
+  /* Echte Zeitachse: Abstände zwischen den Punkten entsprechen der Zeit zwischen den Messungen */
+  const X=d=>L+((tagMs(d)-T0)/(T1-T0))*pw, x=i=>X(s[i].d);
+  const oor=stCur.k==="bad";
 
   /* Aussenzonen einfaerben, damit "ausserhalb" nicht als leerer Raum wirkt */
-  const hiZone=cl(rh)-T>1?`<rect x="${L}" y="${T}" width="${pw}" height="${(cl(rh)-T).toFixed(1)}" fill="var(--alert-soft)" opacity=".5"/>`:"";
-  const loZone=(T+ph)-cl(rl)>1?`<rect x="${L}" y="${cl(rl).toFixed(1)}" width="${pw}" height="${((T+ph)-cl(rl)).toFixed(1)}" fill="var(--alert-soft)" opacity=".5"/>`:"";
+  const zone=!stCur.neutral;
+  const hiZone=zone&&cl(rh)-T>1?`<rect x="${L}" y="${T}" width="${pw}" height="${(cl(rh)-T).toFixed(1)}" fill="var(--alert-soft)" opacity=".5"/>`:"";
+  const loZone=zone&&(T+ph)-cl(rl)>1?`<rect x="${L}" y="${cl(rl).toFixed(1)}" width="${pw}" height="${((T+ph)-cl(rl)).toFixed(1)}" fill="var(--alert-soft)" opacity=".5"/>`:"";
 
   const axis=v=>`<text x="${L-8}" y="${(cl(v)+3.5).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" fill="var(--muted)">${fmt(v)}</text>`;
   const gl=[rl,rh].map(v=>`<line x1="${L}" x2="${L+pw}" y1="${cl(v).toFixed(1)}" y2="${cl(v).toFixed(1)}" stroke="var(--line)" stroke-dasharray="3 4"/>${axis(v)}`).join("");
@@ -2530,23 +2990,28 @@ function chart(m,s){
     mark=`<line x1="${L}" x2="${L+pw}" y1="${cl(cur.v).toFixed(1)}" y2="${cl(cur.v).toFixed(1)}" stroke="var(--alert)" stroke-dasharray="2 3" opacity=".55"/>
       <text x="${L-8}" y="${(cl(cur.v)+3.5).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" font-weight="600" fill="var(--alert)">${fq(cur.v,cur.q)}</text>`;
   }
+  const ticks=achsenTicks(T0,T1);
+  const grid=ticks.map(k=>{ const tx=(L+((k.t-T0)/(T1-T0))*pw).toFixed(1);
+    return `<line x1="${tx}" x2="${tx}" y1="${T}" y2="${T+ph}" stroke="var(--hair)"/><text x="${tx}" y="${H-9}" text-anchor="middle" class="mono" font-size="9.5" fill="var(--muted)">${k.l}</text>` }).join("");
   const line=s.length>1?`<polyline fill="none" stroke="var(--ink)" stroke-width="1.9" stroke-linejoin="round" points="${s.map((p,i)=>x(i).toFixed(1)+","+cl(p.v).toFixed(1)).join(" ")}"/>`:"";
-  const dots=s.map((p,i)=>{const st=status(m,p.v,p.ph,p.q,p.ref);const col=st.k==="ok"?"var(--opt)":st.k==="mid"?"var(--serum)":"var(--alert)";
+  const dots=s.map((p,i)=>{const st=status(m,p.v,p.ph,p.q,p.ref);const col=st.neutral?"var(--muted)":st.k==="ok"?"var(--opt)":st.k==="mid"?"var(--serum)":"var(--alert)";
     /* Messgrenzen als offener Ring mit Pfeil: der echte Wert liegt darunter bzw. darüber */
     const r=i===s.length-1?5.5:4, cx=x(i).toFixed(1), cy=cl(p.v);
     const sg=p.q==="<"?1:-1, yb=cy+sg*(r+2), ys=cy+sg*(r+6.5);
     const pfeil=p.q?`<polygon points="${(+cx-3.4).toFixed(1)},${yb.toFixed(1)} ${(+cx+3.4).toFixed(1)},${yb.toFixed(1)} ${cx},${ys.toFixed(1)}" fill="${col}"/>`:"";
     return `<g>${p.q?`<circle cx="${cx}" cy="${cy.toFixed(1)}" r="${r}" fill="var(--card)" stroke="${col}" stroke-width="2.2"/>${pfeil}`
       :`<circle cx="${cx}" cy="${cy.toFixed(1)}" r="${r}" fill="${col}" stroke="var(--card)" stroke-width="2"/>`}<title>${dlong(p.d)}: ${fq(p.v,p.q)} ${m.u} — ${st.t}</title></g>`}).join("");
-  const xl=s.map((p,i)=>(s.length>6&&i%Math.ceil(s.length/5)!==0&&i!==s.length-1)?"":`<text x="${x(i).toFixed(1)}" y="${H-9}" text-anchor="middle" class="mono" font-size="9.5" fill="var(--muted)">${dshort(p.d)}</text>`).join("");
-  const optLab=(cl(oh)-T)>13?`<text x="${L+pw-4}" y="${(cl(oh)+12).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" fill="var(--opt)">${m.nurRef?"Referenz":"ideal"} ${fmt(ol)}–${fmt(oh)}</text>`:"";
+  /* Kleine Striche unten markieren die Messtage */
+  const tage=s.map(p=>{ const tx=X(p.d).toFixed(1); return `<line x1="${tx}" x2="${tx}" y1="${T+ph}" y2="${T+ph+4}" stroke="var(--ink2)" stroke-width="1.2"/>` }).join("");
+  const bandTxt=labBand?"Labor":stCur.neutral?(zph==="stillzeit"&&m.zyk?"Zyklus ruht":"nicht bewertet"):zph==="stillzeit"&&isF()&&m.still?"Stillzeit":m.nurRef?"Referenz":"ideal";
+  const optLab=(cl(oh)-T)>13?`<text x="${L+pw-4}" y="${(cl(oh)+12).toFixed(1)}" text-anchor="end" class="mono" font-size="9.5" fill="${stCur.neutral?"var(--muted)":"var(--opt)"}">${bandTxt} ${fmt(ol)}–${fmt(oh)}</text>`:"";
 
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Verlauf ${m.n}, aktuell ${fq(cur.v,cur.q)} ${m.u}">
     ${hiZone}${loZone}
     <rect x="${L}" y="${cl(rh).toFixed(1)}" width="${pw}" height="${Math.max(0,cl(rl)-cl(rh)).toFixed(1)}" fill="var(--ref-soft)"/>
-    <rect x="${L}" y="${cl(oh).toFixed(1)}" width="${pw}" height="${Math.max(0,cl(ol)-cl(oh)).toFixed(1)}" fill="var(--opt-soft)"/>
-    ${gl}${optLab}${mark}${line}${dots}${xl}
-    <line x1="${L}" x2="${L+pw}" y1="${T+ph}" y2="${T+ph}" stroke="var(--line)"/></svg>`;
+    ${ohneIdeal?"":`<rect x="${L}" y="${cl(oh).toFixed(1)}" width="${pw}" height="${Math.max(0,cl(ol)-cl(oh)).toFixed(1)}" fill="var(--opt-soft)"/>`}
+    ${grid}${gl}${optLab}${mark}${line}${dots}
+    <line x1="${L}" x2="${L+pw}" y1="${T+ph}" y2="${T+ph}" stroke="var(--line)"/>${tage}</svg>`;
 }
 /* 0 = im Idealbereich, groesser = weiter weg. Am Referenzband normiert. */
 function deviation(m,v,ph,q){
@@ -2572,6 +3037,17 @@ function ring(pct,col){
     <text x="50" y="57" text-anchor="middle" class="mono" font-size="23" font-weight="600" fill="var(--ink)">${pct}%</text></svg>`;
 }
 function rangebar(m,v,ph,q,ref){
+  const st0=status(m,v,ph,q,ref);
+  if(st0.neutral||(ph==="schwanger"&&ref&&(ref.lo!=null||ref.hi!=null))){
+    const labor=!st0.neutral, lo0=labor&&ref.lo!=null&&ref.lo!==""?+ref.lo:null, hi0=labor&&ref.hi!=null&&ref.hi!==""?+ref.hi:null;
+    const [a,b]=labor?[lo0!==null?lo0:0,hi0!==null?hi0:Math.max((lo0||0)*2,v*1.2)]:refOf(m,ph);
+    const sp=(b-a)||1, e0=a-sp*0.28, e1=b+sp*0.28, P=x=>Math.max(0,Math.min(100,((x-e0)/(e1-e0))*100));
+    const seg=(x0,x1,col)=>`<span class="seg" style="left:${x0}%;width:${Math.max(0,x1-x0)}%;background:${col}"></span>`;
+    const col=labor?(st0.k==="ok"?"var(--opt)":"var(--alert)"):"var(--muted)";
+    return `<div class="rb">${labor?seg(0,P(a),lo0!==null?"var(--alert)":"var(--opt)")+seg(P(a)+.6,P(b),"var(--opt)")+seg(P(b)+.6,100,hi0!==null?"var(--alert)":"var(--opt)"):seg(0,100,"var(--line)")}
+      <span class="val" style="left:${P(v)}%;color:${col}">${fq(v,q)}</span><span class="ptr" style="left:${P(v)}%;color:${col}">▼</span>
+      <span class="lab" style="left:${P(a)}%">${fmt(a)}</span><span class="lab" style="left:${P(b)}%">${fmt(b)}</span></div>`;
+  }
   const [rl,rh]=refOf(m,ph),[ol,oh]=optOf(m,ph);
   const span=(rh-rl)||1, d0=rl-span*0.28, d1=rh+span*0.28;
   const P=x=>Math.max(0,Math.min(100,((x-d0)/(d1-d0))*100));
@@ -2603,7 +3079,7 @@ async function installApp(){
 }
 window.installApp=installApp;
 let filter="Alle";
-const metaOf=e=>e?{ph:e.cycle||"", zeit:e.time||"", zyk:e.cycle||"", ztag:e.cycleDay||""}:{};
+const metaOf=e=>e?{ph:phaseOf(e)||"", zeit:e.time||"", zyk:e.cycle||"", ztag:e.cycleDay||""}:{};
 const esc=s=>String(s).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
 
 function setView(n,e){ view={name:n,entry:e||null}; document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===n?"page":"false")); render(); window.scrollTo({top:0}) }
@@ -2626,7 +3102,8 @@ function viewDash(){
   const nm=p.name||"Dein Profil", init=(p.name||"?").trim().charAt(0).toUpperCase()||"?";
   const age=p.year?`${new Date().getFullYear()-(+p.year)} Jahre`:null;
   const meta=[age,p.sex==="f"?"Weiblich":"Männlich",p.kg?p.kg+" kg":null,p.cm?p.cm+" cm":null].filter(Boolean).join(" · ");
-  const tags=profilTags();
+  const phTags=phasenAm(heuteIso()).map(e=>phaseText(e,heuteIso()));
+  const tags=phTags.concat(profilTags().filter(t=>!(phTags.length&&t==="Schwangerschaft oder Kinderwunsch")));
   const head=`<div class="who card">
       <div class="avatar">${esc(init)}</div>
       <div style="flex:1">
@@ -2635,7 +3112,7 @@ function viewDash(){
         ${tags.length?`<div class="cond">${tags.map(c=>`<span class="tag">${esc(c)}</span>`).join("")}</div>`:""}
       </div>
       <button class="btn sm" onclick="openProfile(false)">Bearbeiten</button>
-    </div>`;
+    </div>`+phasenHinweisKarte();
 
   if(!DB.entries.length){
     return head+`<div class="empty"><h2>Noch keine Werte</h2>
@@ -2651,13 +3128,14 @@ function viewDash(){
   const juengst=S.befunde[0];
   const aeltest=ids.reduce((x,id)=>S.d[id]<x?S.d[id]:x, juengst.date);
   const dev=id=>deviation(byId[id],+S.v[id],S.ph[id],S.q[id]);
-  const off=ids.filter(id=>statOf(S,id).k!=="ok")
+  const off=ids.filter(id=>statOf(S,id).k!=="ok"&&!statOf(S,id).neutral)
     .sort((x,y)=>RANK[statOf(S,x).k]-RANK[statOf(S,y).k] || dev(y)-dev(x));
 
   /* Verlauf über alle Werte — an Messgrenzen gibt es keinen Zahlenvergleich */
   const moves=[];
   M.forEach(m=>{ const s=series(m.id); if(s.length<2) return;
     const cur=s[s.length-1],prev=s[s.length-2]; if(cur.q||prev.q) return;
+    if(cur.ph==="schwanger"||status(m,cur.v,cur.ph,cur.q,cur.ref).neutral) return;
     const [ol,oh]=optOf(m,cur.ph);
     const abst=v => v<ol ? ol-v : (v>oh ? v-oh : 0);
     const dd=abst(prev.v)-abst(cur.v);   /* größer null heißt: näher am Idealbereich */
@@ -2697,7 +3175,7 @@ function viewDash(){
       <div class="rows card">${off.map(id=>{const m=byId[id],st=statOf(S,id),r=refOf(m,S.ph[id]);
         return `<button class="row-i" onclick="jumpTo('${id}')">
           <span class="dot ${st.k}" style="margin:0"></span>
-          <span><span class="nm">${m.n}</span><br><span class="sm">${m.g} · Referenz ${fmt(r[0])}–${fmt(r[1])} ${m.u}${S.d[id]!==juengst.date?` · gemessen ${dmed(S.d[id])}`:""}</span></span>
+          <span><span class="nm">${m.n}</span><br><span class="sm">${m.g} · ${st.labor&&S.ref[id]?"Labor "+labTxt(S.ref[id]):"Referenz "+fmt(r[0])+"–"+fmt(r[1])} ${m.u}${S.d[id]!==juengst.date?` · gemessen ${dmed(S.d[id])}`:""}</span></span>
           <span class="rv"><b>${fq(S.v[id],S.q[id])}</b><br><span class="pill ${st.k}">${st.s}</span></span>
           <span class="chev">›</span></button>`}).join("")}</div>`:""}
     ${(()=>{const cp=carePlan(), off=cp.fehlt.concat(cp.faellig).filter(x=>x.t!=="erweitert");
@@ -2724,15 +3202,16 @@ function markerCard(m){
   const s=series(m.id),cur=s[s.length-1],st=status(m,cur.v,cur.ph,cur.q,cur.ref),tr=trend(m,s);
   const na=answersFor("m:"+m.id).length;
   return `<article class="mcard" id="m-${m.id}">
-    <div class="card-top"><div><h3>${m.n}</h3><div class="sub">${m.g} · ${(m.lab||m.nurLabor)&&cur.ref&&(cur.ref.lo!=null||cur.ref.hi!=null)?"Laborbereich "+labTxt(cur.ref):"Referenz "+fmt(refOf(m,cur.ph)[0])+"–"+fmt(refOf(m,cur.ph)[1])}${cur.ph?" · "+PHASEN[cur.ph]:""}</div></div>
+    <div class="card-top"><div><h3>${m.n}</h3><div class="sub">${m.g} · ${(m.lab||m.nurLabor||cur.ph==="schwanger")&&cur.ref&&(cur.ref.lo!=null||cur.ref.hi!=null)?"Laborbereich "+labTxt(cur.ref):"Referenz "+fmt(refOf(m,cur.ph)[0])+"–"+fmt(refOf(m,cur.ph)[1])}${cur.ph?" · "+esc(phLabel(cur.ph,cur.d)):""}</div></div>
       <div class="readout"><div class="val">${fq(cur.v,cur.q)}</div><div class="unit">${m.u}</div><span class="pill ${st.k}">${st.t}</span></div></div>
-    ${chart(m,s)}
+    ${verlaufHtml(m,s)}
     <div class="trend"><span class="arrow">${tr.arrow}</span><span>${tr.txt}</span></div>
     ${m.warn?`<div class="warnbox" style="margin:10px 18px 0">${m.warn}</div>`:""}
     <details class="acc"><summary>Was wird gemessen und warum zählt es?</summary><div class="body"><p>${m.what}</p><p>${m.why}</p></div></details>
     ${m.imp.length?`<details class="acc"><summary>Was den Wert beeinflusst</summary><div class="body"><ul>${m.imp.map(i=>`<li>${i}</li>`).join("")}</ul></div></details>`:""}
     <div class="card-foot"><button class="btn primary" onclick="openAsk('${m.id}')">Frag Claude${na?` <span class="badge">${na}</span>`:""}</button>
-      ${m.rel&&m.rel.length?`<span class="hint" style="margin:0;align-self:center">Hängt zusammen mit ${m.rel.map(r=>byId[r]&&byId[r].n).filter(Boolean).join(", ")}</span>`:""}</div>
+      <button class="btn sm ghost" data-evneu="" data-evdate="">Ereignis eintragen</button>
+      ${m.rel&&m.rel.length?`<span class="hint" style="margin:0;align-self:center;flex:1 1 100%">Hängt zusammen mit ${m.rel.map(r=>byId[r]&&byId[r].n).filter(Boolean).join(", ")}</span>`:""}</div>
   </article>`;
 }
 /* Am weitesten vom Idealbereich entfernt zuerst. */
@@ -2742,7 +3221,7 @@ function sortByDeviation(list){
 }
 function groupHead(g,list){
   const bad=list.filter(m=>{const s=series(m.id),x=s[s.length-1];return status(m,x.v,x.ph,x.q,x.ref).k==="bad"}).length;
-  const mid=list.filter(m=>{const s=series(m.id),x=s[s.length-1];return status(m,x.v,x.ph,x.q,x.ref).k==="mid"}).length;
+  const mid=list.filter(m=>{const s=series(m.id),x=s[s.length-1],st=status(m,x.v,x.ph,x.q,x.ref);return st.k==="mid"&&!st.neutral}).length;
   const txt=bad?`${bad} außerhalb der Referenz`:mid?`${mid} im Grenzbereich`:list.every(m=>m.nurRef)?"alle im Normbereich":"alle im Idealbereich";
   return `<div class="grp-h"><h3>${g}</h3><span style="color:${bad?"var(--alert)":mid?"var(--serum)":"var(--opt)"}">${txt}</span><span class="n">${list.length} Werte</span></div>`;
 }
@@ -2772,7 +3251,7 @@ function viewMarks(){
     const list=sortByDeviation(have.filter(m=>trifft(m,suche)));
     const nie=M.filter(m=>!m.calc&&!series(m.id).length&&trifft(m,suche)).slice(0,10);
     const rechen=M.filter(m=>m.calc&&!series(m.id).length&&trifft(m,suche)).slice(0,5);
-    return `<div class="grp-h"><h3>${list.length} Treffer für „${esc(suche.trim())}“</h3></div>`+
+    return evKopf()+`<div class="grp-h"><h3>${list.length} Treffer für „${esc(suche.trim())}“</h3></div>`+
       (list.length?`<div class="grid">${list.map(markerCard).join("")}</div>`
         :`<div class="empty" style="padding:28px 24px"><p style="margin:0 auto">Kein gemessener Wert passt zu dieser Suche.</p></div>`)+
       (nie.length?`<p class="hint" style="margin-top:18px">Kennt Serum, wurde bei dir aber noch nicht gemessen: ${nie.map(m=>esc(m.n)).join(", ")}.</p>`:"")+
@@ -2782,14 +3261,14 @@ function viewMarks(){
   if(filter!=="Alle"){
     const list=sortByDeviation(have.filter(m=>m.g===filter));
     if(!list.length) return `<div class="empty"><h2>Keine Werte in dieser Kategorie</h2><p>Wähle oben eine andere Kategorie.</p></div>`;
-    return groupHead(filter,list)+`<div class="grid">${list.map(markerCard).join("")}</div>`;
+    return evKopf()+groupHead(filter,list)+`<div class="grid">${list.map(markerCard).join("")}</div>`;
   }
   /* Kategorien nach ihrem schlechtesten Wert ordnen, innerhalb jeder Kategorie ebenso. */
   const secs=GROUPS.map(g=>{const list=sortByDeviation(have.filter(m=>m.g===g)); if(!list.length) return null;
       const top=list[0], s=series(top.id), x=s[s.length-1];
       return {g,list,r:RANK[status(top,x.v,x.ph,x.q,x.ref).k],d:deviation(top,x.v,x.ph,x.q)}})
     .filter(Boolean).sort((a,b)=>a.r-b.r||b.d-a.d);
-  return `<p class="hint" style="margin:0 0 18px">Sortiert nach Abweichung — was am weitesten vom Idealbereich entfernt liegt, steht oben.</p>`+
+  return `<p class="hint" style="margin:0 0 ${DB.events&&DB.events.length?10:18}px">Sortiert nach Abweichung — was am weitesten vom Idealbereich entfernt liegt, steht oben.${DB.events&&DB.events.length?" Unter jedem Verlauf stehen deine Ereignisse; tipp auf eine Spur, um sie zu bearbeiten.":""}</p>`+evKopf()+
     secs.map(sec=>groupHead(sec.g,sec.list)+`<div class="grid">${sec.list.map(markerCard).join("")}</div>`).join("")+weitereKarte(tl,true)+weitereKarte(wl);
 }
 
@@ -2872,17 +3351,7 @@ function copyCare(){
 }
 window.copyCare=copyCare;
 
-/* --- Befundliste --- */
-function viewTests(){
-  const es=sortedEntries();
-  if(!es.length) return `<div class="empty"><h2>Noch keine Befunde</h2><p>Jeder hochgeladene Befund erscheint hier als eigener Eintrag mit Auswertung.</p><button class="btn primary" onclick="openAdd()">Befund hinzufügen</button></div>`;
-  return `<div class="sect-h">${es.length} Befunde</div><div class="rows card">${es.map(e=>{const c=counts(standAus(e));
-    return `<button class="test-row" onclick="setView('test','${e.date}')">
-      <div><div class="dt">${dlong(e.date)}</div><div class="lb">${esc(e.lab||"Labor nicht angegeben")}</div></div>
-      <div class="ct">${c.total} Biomarker<br><span style="color:${c.bad?"var(--alert)":"var(--opt)"}">${c.bad?c.bad+" auffällig":"alle im Referenzbereich"}</span></div>
-      <span class="chev">›</span></button>`}).join("")}</div>`;
-}
-
+/* --- Befundliste: siehe 6b — Befunde und Ereignisse in einer Liste --- */
 /* --- Einzelbefund --- */
 function viewTest(date){
   const e=DB.entries.find(x=>x.date===date);
@@ -2901,7 +3370,7 @@ function viewTest(date){
   const abwTxt=abw.length?` Das Labor markiert ${und(abw.map(x=>x.m.n))} als ${abw.every(x=>x.r==="hoch")?"erhöht":abw.every(x=>x.r==="niedrig")?"niedrig":"auffällig"}; Serum bewertet ${abw.length>1?"diese Werte":"diesen Wert"} nach eigenem Bereich anders — Details beim jeweiligen Wert.`:"";
   const exW=(e.x||[]).filter(x=>!x.tid), exT=(e.x||[]).filter(x=>x.tid);
   const exTpos=exT.filter(x=>{const st=xStatus(x);return st&&st.k==="bad"}), exTmid=exT.filter(x=>{const st=xStatus(x);return st&&st.k==="mid"});
-  const lead=`In diesem Befund wurden ${c.total} Werte bestimmt${exW.length?`, dazu ${exW.length} weitere, die Serum nach der Laborreferenz bewertet`:""}${exT.length?`, und ${exT.length} Textergebnis${exT.length===1?"":"se"}`:""}.${exTpos.length?` Auffällig ${exTpos.length===1?"ist":"sind"}: ${exTpos.map(x=>x.n).join(", ")} — bitte ärztlich besprechen.`:""} ${c.bad?`${c.bad} liegen außerhalb des Referenzbereichs`:"Alle liegen im Referenzbereich"}${c.mid?`, ${c.mid} im Grenzbereich zwischen Norm und Ideal`:""}.${abwTxt}${prev?` Verglichen wird jeweils mit der letzten Messung davor.`:""}`;
+  const lead=`In diesem Befund wurden ${ids.length} Werte bestimmt${ids.length>c.total?` (${ids.length-c.total===1?"einer":ids.length-c.total} davon in dieser Lebensphase nicht bewertet)`:""}${exW.length?`, dazu ${exW.length} weitere, die Serum nach der Laborreferenz bewertet`:""}${exT.length?`, und ${exT.length} Textergebnis${exT.length===1?"":"se"}`:""}.${exTpos.length?` Auffällig ${exTpos.length===1?"ist":"sind"}: ${exTpos.map(x=>x.n).join(", ")} — bitte ärztlich besprechen.`:""} ${c.bad?`${c.bad} liegen außerhalb des Referenzbereichs`:"Alle liegen im Referenzbereich"}${c.mid?`, ${c.mid} im Grenzbereich zwischen Norm und Ideal`:""}.${abwTxt}${prev?` Verglichen wird jeweils mit der letzten Messung davor.`:""}`;
 
   return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <button class="back" style="margin:0" onclick="setView('tests')">‹ Alle Befunde</button>
@@ -2910,13 +3379,16 @@ function viewTest(date){
       <div class="stat card wide"><div class="k">Befund</div><div class="n small">${dmed(e.date)}</div>
         <dl class="kv" style="margin-top:12px"><dt>Labor</dt><dd>${esc(e.lab||"—")}</dd>
         ${e.time?`<dt>Uhrzeit</dt><dd>${esc(e.time)} Uhr</dd>`:""}
-        ${e.cycle?`<dt>Zyklus</dt><dd>${esc(PHASEN[e.cycle]||e.cycle)}${e.cycleDay?" · Tag "+esc(e.cycleDay):""}</dd>`:""}
+        ${(()=>{const ps=phasenAm(e.date), ers=ps.some(x=>LPbyK[x.ph]&&LPbyK[x.ph].ersetzt);
+          return (ps.length?`<dt>Lebensphase</dt><dd>${esc(ps.map(x=>phaseText(x,e.date)).join(", "))}</dd>`:"")+
+            (e.cycle&&!ers?`<dt>Zyklus</dt><dd>${esc(PHASEN[e.cycle]||e.cycle)}${e.cycleDay?" · Tag "+esc(e.cycleDay):""}</dd>`:"")})()}
         <dt>Person</dt><dd>${esc(p.name||"—")}${p.year?`, ${new Date(e.date).getFullYear()-(+p.year)} J.`:""}</dd>
         ${e.fasting?`<dt>Nüchtern</dt><dd>${e.fasting==="ja"?"ja":"nein"}</dd>`:""}
 </dl></div>
       <div class="stat card ringbox">${ring(c.pctIdeal)}<div><div class="k">Im Idealbereich</div><div class="s" style="margin-top:4px">${c.ok} von ${c.total}<br>${c.mid} im Grenzbereich</div></div></div>
       <div class="stat card ringbox">${ring(c.pctNorm)}<div><div class="k">Im Normbereich</div><div class="s" style="margin-top:4px">${c.bad?`<span style="color:var(--alert);font-weight:600">${c.bad} außerhalb der Referenz</span>`:"nichts außerhalb"}</div></div></div>
     </div>
+    ${zeitleisteBlock(e)}
     ${e.note?`<div class="card notecard"><div class="k">Umstände</div><p>${esc(e.note)}</p></div>`:""}
     <div class="sect-h">Übersicht</div>
     ${assessBlock("Interpretation","i",a.f,lead)}
@@ -2943,7 +3415,7 @@ function viewTest(date){
             ${m.warn?`<div class="warnbox">${m.warn}</div>`:""}
             <div class="d">${d!==null?`Vorher ${fmt(pv)}${pdat} · ${d>0?"+":""}${fmt(d)} ${m.u}`:pv!==null?`Vorher ${fq(pv,pq)} ${m.u}${pdat}`:"Erste Messung dieses Werts"}${gerechnet?" · automatisch berechnet":""}
               ${q?`&nbsp;·&nbsp; Labor meldet ${q==="<"?"unter":"über"} der Messgrenze`:""}
-              ${m.nurRef?"":`&nbsp;·&nbsp; ideal ${fmt(optOf(m,eph)[0])}–${fmt(optOf(m,eph)[1])}`}</div>
+              ${m.nurRef||eph==="schwanger"||st.neutral?"":`&nbsp;·&nbsp; ideal ${fmt(optOf(m,eph)[0])}–${fmt(optOf(m,eph)[1])}`}</div>
             <div style="margin-top:10px"><button class="btn sm" onclick="openAsk('${id}')">Frag Claude</button>
             <button class="btn sm ghost" onclick="jumpTo('${id}')">Verlauf</button></div>
           </div></div>`}).join("")}</details>`}).join("")}
@@ -2984,6 +3456,523 @@ function render(){
   app.innerHTML = view.name==="dash"?viewDash() : view.name==="marks"?viewMarks() : view.name==="care"?viewCare() : view.name==="test"?viewTest(view.entry) : viewTests();
 }
 
+
+/* ===== 6b — Zeitleiste in den Ansichten ================================ */
+let evFilter=(()=>{ try{ return localStorage.getItem("serum.evf")||"pass" }catch(e){ return "pass" } })();
+let listFilter="alle";
+const PHASEN_ALT={stillzeit:"Stillzeit, keine Periode",postmeno:"nach der Menopause",pille:"hormonelle Verhütung"};
+
+/* --- Befund-Dialog ------------------------------------------------------ */
+const ZYK_OPT=[["","unbekannt"],["follikel","Tag 1–12 · Follikelphase"],["ovulation","Tag 13–15 · Eisprung"],["luteal","ab Tag 16 · Lutealphase"],["kein","weder noch · kein Zyklus"]];
+/* Ältere Befunde können noch Menopause, Verhütung oder Stillzeit am Befund tragen — der Wert bleibt erhalten */
+function zyklusOptionen(wert){
+  const alt=wert&&PHASEN_ALT[wert]?`<option value="${wert}">${esc(PHASEN_ALT[wert])} (älterer Befund)</option>`:"";
+  $("#fCycle").innerHTML=ZYK_OPT.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")+alt;
+  $("#fCycle").value=wert&&(alt||ZYK_OPT.some(o=>o[0]===wert))?wert:"";
+}
+function zyklusHinweis(){
+  const h=$("#fCycleHint"); if(!h) return;
+  const kein=$("#fCycle").value==="kein"&&!$("#cycleRow").hidden;
+  h.hidden=!kein;
+  if(kein) h.innerHTML=`Schwanger, in den Wechseljahren, mit hormoneller Verhütung oder in der Stillzeit? Trag das einmal als Lebensphase ein — dann setzt Serum es bei jedem Befund in diesem Zeitraum automatisch.
+    <button type="button" class="btn sm" data-evneu="phase" data-evdate="${esc($("#fDate").value||heuteIso())}" style="margin-top:8px">Lebensphase&nbsp;+</button>`;
+}
+function zyklusFeld(){
+  /* Zyklusfelder nach der Person, der der Befund gehören soll — und nach ihrer Zeitleiste */
+  const p=person(befundPerson());
+  const sex=(p&&p.profile.sex)||DB.profile.sex, d=$("#fDate").value;
+  const ersetzt=!!d&&phasenAm(d,(p&&p.events)||[]).some(e=>LPbyK[e.ph]&&LPbyK[e.ph].ersetzt);
+  $("#cycleRow").hidden=sex!=="f"||ersetzt;
+  zyklusHinweis(); befundZeitleiste();
+}
+/* Phase, die für den Befund im Dialog gilt */
+function dialogPhase(){
+  const p=person(befundPerson()), d=$("#fDate").value;
+  return (d&&phaseKeyAm(d,(p&&p.events)||[]))||($("#fCycle")&&!$("#cycleRow").hidden?$("#fCycle").value||null:null);
+}
+function befundZeitleiste(){
+  const box=$("#fCtx"); if(!box) return;
+  const p=person(befundPerson()), d=$("#fDate").value;
+  if(!p||!d){ box.hidden=true; return }
+  const k=kontextAm(d,p.events||[]);
+  const ersetzt=k.phase.some(e=>LPbyK[e.ph]&&LPbyK[e.ph].ersetzt);
+  const li=a=>a.length?a.map(x=>esc(x)).join("<br>"):`<span class="leer">nichts eingetragen</span>`;
+  box.innerHTML=`<div class="tl-h">Aus deiner Zeitleiste für ${dmed(d)}</div>
+    ${k.phase.length?`<div class="tl-r"><span class="k">Lebensphase</span><span>${k.phase.map(e=>`<span class="ptag">${esc(phaseText(e,d))}</span>`).join(" ")}${ersetzt&&p.profile.sex==="f"?` <em>Zyklus entfällt</em>`:""}</span></div>`:""}
+    <div class="tl-r"><span class="k">4 Wochen davor</span><span>${li(k.vorher.map(e=>vorherText(e,d)))}</span></div>
+    <div class="tl-r"><span class="k">Läuft gerade</span><span>${li(k.laeuft.map(laeuftText))}</span></div>
+    <div class="tl-q">Gab es in den vier Wochen davor etwas, das noch fehlt?
+      <div class="tl-chips">${["inf","med","ne","imp","misc"].map(c=>`<button type="button" class="btn sm" data-evneu="${c}">${EVN[c]}&nbsp;+</button>`).join("")}</div></div>`;
+  box.hidden=false;
+}
+
+/* --- Befund-Detail ------------------------------------------------------ */
+function zeitleisteBlock(e){
+  const d=e.date, k=kontextAm(d);
+  const hat=k.phase.length||k.vorher.length||k.laeuft.length;
+  const li=a=>a.length?`<ul class="tl-ul">${a.join("")}</ul>`:`<span class="leer">nichts eingetragen</span>`;
+  const knopf=(x,txt)=>`<li><button type="button" class="evlink" data-evid="${x.id}"><i class="sw c-${x.cat}"></i><span>${esc(txt)}</span></button></li>`;
+  const ersetzt=k.phase.some(x=>LPbyK[x.ph]&&LPbyK[x.ph].ersetzt)&&isF();
+  return `<div class="card tlcard">
+    <div class="tl-kopf"><h3>Zeitleiste zu diesem Befund</h3><span>aus deinen Ereignissen</span></div>
+    <dl class="kv tlkv">
+      <dt>Lebensphase</dt><dd>${k.phase.length?k.phase.map(x=>`<button type="button" class="ptag" data-evid="${x.id}">${esc(phaseText(x,d))}</button>`).join(" ")+(ersetzt?`<div class="leer" style="margin-top:4px">gilt automatisch und ersetzt die Zyklusphase</div>`:""):`<span class="leer">keine eingetragen</span>`}</dd>
+      <dt>In den 4 Wochen davor</dt><dd>${li(k.vorher.map(x=>knopf(x,vorherText(x,d))))}</dd>
+      <dt>Läuft zu diesem Zeitpunkt</dt><dd>${li(k.laeuft.map(x=>knopf(x,laeuftText(x))))}</dd></dl>
+    <div style="margin-top:12px"><button type="button" class="btn sm" data-evneu="" data-evdate="${plusTage(d,-7)}">Ereignis für diese Zeit eintragen</button></div>
+    ${hat?`<details class="tlacc"><summary>So geht das an Claude</summary><pre class="tlpre">${esc("Kontext aus der Zeitleiste (vom Nutzer eingetragen, von Serum nicht bewertet):\n"+kontextZeilen(d,null,""))}</pre></details>`:""}
+  </div>`;
+}
+/* Phase und Zyklus eines Befunds als Text — für Listen und Claude */
+function befundPhase(e){
+  const ps=phasenAm(e.date), ers=ps.some(x=>LPbyK[x.ph]&&LPbyK[x.ph].ersetzt);
+  const t=ps.map(x=>phaseText(x,e.date));
+  if(e.cycle&&!ers) t.push((PHASEN[e.cycle]||e.cycle)+(e.cycleDay?", Zyklustag "+e.cycleDay:""));
+  return t.join(", ");
+}
+
+/* --- Hinweis: alte Zyklusangabe als Lebensphase übernehmen ---------------- */
+function phasenHinweisKarte(){
+  return altePhasen().map(g=>`<div class="card hinweiskarte">
+      <div><strong>${g.daten.length===1?"Bei einem Befund":"Bei "+g.daten.length+" Befunden"} ist „${esc(PHASEN_ALT[g.k])}“ gewählt.</strong>
+        <p>Das ist jetzt eine Lebensphase in der Zeitleiste. Einmal eingetragen, gilt sie automatisch für alle Befunde in ihrem Zeitraum. Die Bewertung ändert sich dadurch nicht.</p></div>
+      <div class="hk-a"><button type="button" class="btn primary sm" data-altph="${g.k}">Als Lebensphase eintragen</button><button type="button" class="btn ghost sm" data-altaus="${g.k}">Nein, danke</button></div></div>`).join("");
+}
+
+/* --- Befunde und Ereignisse in einer Liste ------------------------------- */
+function viewTests(){
+  const es=sortedEntries(), evs=[...(DB.events||[])];
+  if(!es.length&&!evs.length) return phasenHinweisKarte()+`<div class="empty"><h2>Noch keine Befunde</h2><p>Jeder hochgeladene Befund erscheint hier als eigener Eintrag mit Auswertung. Ereignisse wie Medikamente, Infekte oder eine Schwangerschaft stehen mit in dieser Liste.</p><button class="btn primary" onclick="openAdd()">Befund hinzufügen</button> <button class="btn" data-evneu="">Ereignis eintragen</button></div>`;
+  const items=[];
+  if(listFilter!=="ev") es.forEach(e=>items.push({d:e.date,e}));
+  if(listFilter!=="bef") evs.forEach(x=>items.push({d:evStart(x),x}));
+  items.sort((a,b)=>b.d.localeCompare(a.d)||(a.e?-1:1));
+  const chips=[["alle","Alle"],["bef","Befunde"],["ev","Ereignisse"]].map(([k,n])=>`<button class="chip sm" data-lf="${k}" aria-pressed="${listFilter===k}">${n}</button>`).join("");
+  const kopf=`<div class="listkopf"><div class="sect-h" style="margin:0">${es.length} Befund${es.length===1?"":"e"} · ${evs.length} Ereignis${evs.length===1?"":"se"}</div><div class="fgroup">${chips}</div></div>`;
+  const zeilen=items.map(it=>{
+    if(it.e){ const e=it.e, c=counts(standAus(e)), ph=befundPhase(e);
+      return `<button class="test-row" onclick="setView('test','${e.date}')">
+        <div><div class="dt">${dlong(e.date)}</div><div class="lb">${esc(e.lab||"Labor nicht angegeben")}${ph?" · "+esc(ph):""}</div></div>
+        <div class="ct">${c.total} Biomarker<br><span style="color:${c.bad?"var(--alert)":"var(--opt)"}">${c.bad?c.bad+" auffällig":"alle im Referenzbereich"}</span></div>
+        <span class="chev">›</span></button>`}
+    const x=it.x, inh=evEnthaelt(x);
+    return `<button class="test-row ev-row" data-evid="${x.id}"><i class="sw c-${x.cat}"></i>
+      <div style="min-width:0;flex:1"><div class="et">${esc(evTitel(x))}</div><div class="lb">${esc(EVN[x.cat])} · ${esc(evZeitraum(x))}${inh?" · enthält "+esc(inh):""}</div></div>
+      <span class="chev">›</span></button>`;
+  }).join("");
+  return phasenHinweisKarte()+kopf+(items.length?`<div class="rows card">${zeilen}</div>`:`<div class="empty" style="padding:28px 24px"><p style="margin:0 auto">${listFilter==="ev"?"Noch keine Ereignisse eingetragen.":"Noch keine Befunde."}</p></div>`);
+}
+
+/* --- Verlauf: echte Zeitachse und Ereignis-Spuren ------------------------ */
+const MONK=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const monKurz=t=>{ const d=new Date(t); return MONK[d.getUTCMonth()]+" "+String(d.getUTCFullYear()).slice(2) };
+/* Der Ausschnitt richtet sich nach den Messungen: erste Messung minus Puffer bis letzte plus Puffer */
+function zeitfenster(s){
+  const a=tagMs(s[0].d), b=tagMs(s[s.length-1].d), pad=Math.max(45*TAG,(b-a)*0.08);
+  return [a-pad,b+pad];
+}
+/* Beschriftung halbjährlich, ab gut vier Jahren jährlich, bei kurzen Spannen feiner */
+function achsenTicks(T0,T1){
+  const tage=(T1-T0)/TAG, step=tage>1460?12:tage>540?6:tage>170?3:1, out=[];
+  for(let y=new Date(T0).getUTCFullYear();y<=new Date(T1).getUTCFullYear();y++)
+    for(let mo=0;mo<12;mo+=step){ const t=Date.UTC(y,mo,1); if(t>T0+8*TAG&&t<T1-8*TAG) out.push({t,l:step===12?String(y):MONK[mo]+" "+String(y).slice(2)}) }
+  return out;
+}
+/* Breite der Zeichenfläche in Pixeln — für die Frage, ob eine Beschriftung in den Balken passt */
+function plotPx(){
+  const w=(app&&app.clientWidth)||window.innerWidth||400;
+  const cols=w<=640?1:Math.max(1,Math.floor((w+18)/(430+18)));
+  const karte=(w-18*(cols-1))/cols;
+  return Math.max(200,(karte-16)*(390/460));
+}
+function evImBild(e,T0,T1){ const a=evStart(e), b=evEnde(e); return a<=isoTag(T1)&&(!b||b>=isoTag(T0)) }
+function spurenHtml(evs,s,T0,T1){
+  if(!evs.length) return "";
+  const PX=plotPx(), FX=t=>Math.min(1,Math.max(0,(t-T0)/(T1-T0))), minW=8/PX;
+  const geom=e=>{
+    const ein=einzelTag(e.cat), cl=!ein&&tagMs(evStart(e))<T0, pad=cl?28:16, roh=evTitel(e);
+    const a=FX(tagMs(evStart(e))), ende=evEnde(e);
+    const w=ein?10/PX:Math.max(FX(ende?tagMs(ende):T1)-a,minW);
+    let lab=cl?roh+" · seit "+monKurz(tagMs(evStart(e))):roh, lw=(lab.length*6.3+pad)/PX;
+    if(cl&&w<lw&&w>=(roh.length*6.3+pad)/PX){ lab=roh; lw=(lab.length*6.3+pad)/PX }
+    let mode="in", span=[a,a+w];
+    if(w<lw){ if(a+w+lw+0.015<=1){ mode="lout"; span=[a,a+w+lw+0.015] } else { mode="lleft"; span=[a-lw-0.015,a+w] } }
+    return {a,w,mode,span,lab,cl};
+  };
+  const zeilen=[];
+  [...evs].sort((x,y)=>EV_SPUR.indexOf(x.cat)-EV_SPUR.indexOf(y.cat)||evStart(x).localeCompare(evStart(y))).forEach(e=>{
+    const g=geom(e);
+    let z=zeilen.find(r=>r.cat===e.cat&&r.items.every(o=>g.span[0]>=o.g.span[1]||g.span[1]<=o.g.span[0]));
+    if(!z){ z={cat:e.cat,items:[]}; zeilen.push(z) }
+    z.items.push({e,g});
+  });
+  const RH=24;
+  let h=`<div class="lanes"><div class="lane-area" style="--lp:${(54/460*100).toFixed(3)}%;--wp:${(390/460*100).toFixed(3)}%;height:${zeilen.length*RH}px">`;
+  s.forEach(p=>{ h+=`<span class="tguide" style="left:${(FX(tagMs(p.d))*100).toFixed(2)}%"></span>` });
+  zeilen.forEach((z,ri)=>z.items.forEach(({e,g})=>{
+    const on=!evEnde(e)&&g.mode==="in", txt=EVN[e.cat]+": "+g.lab+" · "+evZeitraum(e)+(evEnthaelt(e)?" · enthält "+evEnthaelt(e):"");
+    h+=`<button type="button" class="evb c-${e.cat}${g.mode==="in"?"":" "+g.mode}${on?" on":""}${g.cl?" cl":""}" data-evid="${e.id}" style="top:${ri*RH}px;left:${(g.a*100).toFixed(2)}%;width:${(g.w*100).toFixed(2)}%" title="${esc(txt)}" aria-label="${esc(txt)}. Bearbeiten"><span>${esc(g.lab)}</span></button>`;
+  }));
+  return h+`</div></div>`;
+}
+function verlaufHtml(m,s){
+  const [T0,T1]=zeitfenster(s);
+  const alle=evFilter==="off"?[]:(DB.events||[]).filter(e=>evFilter==="all"||evPasst(e,m));
+  /* Was erst nach der letzten Messung beginnt, steht als Zeile unter dem Diagramm */
+  const letzte=s[s.length-1].d;
+  const im=alle.filter(e=>evImBild(e,T0,T1)&&evStart(e)<=letzte), danach=alle.filter(e=>evStart(e)>letzte);
+  const hin=evFilter==="off"?[]:stoffHinweise(m,s);
+  return `<div class="plot">${chart(m,s,T0,T1)}${spurenHtml(im,s,T0,T1)}</div>`+
+    (danach.length?`<div class="evnach"><b>Nach der letzten Messung eingetragen:</b> ${danach.map(e=>`<button type="button" class="evlink" data-evid="${e.id}">${esc(evTitel(e))} (ab ${dmed(evStart(e))})</button>`).join(", ")}</div>`:"")+
+    hin.map(t=>`<div class="evinfo">${esc(t)}</div>`).join("");
+}
+function evKopf(){
+  if(!(DB.events||[]).length) return "";
+  const used=EV_ARTEN.filter(a=>DB.events.some(e=>e.cat===a.k));
+  const f=[["pass","Nur passende"],["all","Alle"],["off","Aus"]];
+  return `<div class="evkopf">${evFilter==="off"?"":`<div class="legend">${used.map(a=>`<span><i class="sw c-${a.k}"></i>${a.n}</span>`).join("")}</div>`}
+    <div class="fgroup" role="group" aria-label="Ereignisse im Verlauf"><span class="flabel">Ereignisse</span>${f.map(([k,n])=>`<button class="chip sm" data-evf="${k}" aria-pressed="${evFilter===k}">${n}</button>`).join("")}</div></div>`;
+}
+
+/* --- Klicks rund um die Zeitleiste --------------------------------------- */
+document.addEventListener("click",ev=>{
+  const t=ev.target; if(!t.closest) return;
+  const nb=t.closest("[data-evneu]");
+  if(nb){ const fd=$("#fDate").value;
+    const d=nb.dataset.evdate||(befundOffen()&&fd?plusTage(fd,-7):heuteIso());
+    openEv({cat:nb.dataset.evneu||null, date:d, pid:befundOffen()?befundPerson():ALLE.aktiv}); return }
+  const eb=t.closest("[data-evid]"); if(eb&&!t.closest("#mEv")){ openEv({id:eb.dataset.evid}); return }
+  const lf=t.closest("[data-lf]"); if(lf){ listFilter=lf.dataset.lf; render(); return }
+  const ef=t.closest("[data-evf]"); if(ef){ evFilter=ef.dataset.evf; try{ localStorage.setItem("serum.evf",evFilter) }catch(e){} render(); return }
+  const ap=t.closest("[data-altph]"); if(ap){
+    const g=altePhasen().find(x=>x.k===ap.dataset.altph); if(!g) return;
+    const neuester=sortedEntries()[0], bisJetzt=neuester&&neuester.date===g.daten[g.daten.length-1];
+    openEv({cat:"phase", ph:g.k, date:g.daten[0], to:bisJetzt?null:g.daten[g.daten.length-1], vorschlag:true}); return }
+  const aa=t.closest("[data-altaus]"); if(aa){ DB.aus=DB.aus||[]; if(!DB.aus.includes(aa.dataset.altaus)) DB.aus.push(aa.dataset.altaus); saveDB(); render(); return }
+});
+/* Spuren neu setzen, wenn sich die Breite deutlich ändert (Drehen, Fenster) */
+let breiteAlt=0, breiteUhr=null;
+addEventListener("resize",()=>{ clearTimeout(breiteUhr); breiteUhr=setTimeout(()=>{ const w=(app&&app.clientWidth)||0; if(view.name==="marks"&&Math.abs(w-breiteAlt)>40){ breiteAlt=w; render() } },250) });
+
+
+/* ===== 7b — Ereignis eintragen ==========================================
+   Ein Dialog für alle Arten. Er legt sich über den Befund-Dialog, statt ihn zu
+   schließen — sonst gingen schon gelesene Werte verloren. */
+let evF=null;
+const evOffen=()=>!$("#mEv").hidden;
+const befundOffen=()=>!$("#mAdd").hidden;
+/* Für wen: im Befund-Dialog die dort gewählte Person, sonst die aktive */
+const befundPerson=()=>($("#fPersonRow")&&!$("#fPersonRow").hidden&&$("#fPerson").value)||ALLE.aktiv;
+function evSexVon(pid){ const p=person(pid); return (p&&p.profile&&p.profile.sex)||"m" }
+
+function openEv(o){
+  o=o||{};
+  const gef=o.id?evFinden(o.id):null;
+  const pid=gef?gef.p.id:(o.pid||(befundOffen()?befundPerson():ALLE.aktiv));
+  evF=gef?JSON.parse(JSON.stringify(gef.e)):{cat:o.cat||null, kind:"einzel", stoff:"vitd", einheit:"IE", freq:"täglich", inh:[],
+    from:o.date||heuteIso(), to:null, ph:o.ph||null};
+  evF.pid=pid; evF.mode=gef?"edit":"neu"; evF.arm=false; evF.err={};
+  evF.ongoing=gef?!evF.to:!(evF.cat==="inf"||einzelTag(evF.cat));
+  if(o.to!==undefined&&!gef){ evF.to=o.to; evF.ongoing=!o.to }
+  if(evF.cat==="inf"&&!gef) evF.inf="Erkältung";
+  if(evF.cat==="inf"&&gef) evF.inf=INFEKTE.includes(evF.name)?evF.name:"Anderer Infekt";
+  evF.etikett={lesen:false,status:"",antwort:""};
+  evF.vorschlag=!!o.vorschlag;
+  renderEv(); show("#mEv"); $("#mEv").scrollTop=0;
+  const grob=(()=>{ try{ return matchMedia("(pointer: coarse)").matches }catch(e){ return false } })();
+  if(!grob) setTimeout(()=>{ const f=$("#evBody input:not([type=checkbox]),#evBody select,#evBody .tile"); try{ f&&f.focus() }catch(e){} },40);
+}
+window.openEv=openEv;
+
+const evFeld=(id,label,inner,extra)=>`<div${extra?" "+extra:""}><label for="${id}">${label}</label>${inner}${evF.err[id]?`<div class="everr">${esc(evF.err[id])}</div>`:""}</div>`;
+const evOpts=(arr,sel)=>arr.map(a=>{const v=typeof a==="string"?a:a.k, l=typeof a==="string"?a:a.n; return `<option value="${esc(v)}"${v===sel?" selected":""}>${esc(l)}</option>`}).join("");
+const evWert=v=>esc(v===undefined||v===null?"":v);
+
+function evZeitFelder(){
+  if(einzelTag(evF.cat)) return `<div class="row">${evFeld("efFrom","Datum",`<input type="date" id="efFrom" value="${evWert(evF.from)}">`)}</div>`;
+  return `<div class="row">${evFeld("efFrom","Von",`<input type="date" id="efFrom" value="${evWert(evF.from)}">`)}
+    <div><label for="efTo">Bis</label><input type="date" id="efTo" value="${evWert(evF.to)}"${evF.ongoing?" hidden":""}>
+      <label class="evck"><input type="checkbox" id="efOn"${evF.ongoing?" checked":""}> läuft noch</label>${evF.err.efTo?`<div class="everr">${esc(evF.err.efTo)}</div>`:""}</div></div>`;
+}
+function evInhaltListe(){
+  const zeilen=(evF.inh||[]).map((x,i)=>{
+    const st=x.s&&STOFF[x.s]&&x.s!=="anders"?STOFF[x.s]:null;
+    const ein=NE_EINHEITEN.includes(x.einheit)||!x.einheit?NE_EINHEITEN:NE_EINHEITEN.concat([x.einheit]);
+    return `<div class="inhz">
+      <input type="text" class="inh-n" data-inh="${i}" data-f="n" value="${evWert(x.n)}" placeholder="Name wie auf der Packung" aria-label="Inhaltsstoff">
+      <input type="text" inputmode="decimal" class="inh-m" data-inh="${i}" data-f="menge" value="${evWert(x.menge)}" placeholder="Menge" aria-label="Menge">
+      <select class="inh-e" data-inh="${i}" data-f="einheit" aria-label="Einheit"><option value="">–</option>${evOpts(ein,x.einheit)}</select>
+      <select class="inh-s" data-inh="${i}" data-f="s" aria-label="Zählt als"><option value="">nicht zugeordnet</option>${evOpts(STOFFE.filter(s=>s.k!=="anders"),x.s||"")}</select>
+      <button type="button" class="btn ghost sm inh-x" data-inhx="${i}" aria-label="Entfernen">✕</button></div>`}).join("");
+  return `<div class="inhl">${zeilen||`<p class="hint" style="margin:0">Noch keine Inhaltsstoffe eingetragen.</p>`}</div>
+    <button type="button" class="btn sm" id="efInhAdd" style="margin-top:8px">Inhaltsstoff hinzufügen</button>`;
+}
+function evEtikett(){
+  const key=!!DB.profile.key, E=evF.etikett;
+  return `<div class="etikett">
+    <div class="etikett-h"><strong>Etikett fotografieren</strong>${E.status?`<span class="cb-st${E.fertig?" fertig":""}" id="efEtSt">${E.status}</span>`:""}</div>
+    <p class="hint" style="margin:4px 0 10px">${key
+      ?"Bis zu drei Fotos der Inhaltsstoff-Tabelle. Claude trägt alle Inhaltsstoffe mit Mengen pro Tagesportion ein — du prüfst sie, bevor du speicherst. Kostet etwa 1–2 Cent über deinen API-Key. Die Fotos speichert Serum nicht."
+      :"Ohne API-Key: Prompt kopieren, in deiner Claude-App einfügen, die Fotos des Etiketts dort mit hochladen und die Antwort hier einfügen."}</p>
+    <div class="cb-a">${key?`<button type="button" class="btn" id="efFoto"${E.lesen?" disabled":""}>${E.nochmal?"Nochmal versuchen":"Fotos auswählen"}</button>`:""}
+      <button type="button" class="btn ghost" id="efEtCopy">Prompt kopieren</button></div>
+    <details class="etikett-p"${E.antwort?" open":""}><summary>Antwort aus Claude einfügen</summary>
+      <textarea id="efEtAnt" rows="3" style="min-height:70px;margin-top:8px" placeholder="Die komplette Antwort von Claude hier einfügen">${esc(E.antwort||"")}</textarea>
+      <button type="button" class="btn sm" id="efEtApply" style="margin-top:8px">Übernehmen</button></details>
+  </div>`;
+}
+function evFormular(){
+  const c=evF.cat, sex=evSexVon(evF.pid);
+  let h="";
+  if(ALLE.personen.length>1||evF.mode==="neu"){
+    h+=`<div class="evwer">${ALLE.personen.length>1?`<label for="efPid" style="margin:0">Für</label><select id="efPid" style="width:auto">${ALLE.personen.map(p=>`<option value="${p.id}"${p.id===evF.pid?" selected":""}>${esc(pname(p))}</option>`).join("")}</select>`:""}
+      ${evF.mode==="neu"?`<button type="button" class="btn sm ghost" id="efBack">‹ Andere Art wählen</button>`:""}</div>`;
+  }
+  if(c==="phase"){
+    const liste=LEBENSPHASEN.filter(p=>p.sex.includes(sex));
+    if(!liste.some(p=>p.k===evF.ph)) evF.ph=liste[0].k;
+    const p=LPbyK[evF.ph];
+    h+=`<div class="row">${evFeld("efPh","Lebensphase",`<select id="efPh">${evOpts(liste,evF.ph)}</select>`)}</div><p class="hint" style="margin:-8px 0 14px">${esc(p.h)}${sex==="m"?" Bei Männerprofilen zeigt Serum nur die Phasen, die für sie gelten.":""}</p>`;
+    if(evF.vorschlag) h+=`<div class="calc">Vorschlag aus deinen Befunden: Beginn ist der erste Befund mit dieser Angabe. Weißt du das genaue Datum, etwa die Geburt, trag es ein.</div>`;
+    if(evF.ph==="schwanger"){
+      h+=`<div class="row">${evFeld("efEt","Errechneter Geburtstermin",`<input type="date" id="efEt" value="${evWert(evF.et)}">`)}${evFeld("efEnd","Endete am (optional)",`<input type="date" id="efEnd" value="${evWert(evF.to)}">`)}</div>
+        <div class="calc" id="efCalc">${evSswText()}</div>`;
+    }else{
+      if(p.frei) h+=`<div class="row">${evFeld("efName","Bezeichnung",`<input type="text" id="efName" value="${evWert(evF.name)}" placeholder="z. B. Kinderwunschbehandlung">`)}</div>`;
+      h+=evZeitFelder();
+    }
+    h+=`<p class="hint">${p.ersetzt?"Befunde in diesem Zeitraum bekommen die Phase automatisch — die Zyklusphase musst du dort nicht mehr wählen.":"Serum zeigt die Phase bei den Befunden in diesem Zeitraum an."}</p>`;
+  }else if(c==="ne"){
+    h+=`<div class="tabs evtabs" role="group" aria-label="Art der Nahrungsergänzung"><button type="button" data-kind="einzel" aria-pressed="${evF.kind!=="kombi"}">Einzelstoff</button><button type="button" data-kind="kombi" aria-pressed="${evF.kind==="kombi"}">Kombipräparat</button></div>`;
+    if(evF.kind!=="kombi"){
+      h+=`<div class="row">${evFeld("efStoff","Stoff",`<select id="efStoff">${evOpts(STOFFE,evF.stoff||"vitd")}</select>`)}${evF.stoff==="anders"?evFeld("efName","Welcher Stoff?",`<input type="text" id="efName" value="${evWert(evF.name)}" placeholder="z. B. Ashwagandha">`):""}</div>
+        <div class="row">${evFeld("efMenge","Menge (optional)",`<input type="text" inputmode="decimal" id="efMenge" value="${evWert(evF.menge)}" placeholder="2000">`,'style="flex:1 1 110px"')}
+          ${evFeld("efEinheit","Einheit",`<select id="efEinheit">${evOpts(NE_EINHEITEN,evF.einheit||"mg")}</select>`,'style="flex:0 0 96px"')}
+          ${evFeld("efFreq","Wie oft",`<select id="efFreq">${evOpts(NE_HAEUFIG,evF.freq||"täglich")}</select>`,'style="flex:1 1 150px"')}</div>`;
+    }else{
+      h+=`<div class="row">${evFeld("efName","Name des Präparats",`<input type="text" id="efName" value="${evWert(evF.name)}" placeholder="Name wie auf der Packung">`)}
+          ${evFeld("efFreq","Wie oft",`<select id="efFreq">${evOpts(NE_HAEUFIG,evF.freq||"täglich")}</select>`,'style="flex:0 1 190px"')}</div>
+        <label>Inhaltsstoffe</label>
+        <div class="cbxs">${KOMBI_SCHNELL.map(k=>`<label class="cbx"><input type="checkbox" data-schnell="${k}"${(evF.inh||[]).some(x=>x.s===k)?" checked":""}>${esc(STOFF[k].n)}</label>`).join("")}</div>
+        <p class="hint" style="margin:8px 0 12px">Schnell ankreuzen, was auf der Packung steht — oder das Etikett fotografieren, dann kommen alle Inhaltsstoffe mit Mengen dazu. Serum zeigt das Präparat bei den passenden Werten, etwa bei Vitamin D. Es schlägt nichts nach und bewertet keine Mengen.</p>
+        ${evEtikett()}
+        ${evF.portion?`<p class="hint" style="margin:10px 0 6px">Mengen pro Tagesportion: ${esc(evF.portion)}</p>`:""}
+        ${evInhaltListe()}<div style="height:14px"></div>`;
+    }
+    h+=evZeitFelder();
+  }else if(c==="med"){
+    h+=`<div class="row">${evFeld("efName","Medikament",`<input type="text" id="efName" value="${evWert(evF.name)}" placeholder="z. B. L-Thyroxin">`)}${evFeld("efDose","Dosis (optional)",`<input type="text" id="efDose" value="${evWert(evF.dose)}" placeholder="50 µg morgens">`)}</div>`+evZeitFelder();
+  }else if(c==="inf"){
+    h+=`<div class="row">${evFeld("efInf","Art",`<select id="efInf">${evOpts(INFEKTE,evF.inf||"Erkältung")}</select>`)}${evF.inf==="Anderer Infekt"?evFeld("efName","Welcher?",`<input type="text" id="efName" value="${evWert(INFEKTE.includes(evF.name)?"":evF.name)}" placeholder="z. B. Bronchitis">`):""}</div>`+evZeitFelder();
+  }else if(c==="imp"){
+    h+=`<div class="row">${evFeld("efName","Impfung",`<input type="text" id="efName" value="${evWert(evF.name)}" placeholder="z. B. Grippeimpfung">`)}</div>`+evZeitFelder();
+  }else if(c==="op"){
+    h+=`<div class="row">${evFeld("efName","Was?",`<input type="text" id="efName" value="${evWert(evF.name)}" placeholder="z. B. Blutspende, Zahn-OP">`)}</div>`+evZeitFelder();
+  }else{
+    h+=`<div class="row">${evFeld("efName","Was ist passiert?",`<input type="text" id="efName" value="${evWert(evF.name)}" placeholder="z. B. Fastenwoche, Schichtdienst, Höhentraining">`)}</div>`+evZeitFelder()+`<p class="hint">Serum zeigt den Text an und gibt ihn an Claude weiter. Selbst ausgewertet wird er nicht.</p>`;
+  }
+  return h;
+}
+function evSswText(){
+  const et=evF.et;
+  if(!et) return "Trag den errechneten Geburtstermin aus dem Mutterpass ein. Serum rechnet daraus für jeden Befund die Schwangerschaftswoche aus.";
+  const beginn=plusTage(et,-280), s=ssw({ph:"schwanger",et},heuteIso());
+  return `Beginn laut Rechnung: ${dmed(beginn)} · ${s?"heute "+s.t:heuteIso()<beginn?"liegt noch in der Zukunft":"liegt länger zurück"}. Ohne Enddatum endet die Phase drei Wochen nach dem Termin.`;
+}
+function renderEv(){
+  $("#evTitle").textContent=evF.mode==="edit"?"Ereignis bearbeiten":"Ereignis eintragen";
+  if(!evF.cat){
+    const wer=ALLE.personen.length>1?` für <strong>${esc(pname(person(evF.pid)))}</strong>`:"";
+    $("#evBody").innerHTML=`<p class="lead" style="margin:0 0 12px">Was möchtest du${wer} eintragen?</p>
+      <div class="tiles">${EV_ARTEN.map(a=>`<button type="button" class="tile${a.k==="misc"?" weit":""}" data-evart="${a.k}"><i class="sw c-${a.k}"></i><span><b>${a.n}</b><small>${a.d}</small></span></button>`).join("")}</div>
+      <p class="hint">Ereignisse sind deine eigenen Einträge. Serum zeigt sie unter den Verläufen und gibt sie an Claude weiter, bewertet sie aber nicht.</p>`;
+    $("#evFoot").innerHTML=`<button type="button" class="btn ghost" data-close>Abbrechen</button>`;
+    return;
+  }
+  $("#evBody").innerHTML=evFormular();
+  $("#evFoot").innerHTML=(evF.mode==="edit"?`<button type="button" class="btn ghost evdel${evF.arm?" arm":""}" id="efDel">${evF.arm?"Wirklich löschen?":"Löschen"}</button>`:"")+
+    `<button type="button" class="btn ghost" data-close>${befundOffen()?"Zurück zum Befund":"Abbrechen"}</button><button type="button" class="btn primary" id="efSave">Speichern</button>`;
+}
+/* Eingaben in den Zustand übernehmen, bevor neu gezeichnet wird */
+function syncEv(){
+  if(!evF||!evF.cat) return;
+  const v=id=>{ const el=$("#"+id); return el?el.value:undefined };
+  const map={efName:"name",efDose:"dose",efMenge:"menge",efEinheit:"einheit",efFreq:"freq",efStoff:"stoff",efEt:"et",efPh:"ph",efInf:"inf"};
+  Object.keys(map).forEach(id=>{ const x=v(id); if(x!==undefined) evF[map[id]]=x });
+  if($("#efFrom")) evF.from=$("#efFrom").value;
+  if($("#efOn")) evF.ongoing=$("#efOn").checked;
+  if($("#efTo")) evF.to=evF.ongoing?null:($("#efTo").value||null);
+  if($("#efEnd")) evF.to=$("#efEnd").value||null;
+  if($("#efPid")) evF.pid=$("#efPid").value;
+  document.querySelectorAll("#evBody [data-inh]").forEach(el=>{ const x=evF.inh[+el.dataset.inh]; if(x) x[el.dataset.f]=el.value });
+  if($("#efEtAnt")) evF.etikett.antwort=$("#efEtAnt").value;
+}
+function evFehler(){
+  const c=evF.cat, err={}, leer=x=>!String(x||"").trim();
+  if(c==="phase"){
+    if(evF.ph==="schwanger"){ if(!evF.et) err.efEt="Trag den errechneten Geburtstermin ein."; else evF.from=plusTage(evF.et,-280) }
+    else{ if(LPbyK[evF.ph]&&LPbyK[evF.ph].frei&&leer(evF.name)) err.efName="Gib der Lebensphase einen Namen."; if(!evF.from) err.efFrom="Wann hat sie begonnen?" }
+  }else if(c==="ne"){
+    if(evF.kind==="kombi"&&leer(evF.name)) err.efName="Gib den Namen des Präparats ein.";
+    if(evF.kind!=="kombi"&&evF.stoff==="anders"&&leer(evF.name)) err.efName="Welcher Stoff ist es?";
+    if(!evF.from) err.efFrom="Seit wann nimmst du es?";
+  }else if(c==="inf"){
+    if(evF.inf==="Anderer Infekt"&&leer(evF.name)) err.efName="Welcher Infekt war es?";
+    if(!evF.from) err.efFrom="Wann hat er begonnen?";
+  }else{
+    if(leer(evF.name)) err.efName=c==="med"?"Gib den Namen des Medikaments ein.":"Trag ein, worum es geht.";
+    if(!evF.from) err.efFrom="Gib ein Datum ein.";
+  }
+  if(evF.from&&evF.to&&!einzelTag(c)&&evF.to<evF.from) err[evF.ph==="schwanger"?"efEnd":"efTo"]="Das Ende liegt vor dem Beginn.";
+  if(c==="phase"&&evF.ph==="schwanger"&&evF.to&&evF.et&&evF.to<plusTage(evF.et,-280)) err.efEnd="Das Ende liegt vor dem Beginn.";
+  return err;
+}
+async function speichereEv(){
+  syncEv(); evF.err=evFehler();
+  if(Object.keys(evF.err).length){ renderEv(); return }
+  const c=evF.cat;
+  const rec={id:evF.id||neueEvId(), cat:c, from:evF.from, to:einzelTag(c)?null:(evF.ongoing&&!(c==="phase"&&evF.ph==="schwanger")?null:(evF.to||null))};
+  if(c==="inf"&&!evF.ongoing&&!evF.to) rec.to=evF.from;
+  if(c==="phase"){ rec.ph=evF.ph; if(evF.ph==="schwanger"){ rec.et=evF.et; rec.from=plusTage(evF.et,-280); rec.to=evF.to||null } if(LPbyK[evF.ph].frei) rec.name=String(evF.name||"").trim() }
+  else if(c==="ne"){
+    rec.kind=evF.kind==="kombi"?"kombi":"einzel"; rec.freq=evF.freq||"täglich";
+    if(rec.kind==="kombi"){ rec.name=String(evF.name||"").trim(); if(evF.portion) rec.portion=evF.portion;
+      rec.inh=(evF.inh||[]).map(x=>({s:x.s||null, n:String(x.n||(x.s&&STOFF[x.s]?STOFF[x.s].n:"")).trim().slice(0,80), menge:String(x.menge||"").trim().slice(0,12), einheit:String(x.einheit||"").trim().slice(0,12)}))
+        .filter(x=>x.n||x.s).map(x=>{ if(!x.s){ const g=stoffAus(x.n); if(g) x.s=g } return x }); }
+    else { rec.stoff=evF.stoff||"vitd"; if(rec.stoff==="anders") rec.name=String(evF.name||"").trim(); rec.menge=String(evF.menge||"").trim(); rec.einheit=evF.einheit||"mg" }
+  }else if(c==="inf"){ rec.name=evF.inf==="Anderer Infekt"?String(evF.name||"").trim():evF.inf }
+  else{ rec.name=String(evF.name||"").trim(); if(c==="med"&&evF.dose) rec.dose=String(evF.dose).trim() }
+  rec.at=evF.at||new Date().toISOString();
+  /* Beim Bearbeiten kann die Person wechseln: erst aus der alten Liste nehmen */
+  if(evF.mode==="edit"){ const alt=evFinden(rec.id); if(alt){ const L=evListe(alt.p.id), i=L.findIndex(x=>x.id===rec.id); if(i>=0) L.splice(i,1) } }
+  evListe(evF.pid).push(rec);
+  const fuer=evF.pid!==ALLE.aktiv?pname(person(evF.pid)):"";
+  await saveDB(); hide("#mEv");
+  if(befundOffen()){ zyklusFeld() } else render();
+  toast(fuer?"Für "+fuer+" gespeichert":evF.mode==="edit"?"Ereignis geändert":"Ereignis gespeichert");
+}
+async function loescheEv(){
+  if(!evF.arm){ syncEv(); evF.arm=true; renderEv(); return }
+  const alt=evFinden(evF.id); if(alt){ const L=evListe(alt.p.id), i=L.findIndex(x=>x.id===evF.id); if(i>=0) L.splice(i,1) }
+  await saveDB(); hide("#mEv"); if(befundOffen()) zyklusFeld(); else render(); toast("Ereignis gelöscht");
+}
+
+/* --- Etikett lesen ---------------------------------------------------- */
+function etikettPrompt(){
+  return `Du liest das Etikett einer Nahrungsergänzung (Fotos angehängt). Antworte ausschließlich mit JSON, ohne Text davor oder danach.
+
+AUFGABE
+- Erfasse ALLE Inhaltsstoffe mit Menge pro Tagesportion (Tagesverzehrmenge). Steht die Menge nur pro Kapsel oder Portion da, rechne auf die empfohlene Tagesmenge um und nenne diese in "portion".
+- Prozentangaben (% NRV, % RM, % Referenzmenge) weglassen. Zusatzstoffe weglassen: Füllstoffe, Kapselhülle, Überzug, Trennmittel, Aromen, Farbstoffe, Süßungsmittel.
+- Ordne jeden Inhaltsstoff, wenn möglich, einem Eintrag der STOFF-LISTE zu (Feld "s"), sonst "s": null. Verbindungen gehören zu ihrem Element oder Vitamin: Zinkgluconat → zink, Cholecalciferol → vitd, Methylcobalamin → b12, Eisenbisglycinat → eisen, EPA und DHA → omega3.
+- Ist ein Foto unscharf oder fehlt ein Teil der Tabelle, erfasse, was sicher lesbar ist, und lass den Rest weg.
+
+FORMAT
+{"name":"Produktname wie auf der Packung oder null","portion":"Tagesportion wie gedruckt, z. B. 2 Kapseln, oder null",
+ "inhalt":[{"name":"Inhaltsstoff wie gedruckt","s":"Schlüssel aus der STOFF-LISTE oder null","menge":Zahl oder null,"einheit":"µg, mg, g, IE oder wie gedruckt"}]}
+Zahlen mit Punkt als Dezimaltrennzeichen.
+
+STOFF-LISTE (Schlüssel | Name)
+${STOFFE.filter(s=>s.k!=="anders").map(s=>s.k+" | "+s.n).join("\n")}`;
+}
+/* Antwort übernehmen: Bekanntes ergänzen, Neues anhängen — nichts doppelt */
+function etikettUebernehmen(txt){
+  let d; try{ d=jsonAus(txt) }catch(e){ alert("Die Antwort ließ sich nicht übernehmen: "+e.message); return false }
+  const liste=Array.isArray(d.inhalt)?d.inhalt:[];
+  if(!liste.length){ alert("In der Antwort stehen keine Inhaltsstoffe."); return false }
+  syncEv();
+  evF.inh=evF.inh||[];
+  let neu=0;
+  liste.forEach(x=>{
+    if(!x||!x.name) return;
+    const s=x.s&&STOFF[x.s]?x.s:stoffAus(x.name);
+    const menge=zahlOk(x.menge)?String(+x.menge).replace(".",","):"", einheit=String(x.einheit||"").trim().replace(/^mcg$/i,"µg").replace(/^ug$/i,"µg").slice(0,12);
+    const da=evF.inh.find(y=>(s&&y.s===s&&(!y.menge||flach(y.n)===flach(x.name)||flach(y.n)===flach(STOFF[s].n)))||flach(y.n)===flach(x.name));
+    if(da){ da.n=String(x.name).trim().slice(0,80); if(menge){ da.menge=menge; da.einheit=einheit } if(s) da.s=s }
+    else { evF.inh.push({s:s||null, n:String(x.name).trim().slice(0,80), menge, einheit}); neu++ }
+  });
+  if(d.name&&!String(evF.name||"").trim()) evF.name=String(d.name).trim().slice(0,80);
+  if(d.portion) evF.portion=String(d.portion).trim().slice(0,60);
+  evF.etikett.antwort=""; evF.etikett.status=`✓ ${liste.length} Inhaltsstoffe gelesen — bitte prüfen`; evF.etikett.fertig=true; evF.etikett.nochmal=false;
+  renderEv(); toast(`${liste.length} Inhaltsstoffe übernommen`);
+  return true;
+}
+async function etikettLesen(files){
+  files=[...(files||[])].filter(f=>/^image\//.test(f.type)).slice(0,3);
+  if(!files.length) return;
+  syncEv();
+  const E=evF.etikett; E.lesen=true; E.fertig=false;
+  const start=Date.now();
+  const zeige=()=>{ const sek=Math.round((Date.now()-start)/1000); E.status=`<span class="spinner"></span> Claude liest das Etikett … · 0:${String(sek).padStart(2,"0")}`; const el=$("#efEtSt"); if(el) el.innerHTML=E.status; else renderEv() };
+  zeige(); const uhr=setInterval(zeige,1000);
+  liestGerade=true; wachHalten(true);
+  try{
+    const content=[];
+    for(const f of files){ const b=await bildFuerClaude(f); content.push({type:"image",source:{type:"base64",media_type:b.type,data:b.b64}}) }
+    content.push({type:"text",text:etikettPrompt()});
+    const res=await claudeCall({max_tokens:6000,messages:[{role:"user",content}]});
+    clearInterval(uhr); E.lesen=false;
+    const txt=(res.content||[]).map(x=>x.text||"").join("");
+    if(!etikettUebernehmen(txt)){ E.status="Abgebrochen — die Antwort war nicht lesbar."; E.nochmal=true; renderEv() }
+  }catch(e){
+    clearInterval(uhr); E.lesen=false; E.status="Abgebrochen."; E.nochmal=true; renderEv();
+    alert("Claude konnte das Etikett nicht lesen: "+e.message+"\n\nDu kannst es nochmal versuchen oder die Inhaltsstoffe von Hand eintragen.");
+  }finally{ clearInterval(uhr); liestGerade=false; wachHalten(false) }
+}
+
+/* Fotos verkleinern: Claude rechnet ohnehin auf höchstens 1568 Pixel Kantenlänge herunter.
+   Kleiner verschickt ist schneller, günstiger und scheitert nicht am Größenlimit. */
+async function bildFuerClaude(f,max){
+  max=max||1568;
+  const original=async()=>({type:f.type||"image/jpeg",b64:await dateiB64(f)});
+  try{
+    const url=URL.createObjectURL(f);
+    const img=await Promise.race([
+      new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url }),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("zeit")),5000))]);
+    const w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+    if(!w||!h) throw new Error("leer");
+    if(Math.max(w,h)<=max&&f.size<=3.5e6&&/^image\/(jpeg|png|webp|gif)$/.test(f.type)){ URL.revokeObjectURL(url); return original() }
+    const k=Math.min(1,max/Math.max(w,h)), c=document.createElement("canvas");
+    c.width=Math.round(w*k); c.height=Math.round(h*k);
+    const ctx=c.getContext("2d"); if(!ctx) throw new Error("kein canvas");
+    ctx.drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+    const data=c.toDataURL("image/jpeg",0.88);
+    if(!/^data:image\/jpeg/.test(data)) throw new Error("kein jpeg");
+    return {type:"image/jpeg",b64:data.split(",")[1]};
+  }catch(e){ return original() }
+}
+
+/* --- Verdrahtung des Dialogs ------------------------------------------ */
+document.addEventListener("click",ev=>{
+  const t=ev.target; if(!t.closest) return;
+  if(!t.closest("#mEv")) return;
+  const art=t.closest("[data-evart]"); if(art){ evF.cat=art.dataset.evart; evF.ongoing=!(evF.cat==="inf"||einzelTag(evF.cat)); if(evF.cat==="inf") evF.inf="Erkältung"; renderEv(); return }
+  const kd=t.closest("[data-kind]"); if(kd){ syncEv(); evF.kind=kd.dataset.kind; if(evF.kind==="einzel"&&!evF.einheit) evF.einheit="mg"; renderEv(); return }
+  if(t.closest("#efBack")){ syncEv(); evF.cat=null; evF.vorschlag=false; renderEv(); return }
+  if(t.closest("#efSave")){ speichereEv(); return }
+  if(t.closest("#efDel")){ loescheEv(); return }
+  if(t.closest("#efInhAdd")){ syncEv(); evF.inh.push({s:null,n:"",menge:"",einheit:""}); renderEv(); const l=document.querySelectorAll("#evBody .inh-n"); try{ l[l.length-1].focus() }catch(e){} return }
+  const ix=t.closest("[data-inhx]"); if(ix){ syncEv(); evF.inh.splice(+ix.dataset.inhx,1); renderEv(); return }
+  if(t.closest("#efFoto")){ $("#evFotoIn").click(); return }
+  if(t.closest("#efEtCopy")){ const p=etikettPrompt(); evF.etikett.antwort=$("#efEtAnt")?$("#efEtAnt").value:""; navigator.clipboard.writeText(p).then(()=>{ toast("Prompt kopiert — in Claude einfügen und die Fotos mit hochladen"); const d=$("#evBody .etikett-p"); if(d) d.open=true }).catch(()=>alert(p)); return }
+  if(t.closest("#efEtApply")){ const a=$("#efEtAnt").value; if(!a.trim()) return alert("Bitte zuerst die komplette Antwort von Claude einfügen."); etikettUebernehmen(a); return }
+});
+document.addEventListener("change",ev=>{
+  const t=ev.target; if(!t.closest||!t.closest("#mEv")) return;
+  if(["efPid","efPh","efStoff","efInf"].includes(t.id)){ syncEv(); if(t.id==="efInf") evF.name=""; renderEv(); return }
+  if(t.id==="efOn"){ $("#efTo").hidden=t.checked; return }
+  if(t.dataset&&t.dataset.schnell){ syncEv(); const k=t.dataset.schnell;
+    if(t.checked){ if(!evF.inh.some(x=>x.s===k)) evF.inh.push({s:k,n:STOFF[k].n,menge:"",einheit:""}) }
+    else evF.inh=evF.inh.filter(x=>x.s!==k);
+    renderEv(); return }
+  if(t.dataset&&t.dataset.f==="s"){ syncEv(); renderEv(); return }
+});
+document.addEventListener("input",ev=>{
+  const t=ev.target; if(!t.closest||!t.closest("#mEv")) return;
+  if(t.id==="efEt"){ evF.et=t.value; const c=$("#efCalc"); if(c) c.textContent=evSswText() }
+});
+
 /* ===== 7 — Befund hinzufügen ========================================== */
 let staged={}, stagedNotes={}, stagedQ={}, stagedRef={}, stagedX=[], editing=null;
 /* Woraus gerade gelesen wird — für „Claude liest den Befund“ */
@@ -2995,12 +3984,6 @@ function fillMarkerSelect(q){
     ? list.map(m=>`<option value="${m.id}">${m.n}${m.u?" ("+m.u+")":""}</option>`).join("")
     : `<option value="">kein Treffer</option>`;
   fillUnits();
-}
-function zyklusFeld(){
-  /* Zyklusfelder nach der Person, der der Befund gehören soll */
-  const wahl=$("#fPersonRow")&&!$("#fPersonRow").hidden?person($("#fPerson").value):null;
-  const zeig = ((wahl&&wahl.profile.sex)||DB.profile.sex)==="f";
-  $("#cycleRow").hidden=!zeig;
 }
 function tagZuPhase(){
   const d=parseInt($("#fCycleDay").value,10); if(!isFinite(d)) return;
@@ -3034,7 +4017,7 @@ function openAdd(){
   $("#fFast").value=""; $("#fNote").value=""; $("#mFind").value=""; $("#mQ").value="";
   $("#addTitle").textContent="Befund hinzufügen"; $("#saveEntry").textContent="Werte speichern";
   $("#fDate").value=new Date().toISOString().slice(0,10); $("#fLab").value=""; $("#fTime").value="";
-  $("#fTime").value=""; $("#fCycle").value=""; $("#fCycleDay").value=""; zyklusFeld();
+  $("#fTime").value=""; zyklusOptionen(""); $("#fCycleDay").value=""; zyklusFeld();
   $("#pasteBox").value=""; $("#detected").innerHTML=""; tab("file");
   fillMarkerSelect(); claudeBoxAuf(); show("#mAdd");
 }
@@ -3048,7 +4031,7 @@ function openEdit(date){
   $("#fFast").value=e.fasting||""; $("#fNote").value=e.note||""; $("#mFind").value=""; $("#mQ").value="";
   $("#addTitle").textContent="Befund bearbeiten"; $("#saveEntry").textContent="Änderungen speichern";
   $("#fDate").value=e.date; $("#fLab").value=e.lab||""; $("#fTime").value=e.zeit||"";
-  $("#fTime").value=e.time||""; $("#fCycle").value=e.cycle||""; $("#fCycleDay").value=e.cycleDay||""; zyklusFeld();
+  $("#fTime").value=e.time||""; zyklusOptionen(e.cycle||""); $("#fCycleDay").value=e.cycleDay||""; zyklusFeld();
   $("#pasteBox").value=""; tab("manual");
   fillMarkerSelect(); showDetected(); show("#mAdd");
 }
@@ -3132,8 +4115,14 @@ function flagBei(src,w){
 }
 /* Referenzbereich aus dem Rest der Zeile — nur wenn er eindeutig ist.
    Mehrere Bereiche oder Risikostufen („>=5.5 3.8-5.4 <=3.7“) bleiben lieber leer. */
+/* Nennt die Referenz mehrere Gruppen — Zyklusphasen, Geschlecht, Alter, Risikostufen —, ist keine einzelne Zahl gültig. */
+const GRUPPEN_RE=/deficien|insuffici|sufficien|desirable|borderline|optimal|risk|toxic|pregnan|trimester|phase|follicul|luteal|midcycle|menopaus|smoker|children|week|mangel|schwanger|female|\bmale|women|\bmen\b|frauen|männer|manner|years|jahre/i;
+function mehrereGruppen(t){
+  t=String(t||""); if(!t) return false;
+  return GRUPPEN_RE.test(t)||(t.match(/\d+(?:[.,]\d+)?\s*[-–]\s*\d+(?:[.,]\d+)?/g)||[]).length>=2;
+}
 function refAus(txt){
-  if(/deficien|insuffici|sufficien|desirable|borderline|optimal|risk|toxic|pregnan|trimester|phase|menopaus|smoker|children|week|mangel|schwanger/.test(txt)) return null;
+  if(mehrereGruppen(txt)&&GRUPPEN_RE.test(txt)) return null;
   const komp=(txt.match(/[<>]=?|≤|≥/g)||[]).length;
   const ber=[...txt.matchAll(/(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)/g)];
   const z=x=>parseFloat(x.replace(",","."));
@@ -3402,7 +4391,7 @@ const labTxt=x=>!x?"":(("rt" in x?x.rt:x.t)?esc("rt" in x?x.rt:x.t):[x.lo!=null?
 function showDetected(){
   const ids=Object.keys(staged);
   if(!ids.length&&!stagedX.length){ $("#detected").innerHTML=`<p class="hint">Keine bekannten Werte gefunden. Lass Claude den Befund lesen — oder trag die Werte über „Manuell“ ein.</p>`; return }
-  const ph=$("#fCycle")?$("#fCycle").value||null:null;
+  const ph=dialogPhase();
   const tabelle=ids.length?`<div class="detected"><table><thead><tr><th>Messwert</th><th>Wert</th><th>Referenz</th><th></th></tr></thead><tbody>
     ${ids.map(id=>{const m=byId[id],r=refOf(m,ph),nt=stagedNotes[id],lr=stagedRef[id];return `<tr><td><strong>${m.n}</strong><br><span class="hint" style="margin:0">${m.u||"—"}</span>${nt&&nt.t?`<br><span class="hint" style="margin:2px 0 0;color:${nt.warn?"var(--alert)":"var(--opt)"}">${esc(nt.t)}</span>`:""}${nt&&nt.vorschlag!==undefined?`<br><button class="btn sm" style="margin-top:6px" data-fix="${id}" data-val="${nt.vorschlag}">Auf ${fmt(nt.vorschlag)} ${esc(m.u)} umrechnen</button>`:""}</td>
       <td style="white-space:nowrap"><select class="qsel" data-q="${id}" aria-label="Messgrenze"><option value=""${stagedQ[id]?"":" selected"}>=</option><option value="<"${stagedQ[id]==="<"?" selected":""}>&lt;</option><option value=">"${stagedQ[id]===">"?" selected":""}>&gt;</option></select><input type="number" step="any" value="${staged[id]}" data-v="${id}"></td>
@@ -3413,7 +4402,7 @@ function showDetected(){
   const weitere=stagedX.length?`<div class="sect-h" style="margin:20px 0 8px">${stagedX.every(x=>x.tid)?"Textergebnisse":stagedX.some(x=>x.tid)?"Textergebnisse und weitere Werte":"Weitere Werte"} <span class="hint" style="font-weight:400;margin:0">· ${stagedX.some(x=>x.tid)&&!stagedX.some(x=>!x.tid)?"ohne Zahl, nach Stichworten bewertet":stagedX.some(x=>x.hin)?"doppelt im Befund oder nicht im Katalog":"nicht im Serum-Katalog"}</span></div>
     <div class="detected"><table><thead><tr><th>Name im Befund</th><th>Ergebnis</th><th>Labor</th></tr></thead><tbody>
     ${stagedX.map((x,i)=>{const st=x.tid?xStatus(x):null; return `<tr class="xrow"><td><strong>${esc(x.n||"—")}</strong>${x.tid?`<br>${st?`<span class="pill ${st.k}" style="margin-top:4px;display:inline-block">${st.s}</span>`:`<span class="hint" style="margin:2px 0 0">Textergebnis</span>`}`:x.hin?`<br><span class="hint" style="margin:2px 0 0">${esc(x.hin)}</span>`:x.vorschlag&&byId[x.vorschlag]?`<br><span class="hint" style="margin:2px 0 0">Vermutlich ${esc(byId[x.vorschlag].n)} — Einheit „${esc(x.u)}“ ist Serum unbekannt</span>`:""}</td>
-      <td class="mono" style="white-space:nowrap">${x.v!==null&&x.v!==undefined?fq(x.v,x.q):esc(x.t||"—")} ${esc(x.u||"")}</td>
+      <td class="mono" style="${x.v!==null&&x.v!==undefined?"white-space:nowrap":"white-space:normal;word-break:break-word"}">${x.v!==null&&x.v!==undefined?fq(x.v,x.q):esc(x.t||"—")} ${esc(x.u||"")}</td>
       <td class="labref">${labTxt(x)}</td></tr>
       <tr class="xact"><td colspan="3"><div>${x.tid?"":`<select class="xsel" data-zu="${i}" aria-label="Einem Serum-Wert zuordnen"><option value="">Zuordnen …</option>${optionen}</select>`}
         <button class="btn ghost sm" data-xdel="${i}"${x.tid?' style="margin-left:auto"':""}>Entfernen</button></div></td></tr>`}).join("")}</tbody></table></div>
@@ -3539,7 +4528,7 @@ let askId=null, askMode="marker";
 
 /* Sammelt den kompletten Stand für eine Gesamtbeurteilung. */
 function befundZeile(e){
-  return `${dmed(e.date)}${e.time?", "+e.time+" Uhr":""}${e.lab?", "+e.lab:""}${e.cycle?", "+(PHASEN[e.cycle]||e.cycle):""}${e.fasting==="ja"?", nüchtern":e.fasting==="nein"?", nicht nüchtern":""}${e.note?"\n    Umstände: "+e.note.replace(/\s+/g," "):""}`;
+  return `${dmed(e.date)}${e.time?", "+e.time+" Uhr":""}${e.lab?", "+e.lab:""}${befundPhase(e)?", "+befundPhase(e):""}${e.fasting==="ja"?", nüchtern":e.fasting==="nein"?", nicht nüchtern":""}${e.note?"\n    Umstände: "+e.note.replace(/\s+/g," "):""}`;
 }
 function buildGesamtPrompt(q){
   const p=DB.profile;
@@ -3555,7 +4544,10 @@ function buildGesamtPrompt(q){
       const m=byId[id], v=+S.v[id], qq=S.q[id]||"", ph=S.ph[id]||null, st=statOf(S,id), s=series(id);
       let verlauf="";
       if(s.length>1){ const vor=s[s.length-2]; verlauf=` | vorher ${fq(vor.v,vor.q)} am ${dmed(vor.d)}`; }
-      return `  ${m.n}: ${fq(v,qq)}${m.u?" "+m.u:""} | Referenz ${fmt(refOf(m,ph)[0])}–${fmt(refOf(m,ph)[1])} | ideal ${fmt(optOf(m,ph)[0])}–${fmt(optOf(m,ph)[1])} | ${st.t} | gemessen ${dmed(S.d[id])}${m.calc&&S.e[id]&&S.e[id].v[id]===undefined?" | von Serum berechnet":""}${verlauf}`;
+      const lr=S.ref&&S.ref[id], bereich=ph==="schwanger"||st.neutral
+        ? `Laborbereich ${lr&&(lr.lo!=null||lr.hi!=null)?String(lr.t||[lr.lo,lr.hi].filter(x=>x!=null).map(fmt).join("–")):"nicht angegeben"} | ${ph==="schwanger"?"Schwangerschaft: keine eigenen Bereiche":"in dieser Lebensphase nicht bewertet"}`
+        : `Referenz ${fmt(refOf(m,ph)[0])}–${fmt(refOf(m,ph)[1])} | ideal ${fmt(optOf(m,ph)[0])}–${fmt(optOf(m,ph)[1])}`;
+      return `  ${m.n}: ${fq(v,qq)}${m.u?" "+m.u:""} | ${bereich} | ${st.t} | gemessen ${dmed(S.d[id])}${m.calc&&S.e[id]&&S.e[id].v[id]===undefined?" | von Serum berechnet":""}${verlauf}`;
     });
     return g+"\n"+rows.join("\n");
   }).join("\n\n");
@@ -3576,7 +4568,7 @@ AKTUELLER STAND
 
 BEFUNDE, AUS DENEN DIESE WERTE STAMMEN
 ${S.befunde.map(e=>"  "+befundZeile(e)).join("\n")}
-
+${(DB.events||[]).length?"\nZEITLEISTE (vom Nutzer eingetragen, von Serum nicht bewertet)\n"+S.befunde.map(e=>"  Befund vom "+dmed(e.date)+":\n"+kontextZeilen(e.date,null,"    ")).join("\n")+(()=>{const k=kontextAm(heuteIso());const l=k.phase.map(x=>"Lebensphase: "+phaseText(x,heuteIso())).concat(k.laeuft.map(laeuftText));return l.length?"\n  Läuft heute: "+l.join("; "):""})()+"\n":""}
 ALLE WERTE${mitGrenze?"\n  („<“ heißt unter der Messgrenze des Labors, „>“ über dem Messbereich — kein genauer Wert.)":""}
 ${zeilen}
 ${(()=>{const tl=weitereAlle(true); if(!tl.length) return "";
@@ -3617,7 +4609,7 @@ function buildPrompt(id,q){
   const m=byId[id],s=series(id),p=DB.profile,letzt=s[s.length-1];
   const age=p.year?`${new Date().getFullYear()-(+p.year)} Jahre`:"Alter nicht angegeben";
   const body=[p.sex==="f"?"Weiblich":"Männlich",age,p.kg?p.kg+" kg":null,p.cm?p.cm+" cm":null].filter(Boolean).join(", ");
-  const hist=s.map(x=>`  ${dmed(x.d)}: ${fq(x.v,x.q)} ${m.u} (${status(m,x.v,x.ph,x.q,x.ref).t})${x.zeit?", abgenommen um "+x.zeit+" Uhr":""}${x.ph?", "+PHASEN[x.ph]:""}${x.nue==="ja"?", nüchtern":x.nue==="nein"?", nicht nüchtern":""}${x.note?"\n    Umstände: "+x.note.replace(/\s+/g," "):""}`).join("\n");
+  const hist=s.map(x=>`  ${dmed(x.d)}: ${fq(x.v,x.q)} ${m.u} (${status(m,x.v,x.ph,x.q,x.ref).t})${x.zeit?", abgenommen um "+x.zeit+" Uhr":""}${x.ph?", "+phLabel(x.ph,x.d):""}${x.nue==="ja"?", nüchtern":x.nue==="nein"?", nicht nüchtern":""}${x.note?"\n    Umstände: "+x.note.replace(/\s+/g," "):""}`).join("\n");
   const mitGrenze=s.some(x=>x.q);
   const rel=(m.rel||[]).map(r=>{const rm=byId[r],rs=series(r); if(!rm||!rs.length) return null;
     const c=rs[rs.length-1];
@@ -3630,7 +4622,8 @@ MEIN PROFIL
 
 MESSWERT: ${m.n} (${m.u})
   Referenzbereich: ${fmt(refOf(m,letzt.ph)[0])}–${fmt(refOf(m,letzt.ph)[1])}
-  Angestrebter Idealbereich: ${fmt(optOf(m,letzt.ph)[0])}–${fmt(optOf(m,letzt.ph)[1])}${m.zeit?`
+  Angestrebter Idealbereich: ${fmt(optOf(m,letzt.ph)[0])}–${fmt(optOf(m,letzt.ph)[1])}${letzt.ph==="schwanger"?`
+  Schwangerschaft: Diese Bereiche gelten außerhalb der Schwangerschaft. Serum bewertet in der Schwangerschaft nur nach dem Laborbereich.`:""}${m.zeit?`
   Tageszeitabhängig — aussagekräftig zwischen ${m.zeit.von} und ${m.zeit.bis} Uhr`:""}${m.zyk?`
   Zyklusabhängig — der genannte Bereich gilt für die angegebene Zyklusphase`:""}${m.calc?`
   Von Serum berechnet aus ${m.calc.map(r=>byId[r].n).join(" und ")}${id==="testofrei_calc"?" sowie Albumin (Formel nach Vermeulen, ohne Albumin mit 4,3 g/dl)":""}, sofern das Labor den Wert nicht selbst meldet`:""}${m.warn?`
@@ -3638,7 +4631,10 @@ MESSWERT: ${m.n} (${m.u})
 
 MEIN VERLAUF${mitGrenze?"\n  („<“ heißt unter der Messgrenze des Labors, „>“ über dem Messbereich — kein genauer Wert.)":""}
 ${hist}
-${rel?`\nBEGLEITWERTE (aktuellster Stand)\n${rel}`:""}
+${(()=>{ const a=plusTage(s[0].d,-60), evs=(DB.events||[]).filter(e=>evPasst(e,m)&&(!evEnde(e)||evEnde(e)>=a));
+  if(!evs.length) return "";
+  const hin=stoffHinweise(m,s);
+  return "\nZEITLEISTE ZU DIESEM WERT (vom Nutzer eingetragen, von Serum nicht bewertet)\n"+evs.sort((x,y)=>evStart(x).localeCompare(evStart(y))).map(e=>`  ${EVN[e.cat]}: ${evTitel(e)} · ${evZeitraum(e)}${evEnthaelt(e)?" · enthält "+evEnthaelt(e):""}`).join("\n")+(hin.length?"\n  Hinweis: "+hin.join("\n  Hinweis: "):"")+"\n"; })()}${rel?`\nBEGLEITWERTE (aktuellster Stand)\n${rel}`:""}
 ${m.tag?`\nHINWEIS ZUR ABNAHMEZEIT\n  ${m.tag.txt} Günstig ist eine Abnahme zwischen ${m.tag.von} und ${m.tag.bis} Uhr.`:""}
 ${m.zyk?`\nHINWEIS ZUM ZYKLUS\n  Dieser Wert ist zyklusabhängig. Übliche Bereiche: Follikelphase ${fmt(m.zyk.follikel[0])}–${fmt(m.zyk.follikel[1])}, Eisprung ${fmt(m.zyk.ovulation[0])}–${fmt(m.zyk.ovulation[1])}, Lutealphase ${fmt(m.zyk.luteal[0])}–${fmt(m.zyk.luteal[1])} ${m.u}.`:""}
 
@@ -3682,7 +4678,7 @@ function keyFormat(k){
 }
 function fehlerText(f){
   const m=(f&&f.msg)||"", st=(f&&f.status)||0, tech=m?` (Anthropic: ${m.slice(0,160)})`:"";
-  if(!st) return "Keine Verbindung zu Anthropic. Bitte Internet prüfen und nochmal versuchen."+(m?` (${m.slice(0,120)})`:"");
+  if(!st) return "Keine Verbindung zu Anthropic. Bitte Internet prüfen, Serum geöffnet lassen und nochmal versuchen."+(m?` (${m.slice(0,120)})`:"");
   if(st===401&&/cors/i.test(m)) return "Deine Anthropic-Organisation lässt keine Anfragen direkt aus Apps wie Serum zu. Das lässt sich nur in der Anthropic-Console ändern — bis dahin geht es über „Prompt kopieren“."+tech;
   if(st===401) return "Der API-Key wird nicht angenommen: falsch, unvollständig, abgelaufen oder gelöscht. Die Console zeigt den vollständigen Key nur einmal beim Erstellen — die gekürzte Anzeige mit Punkten funktioniert nicht. Im Zweifel einen neuen Key erstellen."+tech;
   if(/credit balance/i.test(m)) return "Das Guthaben bei Anthropic ist aufgebraucht. In der Anthropic-Console unter Billing aufladen."+tech;
@@ -3694,7 +4690,7 @@ function fehlerText(f){
   if(st>=500) return "Anthropic ist gerade überlastet oder gestört. Bitte in ein paar Minuten nochmal versuchen."+tech;
   return `Anthropic hat die Anfrage abgelehnt (Fehler ${st}).`+tech;
 }
-async function claudeCall(body,keyArg){
+async function claudeCall(body,keyArg,opt){
   const key=keyRein(keyArg===undefined?DB.profile.key:keyArg);
   const fmtK=keyFormat(key);
   if(!key) throw new Error("Es ist kein API-Key eingetragen.");
@@ -3709,7 +4705,7 @@ async function claudeCall(body,keyArg){
       try{ r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:kopfFuer(key,art),body:JSON.stringify(Object.assign({},body,{model}))}) }
       /* Keine Verbindung: Die Anmeldeart ist nicht schuld — nicht ein zweites Mal senden */
       catch(e){ throw new Error(fehlerText({status:0,msg:String((e&&e.message)||e||"")})) }
-      if(r.ok){ anmeldeArt=art; const d=body.stream?await streamLesen(r):await r.json(); try{ Object.defineProperty(d,"_auth",{value:art,enumerable:false}) }catch(e){} return d }
+      if(r.ok){ anmeldeArt=art; const d=body.stream?await streamLesen(r,opt&&opt.fortschritt):await r.json(); try{ Object.defineProperty(d,"_auth",{value:art,enumerable:false}) }catch(e){} return d }
       let msg=""; try{ const j=await r.json(); msg=(j&&j.error&&j.error.message)||"" }catch(e){}
       const jetzt={status:r.status,msg};
       /* Abgewiesen: andere Anmeldeart versuchen — die erste Begründung bleibt die aussagekräftige */
@@ -3729,13 +4725,17 @@ async function streamLesen(r,fortschritt){
     const zeile=block.split("\n").find(l=>l.startsWith("data:")); if(!zeile) return;
     let d; try{ d=JSON.parse(zeile.slice(5).trim()) }catch(e){ return }
     if(d.type==="message_start"&&d.message){ out.model=d.message.model; Object.assign(out.usage,d.message.usage||{}) }
-    else if(d.type==="content_block_delta"&&d.delta&&d.delta.type==="text_delta"){ out.content[0].text+=d.delta.text; if(fortschritt) fortschritt(out.content[0].text.length) }
+    else if(d.type==="content_block_delta"&&d.delta&&d.delta.type==="text_delta"){ out.content[0].text+=d.delta.text; if(fortschritt) fortschritt(out.content[0].text) }
     else if(d.type==="message_delta"){ if(d.delta&&d.delta.stop_reason) out.stop_reason=d.delta.stop_reason; Object.assign(out.usage,d.usage||{}) }
     else if(d.type==="error"){ throw new Error(fehlerText({status:529,msg:(d.error&&d.error.message)||"Abbruch während der Antwort"})) }
   };
   if(r.body&&r.body.getReader){
     const rd=r.body.getReader(), dec=new TextDecoder(); let puffer="";
-    for(;;){ const {value,done}=await rd.read(); if(done) break;
+    for(;;){
+      let teil;
+      try{ teil=await rd.read() }
+      catch(e){ throw new Error("Die Verbindung ist während des Lesens abgebrochen — meist, weil das Handy gesperrt oder in eine andere App gewechselt wurde. Serum bitte geöffnet lassen, bis „Fertig“ erscheint, und nochmal versuchen.") }
+      const {value,done}=teil; if(done) break;
       puffer+=dec.decode(value,{stream:true}); let i;
       while((i=puffer.indexOf("\n\n"))>=0){ verarbeite(puffer.slice(0,i)); puffer=puffer.slice(i+2) } }
     if(puffer.trim()) verarbeite(puffer);
@@ -3769,6 +4769,8 @@ WICHTIGE UNTERSCHEIDUNGEN
 - Folsäure/Vitamin B9 per LC-MS/MS (Bereich etwa 0,2–20 ng/ml) ist nicht das Serum-Folat → id null.
 - Quotienten (LDL/HDL, BUN/Kreatinin, Albumin/Globulin …) nur zuordnen, wenn die Liste genau diesen Quotienten enthält.
 - Vitamin D2 oder D3 einzeln ist nicht vitd; vitd ist 25-OH-Vitamin D gesamt.
+- Nennt die Referenz mehrere Gruppen (Zyklusphasen, Geschlecht, Alter, Schwangerschaft, Risikostufen), lass ref_unten und ref_oben weg und gib nur ref_text an.
+- Quotienten und Rechenwerte, die nicht in der Serum-Liste stehen (LDL/HDL, Cholesterin/HDL, BUN/Kreatinin, durchschnittlicher Blutzucker …), weglassen.
 - Werte ohne Zahl (negativ, positiv, Farbe, Titer wie 1:80) mit "text" statt "wert". Gehören sie zur TEXT-LISTE (Erregertests, Urinsediment, Urinkultur, ANA-Titer, Blutgruppe …), setze dort die id.
 - Urin-Teststreifen mit Ergebnis wie „Nil“, „+“, „++“, „Spuren“ → id des Urinwerts aus der Serum-Liste (u_protein, u_leuko …) mit "text".
 
@@ -3805,16 +4807,21 @@ function gegenprobe(lo,hi,rl,rh){
   if(lo!==null&&lo>0&&rl>0) return Math.max(lo/rl,rl/lo)<=2;
   return null;
 }
+function istRechenwert(w){
+  const n=flach(w.name||"");
+  return /\bratio\b|quotient|verhaltnis/.test(n)||/^ratio$/i.test(String(w.einheit||"").trim())
+    ||/average (blood )?glucose|estimated average glucose|\beag\b|mittlere[rs]? (blut)?zucker|durchschnittl/.test(n);
+}
 function weiterAus(w,vorschlag){
   const zahl=zahlOk(w.wert);
   const fl=w.flag==="H"||w.flag==="L"?w.flag:"";
   return {n:String(w.name||"").trim().slice(0,90), v:zahl?+w.wert:null, t:zahl?"":String(w.text||"").trim().slice(0,60),
     q:w.grenze==="<"||w.grenze===">"?w.grenze:"", u:String(w.einheit||"").trim().slice(0,24),
-    lo:zahlOk(w.ref_unten)?+w.ref_unten:null, hi:zahlOk(w.ref_oben)?+w.ref_oben:null, f:fl,
+    lo:zahlOk(w.ref_unten)&&!mehrereGruppen(w.ref_text)?+w.ref_unten:null, hi:zahlOk(w.ref_oben)&&!mehrereGruppen(w.ref_text)?+w.ref_oben:null, f:fl,
     rt:String(w.ref_text||"").trim().slice(0,40), vorschlag:vorschlag||null};
 }
 function claudeWert(m,w){
-  const ph=$("#fCycle")?$("#fCycle").value||null:null;
+  const ph=dialogPhase();
   const wert=+w.wert, u=String(w.einheit||"").trim(), hin=[];
   let v, um, warn=false;
   const ohneEinheit=normU(m.u)===""||m.u===":1";
@@ -3834,11 +4841,12 @@ function claudeWert(m,w){
   }else return null;
   if(w.name&&flach(w.name).replace(/[^a-z0-9]/g,"")!==flach(m.n).replace(/[^a-z0-9]/g,"")) hin.unshift(`„${String(w.name).trim()}“ → ${m.n}`);
   const fl=w.flag==="H"||w.flag==="L"?w.flag:"";
-  const lo=zahlOk(w.ref_unten)?um(+w.ref_unten):null, hi=zahlOk(w.ref_oben)?um(+w.ref_oben):null;
+  const gruppen=mehrereGruppen(w.ref_text);
+  const lo=!gruppen&&zahlOk(w.ref_unten)?um(+w.ref_unten):null, hi=!gruppen&&zahlOk(w.ref_oben)?um(+w.ref_oben):null;
   const ref=(lo!==null||hi!==null||fl)?{lo,hi,f:fl,t:String(w.ref_text||"").trim().slice(0,40)}:null;
   return {v, ref, note:{t:hin.join(" · "), warn}};
 }
-function uebernimmClaude(txt){
+function uebernimmClaude(txt,vonClaude){
   let d; try{ d=jsonAus(txt) }catch(e){ cbStatus(""); alert("Die Antwort von Claude ließ sich nicht übernehmen: "+e.message); return false }
   const werte=Array.isArray(d.werte)?d.werte:[];
   const lokal={v:Object.assign({},staged), q:Object.assign({},stagedQ), ref:Object.assign({},stagedRef)};
@@ -3850,6 +4858,8 @@ function uebernimmClaude(txt){
     if(T){ if(w.text||w.wert!=null){ const x=weiterAus(w,null); x.n=T.n; x.tid=T.id; if(!x.t&&x.v!=null){ x.t=String(x.v)+(x.u?" "+x.u:""); x.v=null } if(!nX.some(y=>y.tid===T.id)) nX.push(x) } return }
     if(m&&m.stufe&&!zahlOk(w.wert)&&stufeAus(w.text)!==null){ if(neu[m.id]===undefined){ neu[m.id]=stufeAus(w.text); nNotes[m.id]={t:"„"+String(w.text).slice(0,20)+"“ als Stufe "+fmt(neu[m.id])+" übernommen"} } return }
     if(m&&zahlOk(w.wert)&&neu[m.id]!==undefined){ const x=weiterAus(w,m.id); x.hin=DOPPELT; nX.push(x); return }
+    /* Quotienten und Rechenwerte des Labors: Serum hat die Ausgangswerte */
+    if(!m&&zahlOk(w.wert)&&istRechenwert(w)) return;
     if(!m||!zahlOk(w.wert)){ if(w.name||w.text||zahlOk(w.wert)) nX.push(weiterAus(w,m?m.id:null)); return }
     const r=claudeWert(m,w);
     if(!r){ nX.push(weiterAus(w,m.id)); return }
@@ -3877,43 +4887,67 @@ function uebernimmClaude(txt){
   });
   staged=neu; stagedQ=nQ; stagedRef=nRef; stagedNotes=nNotes; stagedX=nX;
   const heute=new Date().toISOString().slice(0,10);
-  if(!editing&&d.datum&&/^\d{4}-\d{2}-\d{2}$/.test(d.datum)&&$("#fDate").value===heute) $("#fDate").value=d.datum;
+  if(!editing&&d.datum&&/^\d{4}-\d{2}-\d{2}$/.test(d.datum)&&$("#fDate").value===heute){ $("#fDate").value=d.datum; zyklusFeld() }
   if(d.labor&&!$("#fLab").value) $("#fLab").value=String(d.labor).slice(0,60);
   if(d.patient) personVorschlag(String(d.patient));
   showDetected();
   const n=Object.keys(neu).length;
-  cbStatus(`${n} zugeordnet${nX.length?`, ${nX.length} weitere`:""}`);
+  cbStatus(`✓ Fertig — ${vonClaude?"Claude hat alles gelesen":"Antwort übernommen"}: ${n} zugeordnet${nX.length?`, ${nX.length} weitere`:""}`);
+  $("#cbStatus").classList.add("fertig");
   toast(`Claude: ${n} Werte zugeordnet${nX.length?`, ${nX.length} weitere`:""}`);
   return true;
+}
+/* Während Claude liest: Bildschirm wach halten, sonst trennt das Handy die Verbindung. */
+let wachSperre=null, liestGerade=false;
+async function wachHalten(an){
+  try{
+    if(an&&navigator.wakeLock&&!wachSperre){ wachSperre=await navigator.wakeLock.request("screen"); wachSperre.addEventListener("release",()=>{ wachSperre=null }) }
+    if(!an&&wachSperre){ await wachSperre.release(); wachSperre=null }
+  }catch(e){ wachSperre=null }
+}
+document.addEventListener("visibilitychange",()=>{ if(liestGerade&&document.visibilityState==="visible") wachHalten(true) });
+/* Laufrad mit Zeit und Zahl der bisher gelieferten Werte */
+function cbLaeuft(start,text){
+  const sek=Math.round((Date.now()-start)/1000), zeit=`${Math.floor(sek/60)}:${String(sek%60).padStart(2,"0")}`;
+  const n=text?(text.match(/"name"\s*:/g)||[]).length:0;
+  $("#cbStatus").innerHTML=`<span class="spinner"></span> ${n?`Claude liest … ${n} Werte bisher`:text===null?"Befund wird übertragen …":"Claude liest den Befund …"} · ${zeit}`;
+  $("#cbWach").hidden=false;
 }
 async function claudeLesen(){
   if(!DB.profile.key) return;
   if(!quelle.file&&!String(quelle.text||"").trim()) return;
-  $("#cbRun").disabled=true;
-  cbStatus("liest … das dauert ein bis zwei Minuten");
+  $("#cbRun").disabled=true; $("#cbRun").textContent="Claude lesen lassen";
+  const start=Date.now(); let zuletzt=null, anzeige=0;
+  liestGerade=true; wachHalten(true);
+  cbLaeuft(start,null);
+  const uhr=setInterval(()=>cbLaeuft(start,zuletzt),1000);
   try{
     const content=[];
     const datei=quelle.file&&(quelle.file.type==="application/pdf"||/^image\//.test(quelle.file.type));
     if(datei){
-      const b64=await dateiB64(quelle.file);
-      content.push(quelle.file.type==="application/pdf"
-        ? {type:"document",source:{type:"base64",media_type:"application/pdf",data:b64}}
-        : {type:"image",source:{type:"base64",media_type:quelle.file.type,data:b64}});
+      if(quelle.file.type==="application/pdf") content.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:await dateiB64(quelle.file)}});
+      else { const b=await bildFuerClaude(quelle.file); content.push({type:"image",source:{type:"base64",media_type:b.type,data:b.b64}}) }
     }
     content.push({type:"text",text:claudeLesePrompt(datei?"":quelle.text, datei)});
-    const res=await claudeCall({max_tokens:32000, stream:true, messages:[{role:"user",content}]});
+    zuletzt="";
+    const res=await claudeCall({max_tokens:32000, stream:true, messages:[{role:"user",content}]},undefined,{fortschritt:t=>{ zuletzt=t; if(Date.now()-anzeige>250){ anzeige=Date.now(); cbLaeuft(start,t) } }});
     const txt=(res.content||[]).map(x=>x.text||"").join("");
     if(res.stop_reason==="max_tokens") throw new Error("Der Befund ist zu lang für eine Antwort. Bitte in Teilen einfügen.");
-    uebernimmClaude(txt);
-  }catch(e){ cbStatus(""); alert("Claude konnte den Befund nicht lesen: "+e.message+"\n\nDie Werte des eingebauten Lesers bleiben stehen. Ohne funktionierenden Key: „Prompt kopieren“ und in deiner Claude-App lesen lassen.") }
-  finally{ $("#cbRun").disabled=false }
+    clearInterval(uhr);
+    if(uebernimmClaude(txt,true)) toast("Fertig — Claude hat den Befund gelesen");
+  }catch(e){
+    clearInterval(uhr); cbStatus("Abgebrochen — die Werte des eingebauten Lesers bleiben stehen.");
+    $("#cbRun").textContent="Nochmal versuchen";
+    alert("Claude konnte den Befund nicht lesen: "+e.message+"\n\nDie Werte des eingebauten Lesers bleiben stehen. Über „Nochmal versuchen“ startet Claude neu — oder „Prompt kopieren“ und in deiner Claude-App lesen lassen.");
+  }
+  finally{ clearInterval(uhr); liestGerade=false; wachHalten(false); $("#cbRun").disabled=false; $("#cbWach").hidden=true }
 }
-function cbStatus(t){ $("#cbStatus").textContent=t||"" }
+function cbStatus(t){ $("#cbStatus").textContent=t||""; $("#cbStatus").classList.remove("fertig") }
 function claudeBoxZu(){ $("#claudeBox").hidden=true; $("#cbAnswer").value=""; cbStatus("") }
 function claudeBoxAuf(){
   const key=!!DB.profile.key, bild=quelle.file&&/^image\//.test(quelle.file.type);
   const da=!!(quelle.file||String(quelle.text||"").trim());
-  $("#cbRun").hidden=!key||!da;
+  $("#cbRun").hidden=!key||!da; if(!liestGerade) $("#cbRun").textContent="Claude lesen lassen";
   $("#cbInfo").textContent=!da
     ? "Du kannst den Befund auch in deiner Claude-App lesen lassen: Prompt kopieren, in Claude einfügen, den Befund dort als Datei mit hochladen und die Antwort hier einfügen. Mit API-Key liest Claude automatisch, sobald du oben eine Datei auswählst."
     : key
@@ -4037,6 +5071,11 @@ async function demo(){
     {date:`${y-1}-04-11`,lab:"MVZ Labor Saarbrücken",v:{hb:15.4,hkt:46,mcv:90,leuko:5.4,thrombo:221,ferritin:94,eisen:112,vitd:43,b12:610,tsh:1.9,crp:0.8,ldl:106,hdl:61,trigl:94,chol:186,hba1c:5.1,harnsaeure:5.5,omega3:7.6,gpt:26,ggt:20,kreatinin:1.04,magnesium:0.9,testo:610,shbg:62,estradiol:11,testofrei:12.4,zink:13.2}},
     {date:`${y}-04-09`,lab:"MVZ Labor Saarbrücken",v:{hb:15.6,hkt:47,mcv:90,leuko:5.2,thrombo:218,ferritin:118,eisen:121,vitd:51,b12:690,folsaeure:9.4,tsh:1.7,ft3:3.2,ft4:1.3,crp:0.6,ldl:98,hdl:64,trigl:82,chol:180,hba1c:5.0,glukose:86,harnsaeure:5.2,omega3:8.9,gpt:24,got:34,ggt:18,ck:210,kreatinin:1.06,egfr:96,magnesium:0.92,zink:14.8,selen:98,testo:640,testofrei:13.1,shbg:67.9,estradiol:6,fsh:3.4,lh:4.1,prolaktin:9.2}}
   ];
+  if(!(DB.events||[]).length){ DB.events.push(
+    {id:neueEvId(),cat:"ne",kind:"einzel",stoff:"vitd",menge:"2000",einheit:"IE",freq:"täglich",from:`${y-4}-10-01`,to:null},
+    {id:neueEvId(),cat:"ne",kind:"einzel",stoff:"omega3",menge:"2",einheit:"g",freq:"täglich",from:`${y-3}-01-15`,to:null},
+    {id:neueEvId(),cat:"inf",name:"Erkältung",from:`${y-3}-03-18`,to:`${y-3}-03-25`},
+    {id:neueEvId(),cat:"op",name:"Blutspende",from:`${y-2}-11-08`,to:null}) }
   await saveDB(); setView("dash"); hide("#mData"); toast("Beispieldaten als Person „Beispiel“ geladen");
 }
 window.demo=demo;
@@ -4059,7 +5098,7 @@ document.addEventListener("click",e=>{
   if(e.target.matches("[data-close]")) e.target.closest(".veil").hidden=true;
   if(e.target.matches(".veil")) e.target.hidden=true;
   if(e.target.matches("[data-tab]")) tab(e.target.dataset.tab);
-  if(e.target.matches(".chip")){ filter=e.target.dataset.g; render() }
+  if(e.target.matches(".chip[data-g]")){ filter=e.target.dataset.g; render() }
   if(e.target.matches("#nav button")) setView(e.target.dataset.view);
   const ab=e.target.closest&&e.target.closest("[data-acopy],[data-adel],[data-areask]");
   if(ab){
@@ -4071,11 +5110,18 @@ document.addEventListener("click",e=>{
     }
   }
 });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") document.querySelectorAll(".veil").forEach(v=>v.hidden=true) });
+document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return;
+  if(!$("#mEv").hidden){ $("#mEv").hidden=true; return }
+  document.querySelectorAll(".veil").forEach(v=>v.hidden=true) });
 
 $("#btnAdd").onclick=openAdd;
 $("#mSearch").oninput=()=>{ suche=$("#mSearch").value; if(suche.trim()) filter="Alle"; render() };
-$("#fCycleDay").oninput=tagZuPhase;
+$("#fCycleDay").oninput=()=>{ tagZuPhase(); zyklusHinweis() };
+$("#fCycle").onchange=zyklusHinweis;
+$("#fDate").addEventListener("change",zyklusFeld);
+$("#fDate").addEventListener("input",zyklusFeld);
+$("#btnEv").onclick=()=>openEv();
+$("#evFotoIn").onchange=e=>{ const f=[...e.target.files]; e.target.value=""; etikettLesen(f) };
 $("#btnData").onclick=openData;
 $("#btnUpdate").onclick=()=>window.serumCheckUpdate&&window.serumCheckUpdate();
 $("#pick").onclick=()=>$("#file").click();
@@ -4276,7 +5322,7 @@ $("#askDirect").onclick=askDirect;
    Mehrere Personen: alle in einer Datei. Der API-Key bleibt immer draußen. */
 function exportInhalt(nurAktiv){
   zurueck();
-  const einzeln=p=>({entries:p.entries, answers:p.answers||[], profile:Object.assign({},p.profile,{key:""})});
+  const einzeln=p=>({entries:p.entries, answers:p.answers||[], events:p.events||[], profile:Object.assign({},p.profile,{key:""})});
   const echte=ALLE.personen.filter(p=>!p.beispiel);
   const tag=new Date().toISOString().slice(0,10);
   const slug=p=>flach(p.profile.name||"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -4284,7 +5330,7 @@ function exportInhalt(nurAktiv){
     const p=nurAktiv?aktivePerson():(echte[0]||aktivePerson());
     return {daten:einzeln(p), name:"serum-"+(slug(p)?slug(p)+"-":"")+tag+".json"};
   }
-  return {daten:{format:13, personen:echte.map(p=>Object.assign({id:p.id},einzeln(p)))}, name:"serum-alle-"+tag+".json"};
+  return {daten:{format:14, personen:echte.map(p=>Object.assign({id:p.id},einzeln(p)))}, name:"serum-alle-"+tag+".json"};
 }
 async function exportData(nurAktiv){
   const ex=exportInhalt(nurAktiv===true);
@@ -4349,13 +5395,25 @@ function mergeEntries(incoming){
   return r;
 }
 
+/* Ereignisse zusammenführen: gleiche Kennung oder gleicher Inhalt gilt als vorhanden */
+function mergeEvents(list){
+  if(!Array.isArray(list)) return 0;
+  DB.events=DB.events||[]; let n=0;
+  const sig=e=>[e.cat,e.from,e.ph||"",e.et||"",flach(e.name||""),e.stoff||"",e.kind||""].join("|");
+  list.forEach(inc=>{
+    if(!inc||!inc.cat||!inc.from) return;
+    if(DB.events.some(e=>(inc.id&&e.id===inc.id)||sig(e)===sig(inc))) return;
+    DB.events.push(JSON.parse(JSON.stringify(Object.assign({id:neueEvId()},inc)))); n++;
+  });
+  return n;
+}
 $("#impFile").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
   e.target.value="";
   let d;
   try{ d=JSON.parse(await f.text()) }catch(err){ return alert("Die Datei lässt sich nicht lesen. Erwartet wird ein Export aus Serum.") }
   const pakete=Array.isArray(d.personen) ? d.personen
-    : Array.isArray(d.entries) ? [{id:null, profile:d.profile||{}, entries:d.entries, answers:d.answers||[]}] : null;
+    : Array.isArray(d.entries) ? [{id:null, profile:d.profile||{}, entries:d.entries, answers:d.answers||[], events:d.events||[]}] : null;
   if(!pakete) return alert("Die Datei lässt sich nicht lesen. Erwartet wird ein Export aus Serum.");
   zurueck();
   const vorher=ALLE.aktiv, zeilen=[];
@@ -4379,6 +5437,7 @@ $("#impFile").onchange=async e=>{
     }
     binde(ziel.id);
     const r=mergeEntries(pk.entries); konflikte+=r.konflikte;
+    const nEv=mergeEvents(pk.events);
     let na=0;
     if(Array.isArray(pk.answers)){ DB.answers=DB.answers||[];
       pk.answers.forEach(a=>{ if(a&&a.id&&a.a&&!DB.answers.some(x=>x.id===a.id)){ DB.answers.push(a); na++ } }); }
@@ -4390,6 +5449,7 @@ $("#impFile").onchange=async e=>{
     if(r.neueBefunde) teile.push(r.neueBefunde+" neue"+(r.neueBefunde===1?"r Befund":" Befunde"));
     if(r.werte) teile.push(r.werte+" ergänzte Werte");
     if(na) teile.push(na+" gespeicherte Antwort"+(na>1?"en":""));
+    if(nEv) teile.push(nEv+(nEv===1?" Ereignis":" Ereignisse"));
     zeilen.push((ALLE.personen.length>1||angelegt?pname(ziel)+(angelegt?" (neu angelegt)":"")+": ":"")+(teile.join(", ")||"nichts Neues — war schon alles vorhanden"));
   });
   binde(person(vorher)?vorher:ALLE.personen[0].id);
